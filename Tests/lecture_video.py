@@ -13,6 +13,8 @@ while(True):
     ret, img = cap.read()
     # Préparation de l'affichage de l'
     cv.imshow('frame',img)
+    # Lecture fps 
+    cap.get(cv.CAP_PROP_FPS)
     # affichage et saisie d'un code clavier
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
