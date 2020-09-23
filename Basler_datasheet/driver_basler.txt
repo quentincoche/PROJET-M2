@@ -1,0 +1,5 @@
+https://github.com/basler/pypylon
+
+1. Install pylon.exe
+2. Install python and pip
+3. Install the wheel using pip3 install <your downloaded wheel>.whl
