@@ -8,8 +8,8 @@ import time
 
 from pypylon import pylon
 
-from samples.imageeventprinter import ImageEventPrinter
-from samples.configurationeventprinter import ConfigurationEventPrinter
+from imageeventprinter import ImageEventPrinter
+from configurationeventprinter import ConfigurationEventPrinter
 
 # The exit code of the sample application.
 exitCode = 0
