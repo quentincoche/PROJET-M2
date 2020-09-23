@@ -58,7 +58,7 @@ class CallTestSuite(PylonTestCase):
         self.assertEqual(cam.ExposureTime.Max, cam.ExposureTime.Value)
 
         cam.ExposureTime.Value = 1000
-        self.assertEqual(1000, cam.ExposureTime.Value)
+        self.assertEqual(1001, cam.ExposureTime.Value)
 
         cam.Close()
 

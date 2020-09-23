@@ -26,8 +26,8 @@
 from pypylon import genicam
 from pypylon import pylon
 
-from sample.configurationeventprinter import ConfigurationEventPrinter
-from sample.cameraeventprinter import CameraEventPrinter
+from configurationeventprinter import ConfigurationEventPrinter
+from cameraeventprinter import CameraEventPrinter
 
 eMyExposureEndEvent = 100
 
