@@ -8,10 +8,6 @@ Created on Mon Sep 28 09:22:21 2020
 import tkinter as tk 
 import cv2
 from tkinter import Tk
-from PIL import Image, ImageTk
-import os
-import argparse
-import datetime
 import time
 
 class Application():
@@ -26,13 +22,12 @@ class Application():
         #affichage d'une image sur la fenetre video
         
          
-         
-         self.Menu() # Lance la fonction Menu
+         self.Interface() # Lance la fonction Interface
          #self.video_loop() # Lance la fonction video_loop
     
     
 ##########################################    
-    def Menu(self):
+    def Interface(self):
         for c in self.window.winfo_children():
             c.destroy()
         self.display1 = tk.Label(self.window)  # Initialisation de l'écran 1
@@ -78,6 +73,11 @@ class Application():
         check_expo = tk.Checkbutton(self.Frame2, text="auto exposition", variable=self.auto, onvalue = 1, offvalue = 0)
         check_expo.grid(row=1, column=3)
         
+        
+        #Initialisation de la Frame coupe X
+        self.Frame3 = tk.Frame(self.window, relief = "flat")
+        self.Frame3.grid(row=1, column=3)
+        
             
 ##########################################     
     #def streaming(self):
@@ -100,5 +100,5 @@ class Application():
 
 
 root = Application()
-print(root.auto)
+
 root.window.mainloop() # Lancement de la boucle principale
