@@ -6,7 +6,6 @@ Tested on Basler acA1300-200uc (USB3, linux 64bit , python 3.5)
 from pypylon import pylon
 import cv2
 import numpy as np
-import time
 
 class Camera():
     
