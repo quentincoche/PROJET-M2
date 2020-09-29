@@ -9,10 +9,10 @@ import tkinter as tk
 #import cv2
 from tkinter import Tk
 import time
-from objet_camera import Camera
-
+from objet_camera import *
+cam = Camera()
 class Application():
-    camera = Camera()
+    
     def __init__(self, output_path = "./"):
         
         #Edition de l'interface
@@ -66,7 +66,7 @@ class Application():
         self.Frame2.grid(row=1, column=2)
         
         #Boutons du bandeau
-        bouton_affichvideo = tk.Button(self.Frame2, text="Affichage video", relief="groove", command=camera.acquisition())
+        bouton_affichvideo = tk.Button(self.Frame2, text="Affichage video", relief="groove", command=cam.acquisition())
         bouton_affichvideo.grid(row=1, column=1)
         bouton_capture = tk.Button(self.Frame2, text="Capture", relief="groove")
         bouton_capture.grid(row=1, column=2)

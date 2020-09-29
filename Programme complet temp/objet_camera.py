@@ -21,7 +21,7 @@ class Camera():
         self.camera.GainAuto.SetValue("Continuous")
         self.camera.AcquisitionFrameRate.SetValue(60.0)
         self.camera.ExposureAuto.SetValue('Continuous')#Continuous, SingleFrame
-        self.camera.ExposureTime.SetValue(self.temp_exp)
+        #self.camera.ExposureTime.SetValue(self.temp_exp)
         # Grabing Continusely (video) with minimal delay
         self.camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly) 
         self.converter = pylon.ImageFormatConverter()
