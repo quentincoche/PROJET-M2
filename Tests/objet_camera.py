@@ -21,7 +21,7 @@ class Camera():
         self.camera.GainAuto.SetValue("Continuous")
         self.camera.AcquisitionFrameRate.SetValue(60.0)
         self.camera.ExposureAuto.SetValue('Continuous')#Continuous, SingleFrame
-        #self.camera.ExposureTime.SetValue(self.temp_exp)
+        self.camera.ExposureTime.SetValue(self.temp_exp)
         # Grabing Continusely (video) with minimal delay
         self.camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly) 
         self.converter = pylon.ImageFormatConverter()
@@ -34,17 +34,15 @@ class Camera():
                 self.image = self.converter.Convert(self.grabResult)
                 self.img = self.image.GetArray()
                 #Demande d'auto-exposition
-                #self.camera.ExposureTime.SetValue(self.temp_exp)
-                """
+                self.camera.ExposureTime.SetValue(self.temp_exp)
                 cv2.namedWindow('title', cv2.WINDOW_NORMAL)
                 cv2.imshow('title', self.img)
                 self.k = cv2.waitKey(1)
                 if self.k == 27:
-                    break"""
+                    break
             self.grabResult.Release()
             
         #Printing technical data
-        """
         print("Using device ", self.camera.GetDeviceInfo().GetModelName())
         print("Matrice : ", self.grabResult.Width, " x ", self.grabResult.Height)
         print("Bit pixel : ", self.camera.PixelFormat.GetValue())
@@ -54,10 +52,15 @@ class Camera():
         print("Gain : ", self.camera.Gain.GetValue())
         print("Frame rate : ",self.camera.AcquisitionFrameRate.GetValue())
         print(self.img)
-        """
+        
        
     #def ending_acquisition(self):
         # Releasing the resource    
         self.camera.StopGrabbing()
         self.camera.Close()
         cv2.destroyAllWindows()
+        
+    def auto_exposure(self):
+        exp_ok=False
+        while exp_ok == False:
+            obj=

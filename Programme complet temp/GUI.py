@@ -94,7 +94,7 @@ class Application():
         # Détruit les racines objet et arrête l'acquisition de toutes les sources
         print("[INFO] closing...")
         self.window.destroy() # Ferme la fenêtre
-        time.sleep(5)
+        #time.sleep(5)
 
 
 
