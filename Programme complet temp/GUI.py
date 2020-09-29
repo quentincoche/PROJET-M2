@@ -86,7 +86,7 @@ class Application():
     
 ##########################################    
     def video_loop(self):
-        imgtk = ImageTk.PhotoImage(image=cam.img)
+        imgtk = ImageTk.PhotoImage(image=cam.acquisition().img)
         self.display1.imgtk = imgtk # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
         self.display1.config(image=imgtk) # Montre l'image
     
