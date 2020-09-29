@@ -6,11 +6,13 @@ Created on Mon Sep 28 09:22:21 2020
 """
 
 import tkinter as tk 
-#import cv2
 from tkinter import Tk
+from PIL import Image, ImageTk
 import time
 from objet_camera import *
 cam = Camera()
+
+
 class Application():
     
     def __init__(self, output_path = "./"):
@@ -20,11 +22,8 @@ class Application():
          self.window.title("Beam analyzer Python")
          self.window.config(background="#FFFFFF") # Couleur de la fenêtre
          self.window.protocol('WM_DELETE_WINDOW', self.destructor)
-        #affichage d'une image sur la fenetre video
         
-         
          self.Interface() # Lance la fonction Interface
-         #self.video_loop() # Lance la fonction video_loop
     
     
 ##########################################    
@@ -66,7 +65,7 @@ class Application():
         self.Frame2.grid(row=1, column=2)
         
         #Boutons du bandeau
-        bouton_affichvideo = tk.Button(self.Frame2, text="Affichage video", relief="groove", command=cam.acquisition())
+        bouton_affichvideo = tk.Button(self.Frame2, text="Affichage video", relief="groove", command=self.video_loop())
         bouton_affichvideo.grid(row=1, column=1)
         bouton_capture = tk.Button(self.Frame2, text="Capture", relief="groove")
         bouton_capture.grid(row=1, column=2)
@@ -85,8 +84,11 @@ class Application():
         
     
 ##########################################    
-    #def video_loop(self):
-        
+    def video_loop(self):
+        cam.acquisition()
+        imgtk = ImageTk.PhotoImage(image=cam.img)
+        self.display1.imgtk = imgtk # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
+        self.display1.config(image=imgtk) # Montre l'image
     
 ##########################################    
     
@@ -98,8 +100,5 @@ class Application():
 
 
 
-
-
 root = Application()
-
 root.window.mainloop() # Lancement de la boucle principale
