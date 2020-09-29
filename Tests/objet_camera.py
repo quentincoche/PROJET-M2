@@ -5,22 +5,26 @@ Tested on Basler acA1300-200uc (USB3, linux 64bit , python 3.5)
 '''
 from pypylon import pylon
 import cv2
+import numpy as np
+import time
 
 class Camera():
     
     def __init__(self):
         # conecting to the first available camera
         self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
-        self.camera.Open()
-        #self.temp_exp=16.0
-        #self.acquisition()
+        self.temp_exp=50.0
+        self.acquisition()
     
     def acquisition(self):
+        self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
+        self.auto_exposure()
+        time.sleep(0.05)
+        self.camera.Open()
         self.camera.AcquisitionMode.SetValue('Continuous') #SingleFrame
         self.camera.PixelFormat.SetValue('Mono12')
         self.camera.GainAuto.SetValue("Continuous")
         self.camera.AcquisitionFrameRate.SetValue(60.0)
-        self.camera.ExposureAuto.SetValue('Continuous')#Continuous, SingleFrame
         self.camera.ExposureTime.SetValue(self.temp_exp)
         # Grabing Continusely (video) with minimal delay
         self.camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly) 
@@ -34,7 +38,6 @@ class Camera():
                 self.image = self.converter.Convert(self.grabResult)
                 self.img = self.image.GetArray()
                 #Demande d'auto-exposition
-                self.camera.ExposureTime.SetValue(self.temp_exp)
                 cv2.namedWindow('title', cv2.WINDOW_NORMAL)
                 cv2.imshow('title', self.img)
                 self.k = cv2.waitKey(1)
@@ -62,5 +65,38 @@ class Camera():
         
     def auto_exposure(self):
         exp_ok=False
+        max=self.max_photo()
         while exp_ok == False:
-            obj=
+            if max<=3000:
+                self.temp_exp=self.temp_exp*2.
+                max=self.max_photo()
+            elif max >=4095:
+                self.temp_exp=self.temp_exp/1.5
+                max=self.max_photo()
+            elif self.temp_exp>=10000000.0:
+                exp_ok=True
+                print('Exp time too big')
+                break
+            elif self.temp_exp<=16.0:
+                exp_ok=True
+                print('Exp time too short')
+                break
+            else:
+                exp_ok=True
+                break
+                
+    def max_photo(self):
+        self.camera.Open()
+        photo = pylon.PylonImage()
+        self.camera.ExposureTime.SetValue(self.temp_exp)
+        self.camera.AcquisitionMode.SetValue('SingleFrame')
+        self.camera.ExposureTime.SetValue(self.temp_exp)
+        self.camera.StartGrabbing()
+        grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException)
+        photo.SetImage(grabResult)
+        pht=photo.GetArray()
+        max_photo=np.amax(pht)
+        photo.Release()
+        self.camera.StopGrabbing()
+        self.camera.Close()
+        return(max_photo)
