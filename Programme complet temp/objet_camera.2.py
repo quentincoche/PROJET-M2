@@ -38,7 +38,7 @@ class Camera():
             #print("size= ",cap.get(cv2.CAP_PROP_FRAME_WIDTH)," x ",cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             # affichage et saisie d'un code clavier
             #if cv2.waitKey(1) & 0xFF == 27:
-                break   
+                #break   
         # Ne pas oublier de fermer le flux et la fenetre
         self.cap.release()
         #cv2.destroyAllWindows()
