@@ -80,6 +80,11 @@ class Application():
         cv2.destroyAllWindows()  # Pas nécessaire mais plus sûr
 
     def auto_exposure(self):
+        self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
+        self.camera.Open()
+        self.camera.ExposureTime.SetValue(self.temp_exp)
+        self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
+        self.camera.AcquisitionMode.SetValue('SingleFrame')
         exp_ok=False
         max=self.max_photo()
         while exp_ok == False:
@@ -102,12 +107,10 @@ class Application():
             else:
                 exp_ok=True
                 break
+        self.camera.Close()
+        return
                 
     def max_photo(self):
-        self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
-        self.camera.Open()
-        self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
-        self.camera.AcquisitionMode.SetValue('SingleFrame')
         self.camera.ExposureTime.SetValue(self.temp_exp)
         self.camera.StartGrabbing()
         grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException)
@@ -115,7 +118,6 @@ class Application():
         max_photo=np.amax(pht)
         grabResult.Release()
         self.camera.StopGrabbing()
-        self.camera.Close()
         return max_photo
 
 
