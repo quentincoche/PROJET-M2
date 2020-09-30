@@ -5,7 +5,8 @@ Created on Mon Sep 28 09:22:21 2020
 @author: Optique
 """
 from pypylon import pylon
-from PIL import Image, ImageTk
+from PIL import Image as Img
+from PIL import ImageTk
 from tkinter import *
 import cv2
 import tkinter as tk
@@ -124,7 +125,7 @@ class Fenetre():
         ok0, frame0 = self.cap0.read() # lecture des images de la vidéo
         self.frame0 = frame0 #transformation de la variable en variable exploitable par toutes les fonctions
         self.frame=cv2.flip(self.frame0,0)
-        self.im0 = Image.fromarray(self.frame) # Convertit l'image pour PIL    
+        self.im0 = Img.fromarray(self.frame) # Convertit l'image pour PIL    
         self.img0=self.im0.resize((960,540))
         imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
         self.display1.imgtk = imgtk0 # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
