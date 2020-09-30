@@ -12,8 +12,8 @@ import numpy as np
 
 class Camera():
     def __init__(self):
-        self.temp_exp=50.0
-        self.auto_exposure()
+        #self.temp_exp=50.0
+        #self.auto_exposure()
         self.cap = cv2.VideoCapture(0)
         #self.acquisition()
 
@@ -23,8 +23,8 @@ class Camera():
             self.cap.set(3, 5472)
             self.cap.set(4, 3648)
             ret, img = self.cap.read()
-            self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.25)
-            self.cap.set(cv2.CAP_PROP_EXPOSURE, -6)
+            self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75)
+            #self.cap.set(cv2.CAP_PROP_EXPOSURE, -6)
             #img25=rescale_frame(img, 10)
             # Préparation de l'affichage de l'
             img=cv2.flip(img,0)
@@ -42,6 +42,7 @@ class Camera():
         # Ne pas oublier de fermer le flux et la fenetre
         self.cap.release()
         #cv2.destroyAllWindows()
+        print('ok')
         return img
     
     def auto_exposure(self):
@@ -51,11 +52,11 @@ class Camera():
             if max<=200:
                 self.temp_exp=self.temp_exp*2.
                 max=self.max_photo()
-                #print(self.temp_exp)
+                print(self.temp_exp)
             elif max >=255:
                 self.temp_exp=self.temp_exp/1.6
                 max=self.max_photo()
-                #print(self.temp_exp)
+                print(self.temp_exp)
             elif self.temp_exp>=10000000.0:
                 exp_ok=True
                 print('Exp time too big')

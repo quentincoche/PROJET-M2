@@ -9,7 +9,7 @@ import tkinter as tk
 from tkinter import Tk
 from PIL import Image, ImageTk
 import time
-from objet_camera import *
+from objet_camera2 import *
 cam = Camera()
 
 
@@ -86,7 +86,7 @@ class Application():
     
 ##########################################    
     def video_loop(self):
-        imgtk = ImageTk.PhotoImage(image=cam.acquisition().img)
+        imgtk = ImageTk.PhotoImage(image=cam.acquisition())
         self.display1.imgtk = imgtk # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
         self.display1.config(image=imgtk) # Montre l'image
     
