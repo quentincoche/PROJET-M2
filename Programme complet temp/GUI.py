@@ -24,7 +24,7 @@ class Application():
          self.window.protocol('WM_DELETE_WINDOW', self.destructor)
         
          self.Interface() # Lance la fonction Interface
-         cam.acquisition()
+         #cam.acquisition()
     
     
 ##########################################    
