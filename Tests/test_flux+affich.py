@@ -9,13 +9,14 @@ import datetime
 import time
 
 class Application():
+    cam0 = int(input("Port de périphérique USB de la caméra : "))
     def __init__(self, output_path = "./"):
         """ Initialise l'application en utilisant OpenCV + Tkinter. Affiche le stream vidéo
             dans une fenêtre Tkinter (et enregistre les photos) """    
         self.temp_exp=50.0
         self.auto_exposure()   
         #Capture vidéo
-        self.cap0 = cv2.VideoCapture(0) # Acquisition du flux vidéo des périphériques
+        self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
                   
         self.cap0.set(3, 5472) # Redéfinition de la taille du flux
         self.cap0.set(4, 3648) # Max (1920 par 1080)
