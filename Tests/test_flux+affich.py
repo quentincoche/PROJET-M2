@@ -1,4 +1,6 @@
+from pypylon import pylon
 import cv2
+import numpy as np
 import tkinter as tk
 from PIL import Image, ImageTk
 import os
@@ -9,14 +11,16 @@ import time
 class Application():
     def __init__(self, output_path = "./"):
         """ Initialise l'application en utilisant OpenCV + Tkinter. Affiche le stream vidéo
-            dans une fenêtre Tkinter (et enregistre les photos) """       
+            dans une fenêtre Tkinter (et enregistre les photos) """    
+        self.temp_exp=50.0
+        self.auto_exposure()   
         #Capture vidéo
         self.cap0 = cv2.VideoCapture(0) # Acquisition du flux vidéo des périphériques
                   
         self.cap0.set(3, 5472) # Redéfinition de la taille du flux
         self.cap0.set(4, 3648) # Max (1920 par 1080)
         self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75)
-        self.cap0.set(cv2.CAP_PROP_EXPOSURE, -6)
+        #self.cap0.set(cv2.CAP_PROP_EXPOSURE, -6)
         self.output_path = output_path  # chemin de la sortie de la photo
         #Edition de l'interface
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
@@ -73,6 +77,45 @@ class Application():
         self.window.destroy() # Ferme la fenêtre
         self.cap0.release()  # lâche le flux vidéo
         cv2.destroyAllWindows()  # Pas nécessaire mais plus sûr
+
+    def auto_exposure(self):
+        exp_ok=False
+        max=self.max_photo()
+        while exp_ok == False:
+            if max<=200:
+                self.temp_exp=self.temp_exp*2.
+                max=self.max_photo()
+                print(self.temp_exp)
+            elif max >=255:
+                self.temp_exp=self.temp_exp/1.6
+                max=self.max_photo()
+                print(self.temp_exp)
+            elif self.temp_exp>=10000000.0:
+                exp_ok=True
+                print('Exp time too big')
+                break
+            elif self.temp_exp<=16.0:
+                exp_ok=True
+                print('Exp time too short')
+                break
+            else:
+                exp_ok=True
+                break
+                
+    def max_photo(self):
+        self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
+        self.camera.Open()
+        self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
+        self.camera.AcquisitionMode.SetValue('SingleFrame')
+        self.camera.ExposureTime.SetValue(self.temp_exp)
+        self.camera.StartGrabbing()
+        grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException)
+        pht=grabResult.GetArray()
+        max_photo=np.amax(pht)
+        grabResult.Release()
+        self.camera.StopGrabbing()
+        self.camera.Close()
+        return max_photo
 
 
 ###############################################################################       
