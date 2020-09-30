@@ -13,11 +13,11 @@ class Application():
     def __init__(self, output_path = "./"):
         """ Initialise l'application en utilisant OpenCV + Tkinter. Affiche le stream vidéo
             dans une fenêtre Tkinter (et enregistre les photos) """    
+        self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
         self.temp_exp=50.0
         self.auto_exposure()   
         #Capture vidéo
-        self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
-                  
+                          
         self.cap0.set(3, 5472) # Redéfinition de la taille du flux
         self.cap0.set(4, 3648) # Max (1920 par 1080)
         self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75)
@@ -48,7 +48,8 @@ class Application():
          # Créer un bouton qui lorsqu'il est pressé, va enregistrer l'image affiché
         btn = tk.Button(self.window, text="Capture !", command=self.take_snapshot)
         btn.grid(row=6, column=0, rowspan=3, ipadx=50, ipady=10)
-
+        bouton_exp=tk.Button(self.window, text="Auto exposure", command=self.auto_exposure)
+        bouton_exp.grid(row=6, column=2, rowspan=3, ipadx=50, ipady=10)
 
     def video_loop(self):
         """ Récupère les images de la vidéo et l'affiche dans Tkinter"""
@@ -80,6 +81,7 @@ class Application():
         cv2.destroyAllWindows()  # Pas nécessaire mais plus sûr
 
     def auto_exposure(self):
+        self.cap0.release()  # lâche le flux vidéo
         self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
         self.camera.Open()
         self.camera.ExposureTime.SetValue(self.temp_exp)
@@ -108,6 +110,7 @@ class Application():
                 exp_ok=True
                 break
         self.camera.Close()
+        self.cap0 = cv2.VideoCapture(self.cam0)
         return
                 
     def max_photo(self):
