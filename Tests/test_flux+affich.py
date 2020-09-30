@@ -49,8 +49,8 @@ class Application():
         """ Récupère les images de la vidéo et l'affiche dans Tkinter"""
         ok0, frame0 = self.cap0.read() # lecture des images de la vidéo
         self.frame0 = frame0 #transformation de la variable en variable exploitable par toutes les fonctions
-        
-        self.im0 = Image.fromarray(self.frame0) # Convertit l'image pour PIL    
+        self.frame=cv2.flip(self.frame0,0)
+        self.im0 = Image.fromarray(self.frame) # Convertit l'image pour PIL    
         self.img0=self.im0.resize((960,540))
         imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
         self.display1.imgtk = imgtk0 # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
