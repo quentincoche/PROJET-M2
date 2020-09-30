@@ -13,8 +13,10 @@ class Application():
         #Capture vidéo
         self.cap0 = cv2.VideoCapture(0) # Acquisition du flux vidéo des périphériques
                   
-        self.cap0.set(3, 1920) # Redéfinition de la taille du flux
-        self.cap0.set(4, 1080) # Max (1920 par 1080)
+        self.cap0.set(3, 5472) # Redéfinition de la taille du flux
+        self.cap0.set(4, 3648) # Max (1920 par 1080)
+        self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75)
+        self.cap0.set(cv2.CAP_PROP_EXPOSURE, -6)
         self.output_path = output_path  # chemin de la sortie de la photo
         #Edition de l'interface
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
