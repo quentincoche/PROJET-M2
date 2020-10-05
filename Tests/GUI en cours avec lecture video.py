@@ -12,6 +12,7 @@ import cv2
 import tkinter as tk
 import time
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Fenetre():
@@ -20,8 +21,8 @@ class Fenetre():
 
         """Initialisation de la camera"""
         self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
-        self.temp_exp=50.0
-        self.auto_exposure()
+        #self.temp_exp=50.0
+        #self.auto_exposure()
         self.cap0.set(3, 5472) # Redéfinition de la taille du flux
         self.cap0.set(4, 3648) # Max (1920 par 1080)
         self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75)
@@ -43,7 +44,8 @@ class Fenetre():
 
         self.Interface() #Lance la fonction Interface
         self.video_loop()
-    
+        self.correction_fond()
+
 ##########################################    
     def Interface(self):
         #commandes gauche
@@ -119,6 +121,7 @@ class Fenetre():
         grabResult.Release()
         self.camera.StopGrabbing()
         return max_photo
+
 
     def video_loop(self):
         """ Récupère les images de la vidéo et l'affiche dans Tkinter"""
