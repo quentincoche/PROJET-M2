@@ -11,12 +11,17 @@ from tkinter import *
 import cv2
 import tkinter as tk
 import time
+import datetime
+import os
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Fenetre():
     cam0 = int(input("Port de périphérique USB de la caméra : "))
     def __init__(self, output_path = "./"):
+
+        self.output_path = output_path  # chemin de sortie de la photo
 
         """Initialisation de la camera"""
         self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
@@ -52,7 +57,9 @@ class Fenetre():
         self.cmdleft.grid_columnconfigure(0, weight=1)
         self.cmdleft.grid_rowconfigure(0, weight=1)
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=0,column=0,sticky="nsew")
+        btnquit.grid(row=1,column=0,sticky="nsew")
+        btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
+        btncap.grid(row=0,column=0,sticky="nsew")
 
         #commandes superieures
         self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="blue")
@@ -61,6 +68,8 @@ class Fenetre():
         self.cmdup.grid_rowconfigure(0, weight=1)
         btnvideo = tk.Button(self.cmdup,text="Afficher video")
         btnvideo.grid(row=0,column=0,sticky="nsew")
+        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp",command=self.auto_exposure)
+        btnexp.grid(row=0,column=1,sticky="nsew")
 
         #cadre video
         self.display1 = tk.Label(self.window,padx=5,pady=5,bg="green")  # Initialisation de l'écran 1
@@ -87,15 +96,15 @@ class Fenetre():
         exp_ok=False
         max=self.max_photo()
         while exp_ok == False:
-            if max<=200:
+            if max<=150:
                 self.temp_exp=self.temp_exp*2.
                 max=self.max_photo()
                 print(self.temp_exp)
-            elif max >=255:
+            elif max >=250 :
                 self.temp_exp=self.temp_exp/1.6
                 max=self.max_photo()
                 print(self.temp_exp)
-            elif self.temp_exp>=10000000.0:
+            elif self.temp_exp>=40000.0:
                 exp_ok=True
                 print('Exp time too big')
                 break
@@ -130,10 +139,27 @@ class Fenetre():
         imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
         self.display1.imgtk = imgtk0 # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
         self.display1.config(image=imgtk0) # Montre l'image
+        self.histogram
 
         self.window.after(10, self.video_loop) # rappel la fonction après 10 millisecondes
+
+    def histogram(self):
+        data=np.asarray(self.img0)
+        a=np.reshape(data,1555200)
+        plt.hist(a,bins=25)
+        plt.show
+        return
+
+    def capture(self):
+        ts = datetime.datetime.now()
+        filename = "image_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
+        p = os.path.join(self.output_path, filename)  # construit le chemin de sortie
+        self.im0.save(p, "PNG")  # Sauvegarde l'image sous format png
+        print("[INFO] saved {}".format(filename))
 
 
 
 root = Fenetre()
 root.window.mainloop() # Lancement de la boucle principale
+
+ 
