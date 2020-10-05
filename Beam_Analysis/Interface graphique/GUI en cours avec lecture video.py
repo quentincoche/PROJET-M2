@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 
 class Fenetre():
     cam0 = int(input("Port de périphérique USB de la caméra : "))
+    propre=input('Veux-tu avoir une image propre (True/False) : ')
     def __init__(self, output_path = "./"):
 
         self.output_path = output_path  # chemin de sortie de la photo
@@ -134,20 +135,24 @@ class Fenetre():
         ok0, frame0 = self.cap0.read() # lecture des images de la vidéo
         self.frame0 = frame0 #transformation de la variable en variable exploitable par toutes les fonctions
         self.frame=cv2.flip(self.frame0,0)
+        if self.propre=="True":
+            self.nettoyage()
         self.im0 = Img.fromarray(self.frame) # Convertit l'image pour PIL    
         self.img0=self.im0.resize((960,540))
         imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
         self.display1.imgtk = imgtk0 # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
         self.display1.config(image=imgtk0) # Montre l'image
-        self.histogram
+        self.histogram()
 
         self.window.after(10, self.video_loop) # rappel la fonction après 10 millisecondes
 
     def histogram(self):
-        data=np.asarray(self.img0)
-        a=np.reshape(data,1555200)
-        plt.hist(a,bins=25)
-        plt.show
+        hist = cv2.calcHist([self.frame],[0],None,[256],[0,256])
+        # Plot de hist.
+        plt.plot(hist)
+        plt.xlim([0,256])
+        #Affichage.
+        plt.show()
         return
 
     def capture(self):
@@ -157,6 +162,17 @@ class Fenetre():
         self.im0.save(p, "PNG")  # Sauvegarde l'image sous format png
         print("[INFO] saved {}".format(filename))
 
+    def nettoyage(self):
+        #Test d'amélioration de l'image par binarisation d'Otsu
+        print(self.propre)
+        if self.propre=="False" :
+            raise Exception()
+        else :
+            #self.frame=cv2.cvtColor(self.frame0, cv2.COLOR_BGR2GRAY)
+            self.blur = cv2.GaussianBlur(self.frame,(5,5),0)
+            ret3,self.frame = cv2.threshold(self.blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        return
+        
 
 
 root = Fenetre()
