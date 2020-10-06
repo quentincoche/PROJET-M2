@@ -35,11 +35,11 @@ class Fenetre():
 
         """Initialisation de la camera"""
         self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
+        self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75) #On utilise pas l'auto-exposition d'opencv
         self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
         self.auto_exposure() #Lance le programme d'auto-exposition
         self.cap0.set(3, 5472) # Redéfinition de la taille du flux
         self.cap0.set(4, 3648) # Max (5472 par 3648)
-        self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75) #On utilise pas l'auto-exposition d'opencv
         
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
@@ -91,7 +91,26 @@ class Fenetre():
 
         
     
-##########################################    
+##########################################  
+
+    def video_loop(self):
+        """ Récupère les images de la vidéo et l'affiche dans Tkinter"""
+        ok0, frame0 = self.cap0.read() # lecture des images de la vidéo
+        self.frame0 = frame0 #transformation de la variable en variable exploitable par toutes les fonctions
+        self.frame=cv2.flip(self.frame0,0)
+        if self.propre=="True":
+            self.nettoyage() #Appelle de la fonction de nettoyage de l'image
+        self.im0 = Img.fromarray(self.frame) # Convertit l'image pour PIL    
+        self.img0=self.im0.resize((960,540))
+        imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
+        self.display1.imgtk = imgtk0 # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
+        self.display1.config(image=imgtk0) # Montre l'image
+
+        self.histogram()
+        self.window.after(10, self.video_loop) # rappel la fonction après 10 millisecondes
+
+##########################################
+
     
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
@@ -150,22 +169,6 @@ class Fenetre():
         grabResult.Release() #Relache le flux
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
         return max_photo #Renvoie la valeur du max
-
-    def video_loop(self):
-        """ Récupère les images de la vidéo et l'affiche dans Tkinter"""
-        ok0, frame0 = self.cap0.read() # lecture des images de la vidéo
-        self.frame0 = frame0 #transformation de la variable en variable exploitable par toutes les fonctions
-        self.frame=cv2.flip(self.frame0,0)
-        if self.propre=="True":
-            self.nettoyage() #Appelle de la fonction de nettoyage de l'image
-        self.im0 = Img.fromarray(self.frame) # Convertit l'image pour PIL    
-        self.img0=self.im0.resize((960,540))
-        imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
-        self.display1.imgtk = imgtk0 # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
-        self.display1.config(image=imgtk0) # Montre l'image
-
-        self.histogram()
-        self.window.after(10, self.video_loop) # rappel la fonction après 10 millisecondes
 
     def histogram(self):
         """ Fonction permettant l'affichage de l'histogramme d'intensité de la caméra """
