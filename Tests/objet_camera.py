@@ -13,7 +13,7 @@ class Camera():
         # conecting to the first available camera
         self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
         self.temp_exp=50.0
-        #self.acquisition()
+        self.acquisition()
     
     def acquisition(self):
         self.camera.Open()
