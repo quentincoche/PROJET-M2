@@ -192,13 +192,21 @@ class Fenetre():
 
     def nettoyage(self):
         """ Test d'amélioration de l'image par binarisation d'Otsu """
-        print(self.propre)
+        i,j=0,0
+        #print(self.propre)
         if self.propre=="False" :
             raise Exception() #Quitte la fonction si la valeur est fausse, 2eme sécurité
         else :
             self.gray=cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  #Transforme l'image en noir/blanc
             self.blur = cv2.GaussianBlur(self.gray,(5,5),0) #Mets un flou gaussien
             ret3,self.otsu = cv2.threshold(self.blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
+            data1 = np.asarray(self.gray)
+            data2 = np.asarray(self.otsu)
+            for i in range (data2.shape[0]):
+                for j in range (data2.shape[1]):
+                    if data2[i,j]==255 :
+                        data2[i,j]=data1[i,j]
+            self.frame=data2
         return
         
 
