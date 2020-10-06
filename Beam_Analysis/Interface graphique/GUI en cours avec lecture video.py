@@ -117,7 +117,7 @@ class Fenetre():
                 print(self.temp_exp)
                 self.camera.ExposureTime.SetValue(self.temp_exp)
             elif max >=250 :
-                self.temp_exp=self.temp_exp/1.6
+                self.temp_exp=self.temp_exp/1.9
                 max=self.max_photo()
                 print(self.temp_exp)
                 self.camera.ExposureTime.SetValue(self.temp_exp)

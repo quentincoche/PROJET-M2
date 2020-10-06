@@ -26,18 +26,24 @@ import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 # La Classe Fenetre contient l'ensemble du programme #
 
 class Fenetre():
-    cam0 = int(input("Port de périphérique USB de la caméra : "))
     def __init__(self, output_path = "./"): #Fonction d'initialisation du programme
 
         self.output_path = output_path  # chemin de sortie de la photo
 
         """Initialisation de la camera"""
-        self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
-        self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
-        self.auto_exposure() #Lance le programme d'auto-exposition
-        self.cap0.set(3, 5472) # Redéfinition de la taille du flux
-        self.cap0.set(4, 3648) # Max (5472 par 3648)
-        self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75) #On utilise pas l'auto-exposition d'opencv
+        
+        self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
+        self.temp_exp=50.0
+        self.camera.Open()
+        self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
+        self.auto_exposure()
+        self.camera.PixelFormat.SetValue('Mono12')
+        self.camera.AcquisitionMode.SetValue('Continuous') #SingleFrame
+        self.camera.GainAuto.SetValue("Continuous")
+        self.camera.AcquisitionFrameRate.SetValue(60.0)
+        self.camera.ExposureTime.SetValue(self.temp_exp)
+        self.camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly) 
+        self.converter = pylon.ImageFormatConverter()
         
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
@@ -98,12 +104,6 @@ class Fenetre():
 
     def auto_exposure(self):
         """ Fonction d''auto-exposition uniquement pour la caméra Basler actuellement """
-
-        self.cap0.release()  # lâche le flux vidéo
-        self.cap0.set(cv2.CAP_PROP_EXPOSURE,0.75)
-        self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())    #récupère la caméra par le biais de la bibliothèque Pylon
-        self.camera.Open() #Ouvre la communication avec la caméra
-        self.camera.ExposureTime.SetValue(self.temp_exp) #établi le temps d'exposition
         self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
         self.camera.AcquisitionMode.SetValue('SingleFrame') #Utilise la caméra en mode photo
         
@@ -126,15 +126,13 @@ class Fenetre():
                 exp_ok=True
                 print('Exp time too big')
                 break
-            elif self.temp_exp<=16.0:
+            elif self.temp_exp<=20.0:
                 exp_ok=True
                 print('Exp time too short')
                 break
             else:
                 exp_ok=True
                 break
-        self.camera.Close() #Ferme la communication avec la caméra
-        self.cap0 = cv2.VideoCapture(self.cam0) #Lance l'acquisition avec le module opencv
         return
                 
     def max_photo(self):
@@ -149,16 +147,14 @@ class Fenetre():
         return max_photo #Renvoie la valeur du max
 
     def video_loop(self):
-        """ Récupère les images de la vidéo et l'affiche dans Tkinter"""
-        ok0, frame0 = self.cap0.read() # lecture des images de la vidéo
-        self.frame0 = frame0 #transformation de la variable en variable exploitable par toutes les fonctions
-        self.frame=cv2.flip(self.frame0,0)
-        self.im0 = Img.fromarray(self.frame) # Convertit l'image pour PIL    
-        self.img0=self.im0.resize((960,540))
-        imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
-        self.display1.imgtk = imgtk0 # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
-        self.display1.config(image=imgtk0) # Montre l'image
-        self.window.after(10, self.video_loop) # rappel la fonction après 10 millisecondes
+        while self.camera.IsGrabbing():
+            self.grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException)
+            if self.grabResult.GrabSucceeded():
+                # Access the image data
+                self.image = self.converter.Convert(self.grabResult)
+                self.img = self.image.GetArray()
+            self.grabResult.Release()
+
 
     def histogram(self):
         """ Fonction permettant l'affichage de l'histogramme d'intensité de la caméra """
@@ -177,11 +173,8 @@ class Fenetre():
         p = os.path.join(self.output_path, filename)  # construit le chemin de sortie
         self.im0.save(p, "PNG")  # Sauvegarde l'image sous format png
         print("[INFO] saved {}".format(filename))
-
         
 
 
 root = Fenetre()
 root.window.mainloop() # Lancement de la boucle principale
-
- 
