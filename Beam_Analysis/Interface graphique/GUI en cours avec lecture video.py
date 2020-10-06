@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 #####################################################################
 
 
-#La Classe Fenetre contient l'ensemble du programme
+ """ La Classe Fenetre contient l'ensemble du programme """
 
 class Fenetre():
     cam0 = int(input("Port de périphérique USB de la caméra : "))
@@ -60,7 +60,7 @@ class Fenetre():
     
 ##########################################    
     def Interface(self):
-        #Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme
+    """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
         
         #commandes gauche
         self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="red")
@@ -93,12 +93,12 @@ class Fenetre():
 ##########################################    
     
     def destructor(self):
-        # Détruit les racines objet et arrête l'acquisition de toutes les sources
+    """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
         print("[INFO] closing...")
         self.window.destroy() # Ferme la fenêtre
 
     def auto_exposure(self):
-        #Fonction d''auto-exposition uniquement pour la caméra Basler actuellement
+    """ Fonction d''auto-exposition uniquement pour la caméra Basler actuellement """
 
         self.cap0.release()  # lâche le flux vidéo
         self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())    #récupère la caméra par le biais de la bibliothèque Pylon
@@ -136,14 +136,15 @@ class Fenetre():
         return
                 
     def max_photo(self):
+        """" Fonction permettant de retourner le max d'intensité sur l'image """
         self.camera.ExposureTime.SetValue(self.temp_exp)
-        self.camera.StartGrabbing()
-        grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException)
-        pht=grabResult.GetArray()
-        max_photo=np.amax(pht)
-        grabResult.Release()
-        self.camera.StopGrabbing()
-        return max_photo
+        self.camera.StartGrabbing() #Permet la récupération des infos de la caméra
+        grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) #Récupère tous les flux de la caméra
+        pht=grabResult.GetArray() #Transforme l'image en matrice
+        max_photo=np.amax(pht) #cherche la valeur max de la matrice
+        grabResult.Release() #Relache le flux
+        self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
+        return max_photo #Renvoie la valeur du max
 
     def video_loop(self):
         """ Récupère les images de la vidéo et l'affiche dans Tkinter"""
@@ -151,7 +152,7 @@ class Fenetre():
         self.frame0 = frame0 #transformation de la variable en variable exploitable par toutes les fonctions
         self.frame=cv2.flip(self.frame0,0)
         if self.propre=="True":
-            self.nettoyage()
+            self.nettoyage() #Appelle de la fonction de nettoyage de l'image
         self.im0 = Img.fromarray(self.frame) # Convertit l'image pour PIL    
         self.img0=self.im0.resize((960,540))
         imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
@@ -162,15 +163,17 @@ class Fenetre():
         self.window.after(10, self.video_loop) # rappel la fonction après 10 millisecondes
 
     def histogram(self):
+    """ Fonction permettant l'affichage de l'histogramme d'intensité de la caméra """
         hist = cv2.calcHist([self.frame],[0],None,[256],[0,256])
         # Plot de hist.
         plt.plot(hist)
         plt.xlim([0,256])
         #Affichage.
-        plt.show()
+        plt.show(block=False)
         return
 
     def capture(self):
+    """ Fonction permettant de capturer une image et de l'enrigistré avec l'horodatage """
         ts = datetime.datetime.now()
         filename = "image_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
         p = os.path.join(self.output_path, filename)  # construit le chemin de sortie
@@ -178,14 +181,14 @@ class Fenetre():
         print("[INFO] saved {}".format(filename))
 
     def nettoyage(self):
-        #Test d'amélioration de l'image par binarisation d'Otsu
+    """ Test d'amélioration de l'image par binarisation d'Otsu """
         print(self.propre)
         if self.propre=="False" :
-            raise Exception()
+            raise Exception() #Quitte la fonction si la valeur est fausse, 2eme sécurité
         else :
-            self.frame=cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-            self.blur = cv2.GaussianBlur(self.frame,(5,5),0)
-            ret3,self.frame = cv2.threshold(self.blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+            self.frame=cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  #Transforme l'image en noir/blanc
+            self.blur = cv2.GaussianBlur(self.frame,(5,5),0) #Mets un flou gaussien
+            ret3,self.frame = cv2.threshold(self.blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         return
         
 
