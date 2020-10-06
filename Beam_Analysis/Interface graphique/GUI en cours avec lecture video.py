@@ -27,15 +27,14 @@ import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 
 class Fenetre():
     cam0 = int(input("Port de périphérique USB de la caméra : "))
-    propre=input('Veux-tu avoir une image propre (True/False) : ')
     def __init__(self, output_path = "./"): #Fonction d'initialisation du programme
 
         self.output_path = output_path  # chemin de sortie de la photo
 
         """Initialisation de la camera"""
         self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
-        #self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
-        #self.auto_exposure() #Lance le programme d'auto-exposition
+        self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
+        self.auto_exposure() #Lance le programme d'auto-exposition
         self.cap0.set(3, 5472) # Redéfinition de la taille du flux
         self.cap0.set(4, 3648) # Max (5472 par 3648)
         self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75) #On utilise pas l'auto-exposition d'opencv
@@ -133,8 +132,6 @@ class Fenetre():
             else:
                 exp_ok=True
                 break
-
-        self.camera.ExposureTime.SetValue(self.temp_exp)
         self.camera.Close() #Ferme la communication avec la caméra
         self.cap0 = cv2.VideoCapture(self.cam0) #Lance l'acquisition avec le module opencv
         return
@@ -152,19 +149,14 @@ class Fenetre():
 
     def video_loop(self):
         """ Récupère les images de la vidéo et l'affiche dans Tkinter"""
-        self.camera.ExposureTime.SetValue(self.temp_exp)
         ok0, frame0 = self.cap0.read() # lecture des images de la vidéo
         self.frame0 = frame0 #transformation de la variable en variable exploitable par toutes les fonctions
         self.frame=cv2.flip(self.frame0,0)
-        if self.propre=="True":
-            self.nettoyage() #Appelle de la fonction de nettoyage de l'image
         self.im0 = Img.fromarray(self.frame) # Convertit l'image pour PIL    
         self.img0=self.im0.resize((960,540))
         imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
         self.display1.imgtk = imgtk0 # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
         self.display1.config(image=imgtk0) # Montre l'image
-        self.histogram()
-
         self.window.after(10, self.video_loop) # rappel la fonction après 10 millisecondes
 
     def histogram(self):
@@ -184,17 +176,6 @@ class Fenetre():
         p = os.path.join(self.output_path, filename)  # construit le chemin de sortie
         self.im0.save(p, "PNG")  # Sauvegarde l'image sous format png
         print("[INFO] saved {}".format(filename))
-
-    def nettoyage(self):
-        """ Test d'amélioration de l'image par binarisation d'Otsu """
-        print(self.propre)
-        if self.propre=="False" :
-            raise Exception() #Quitte la fonction si la valeur est fausse, 2eme sécurité
-        else :
-            self.gray=cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  #Transforme l'image en noir/blanc
-            self.blur = cv2.GaussianBlur(self.gray,(5,5),0) #Mets un flou gaussien
-            ret3,self.otsu = cv2.threshold(self.blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
-        return
         
 
 
