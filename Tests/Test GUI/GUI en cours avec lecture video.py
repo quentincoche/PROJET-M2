@@ -36,8 +36,8 @@ class Fenetre():
         """Initialisation de la camera"""
         self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
         self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75) #On utilise pas l'auto-exposition d'opencv
-        self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
-        self.auto_exposure() #Lance le programme d'auto-exposition
+        #self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
+        #self.auto_exposure() #Lance le programme d'auto-exposition
         self.cap0.set(3, 5472) # Redéfinition de la taille du flux
         self.cap0.set(4, 3648) # Max (5472 par 3648)
         
@@ -197,7 +197,11 @@ class Fenetre():
         if self.propre=="False" :
             raise Exception() #Quitte la fonction si la valeur est fausse, 2eme sécurité
         else :
-            self.gray=cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  #Transforme l'image en noir/blanc
+            img_gris=cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  #Transforme l'image en noir/blanc
+            width = int(self.frame.shape[1]*0.5)
+            height = int(self.frame.shape[0]*0.5)
+            dim = (width, height)
+            self.gray = cv2.resize(img_gris,dim, interpolation = cv2.INTER_AREA)
             self.blur = cv2.GaussianBlur(self.gray,(5,5),0) #Mets un flou gaussien
             ret3,self.otsu = cv2.threshold(self.blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
             data1 = np.asarray(self.gray)
