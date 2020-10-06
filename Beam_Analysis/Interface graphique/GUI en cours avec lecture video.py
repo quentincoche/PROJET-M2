@@ -35,7 +35,6 @@ class Fenetre():
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
         self.window.geometry("920x613")
-         
         self.window.title("Beam analyzer Python")
         self.window.config(background="#FFFFFF") # Couleur de la fenêtre
         self.window.protocol('WM_DELETE_WINDOW', self.destructor)
@@ -102,7 +101,7 @@ class Fenetre():
                 max=self.max_photo()
                 print(self.temp_exp)
             elif max >=250 :
-                self.temp_exp=self.temp_exp/1.6
+                self.temp_exp=self.temp_exp/1.95
                 max=self.max_photo()
                 print(self.temp_exp)
             elif self.temp_exp>=40000.0:
