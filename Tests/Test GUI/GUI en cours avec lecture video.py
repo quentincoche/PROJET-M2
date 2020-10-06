@@ -15,6 +15,7 @@ import datetime #Bibliothèque permettant de récupérer la date
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
+import matplotlib.animation as animation
 
 #####################################################################
 #                                                                   #
@@ -34,8 +35,8 @@ class Fenetre():
 
         """Initialisation de la camera"""
         self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
-        #self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
-        #self.auto_exposure() #Lance le programme d'auto-exposition
+        self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
+        self.auto_exposure() #Lance le programme d'auto-exposition
         self.cap0.set(3, 5472) # Redéfinition de la taille du flux
         self.cap0.set(4, 3648) # Max (5472 par 3648)
         self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75) #On utilise pas l'auto-exposition d'opencv
@@ -54,7 +55,7 @@ class Fenetre():
         self.window.grid_columnconfigure(1, weight=8)
         self.window.grid_rowconfigure(1, weight=8)
 
-
+        self.fig=plt.figure()
         self.Interface() #Lance la fonction Interface
         self.video_loop() #lance la fonction d'acquisition de la caméra
     
@@ -133,7 +134,7 @@ class Fenetre():
             else:
                 exp_ok=True
                 break
-
+            
         self.camera.ExposureTime.SetValue(self.temp_exp)
         self.camera.Close() #Ferme la communication avec la caméra
         self.cap0 = cv2.VideoCapture(self.cam0) #Lance l'acquisition avec le module opencv
@@ -152,7 +153,6 @@ class Fenetre():
 
     def video_loop(self):
         """ Récupère les images de la vidéo et l'affiche dans Tkinter"""
-        self.camera.ExposureTime.SetValue(self.temp_exp)
         ok0, frame0 = self.cap0.read() # lecture des images de la vidéo
         self.frame0 = frame0 #transformation de la variable en variable exploitable par toutes les fonctions
         self.frame=cv2.flip(self.frame0,0)
@@ -163,17 +163,18 @@ class Fenetre():
         imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
         self.display1.imgtk = imgtk0 # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
         self.display1.config(image=imgtk0) # Montre l'image
-        self.histogram()
 
+        self.histogram()
         self.window.after(10, self.video_loop) # rappel la fonction après 10 millisecondes
 
     def histogram(self):
         """ Fonction permettant l'affichage de l'histogramme d'intensité de la caméra """
         hist = cv2.calcHist([self.frame],[0],None,[256],[0,256])
         # Plot de hist.
-        plt.plot(hist)
+        self.histo=plt.plot(hist)
         plt.xlim([0,256])
-        #Affichage.
+        #Affichage
+        ani = animation.FuncAnimation(self.fig, self.histo, interval=5)
         plt.show(block=False)
         return
 
