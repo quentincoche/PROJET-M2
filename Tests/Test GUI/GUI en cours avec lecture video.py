@@ -36,8 +36,8 @@ class Fenetre():
         """Initialisation de la camera"""
         self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
         self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75) #On utilise pas l'auto-exposition d'opencv
-        #self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
-        #self.auto_exposure() #Lance le programme d'auto-exposition
+        self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
+        self.auto_exposure() #Lance le programme d'auto-exposition
         self.cap0.set(3, 5472) # Redéfinition de la taille du flux
         self.cap0.set(4, 3648) # Max (5472 par 3648)
         
