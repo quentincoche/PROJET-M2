@@ -36,7 +36,7 @@ class Fenetre():
         self.temp_exp=50.0
         self.camera.Open()
         self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
-        self.auto_exposure()
+        #self.auto_exposure()
         self.camera.PixelFormat.SetValue('Mono12')
         self.camera.AcquisitionMode.SetValue('Continuous') #SingleFrame
         self.camera.GainAuto.SetValue("Continuous")
@@ -104,9 +104,7 @@ class Fenetre():
 
     def auto_exposure(self):
         """ Fonction d''auto-exposition uniquement pour la caméra Basler actuellement """
-        self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
         self.camera.AcquisitionMode.SetValue('SingleFrame') #Utilise la caméra en mode photo
-        
         exp_ok=False #Variable permettant de définir l'état de l'ajustement de l'exposition
         
         max=self.max_photo() #variable du max d'intensité de l'image
@@ -118,7 +116,7 @@ class Fenetre():
                 print(self.temp_exp)
                 self.camera.ExposureTime.SetValue(self.temp_exp)
             elif max >=250 :
-                self.temp_exp=self.temp_exp/1.6
+                self.temp_exp=self.temp_exp/1.8
                 max=self.max_photo()
                 print(self.temp_exp)
                 self.camera.ExposureTime.SetValue(self.temp_exp)
@@ -126,7 +124,7 @@ class Fenetre():
                 exp_ok=True
                 print('Exp time too big')
                 break
-            elif self.temp_exp<=20.0:
+            elif self.temp_exp<=100:
                 exp_ok=True
                 print('Exp time too short')
                 break
@@ -154,17 +152,6 @@ class Fenetre():
                 self.image = self.converter.Convert(self.grabResult)
                 self.img = self.image.GetArray()
             self.grabResult.Release()
-
-
-    def histogram(self):
-        """ Fonction permettant l'affichage de l'histogramme d'intensité de la caméra """
-        hist = cv2.calcHist([self.frame],[0],None,[256],[0,256])
-        # Plot de hist.
-        plt.plot(hist)
-        plt.xlim([0,256])
-        #Affichage.
-        plt.show(block=False)
-        return
 
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enrigistré avec l'horodatage """

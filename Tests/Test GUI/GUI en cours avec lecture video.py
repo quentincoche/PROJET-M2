@@ -55,7 +55,6 @@ class Fenetre():
         self.window.grid_columnconfigure(1, weight=8)
         self.window.grid_rowconfigure(1, weight=8)
 
-        self.fig=plt.figure()
         self.Interface() #Lance la fonction Interface
         self.video_loop() #lance la fonction d'acquisition de la caméra
     
@@ -105,8 +104,6 @@ class Fenetre():
         imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
         self.display1.imgtk = imgtk0 # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
         self.display1.config(image=imgtk0) # Montre l'image
-
-        self.histogram()
         self.window.after(10, self.video_loop) # rappel la fonction après 10 millisecondes
 
 ##########################################
@@ -171,17 +168,6 @@ class Fenetre():
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
         return max_photo #Renvoie la valeur du max
 
-    def histogram(self):
-        """ Fonction permettant l'affichage de l'histogramme d'intensité de la caméra """
-        hist = cv2.calcHist([self.frame],[0],None,[256],[0,256])
-        # Plot de hist.
-        self.histo=plt.plot(hist)
-        plt.xlim([0,256])
-        #Affichage
-        ani = animation.FuncAnimation(self.fig, self.histo, interval=5)
-        plt.show(block=False)
-        return
-
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enrigistré avec l'horodatage """
         ts = datetime.datetime.now()
@@ -198,8 +184,8 @@ class Fenetre():
             raise Exception() #Quitte la fonction si la valeur est fausse, 2eme sécurité
         else :
             img_gris=cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  #Transforme l'image en noir/blanc
-            width = int(self.frame.shape[1]*0.5)
-            height = int(self.frame.shape[0]*0.5)
+            width = int(self.frame.shape[1]*0.05)
+            height = int(self.frame.shape[0]*0.05)
             dim = (width, height)
             self.gray = cv2.resize(img_gris,dim, interpolation = cv2.INTER_AREA)
             self.blur = cv2.GaussianBlur(self.gray,(5,5),0) #Mets un flou gaussien
