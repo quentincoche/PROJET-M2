@@ -17,13 +17,25 @@ while True:
 
         blur = cv2.GaussianBlur(gray,(5,5),0) #Mets un flou gaussien
         ret3,otsu = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
+        
+        i,j=0,0
+    
+        data1 = np.asarray(gray)
+        data2 = np.asarray(otsu)
+        #print(data1.shape[0])
+        
+        for i in range (data2.shape[0]):
+            for j in range (data2.shape[1]):
+                if data2[i,j]==255 :
+                    data2[i,j]=data1[i,j]
 
-        cv2.imshow('frame', otsu)
-        if cv2.waitKey(30) & 0xFF == ord('q'):
-            break
+        img=Img.fromarray(data2)
 
-    else:
-        break
+        load_img.show()
+
+    
+
+
 
 cap.release()
 cv2.destroyAllWindows()
