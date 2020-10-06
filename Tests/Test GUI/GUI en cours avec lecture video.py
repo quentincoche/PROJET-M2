@@ -156,6 +156,7 @@ class Fenetre():
             
         self.camera.ExposureTime.SetValue(self.temp_exp)
         self.camera.Close() #Ferme la communication avec la caméra
+        self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75)
         self.cap0 = cv2.VideoCapture(self.cam0) #Lance l'acquisition avec le module opencv
         return
                 
