@@ -36,8 +36,8 @@ class Fenetre():
         """Initialisation de la camera"""
         self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
         self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75) #On utilise pas l'auto-exposition d'opencv
-        self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
-        self.auto_exposure() #Lance le programme d'auto-exposition
+        #self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
+        #self.auto_exposure() #Lance le programme d'auto-exposition
         self.cap0.set(3, 5472) # Redéfinition de la taille du flux
         self.cap0.set(4, 3648) # Max (5472 par 3648)
         
@@ -55,6 +55,7 @@ class Fenetre():
         self.window.grid_columnconfigure(1, weight=8)
         self.window.grid_rowconfigure(1, weight=8)
 
+        self.fig=plt.figure()
         self.Interface() #Lance la fonction Interface
         self.video_loop() #lance la fonction d'acquisition de la caméra
     
@@ -104,6 +105,8 @@ class Fenetre():
         imgtk0 = ImageTk.PhotoImage(image=self.img0) # Converti l'image pour Tkinter
         self.display1.imgtk = imgtk0 # ancrer imgtk afin qu'il ne soit pas supprimé par garbage-collector
         self.display1.config(image=imgtk0) # Montre l'image
+
+        #self.histogram()
         self.window.after(10, self.video_loop) # rappel la fonction après 10 millisecondes
 
 ##########################################
@@ -168,6 +171,17 @@ class Fenetre():
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
         return max_photo #Renvoie la valeur du max
 
+    def histogram(self):
+        """ Fonction permettant l'affichage de l'histogramme d'intensité de la caméra """
+        hist = cv2.calcHist([self.frame],[0],None,[256],[0,256])
+        # Plot de hist.
+        self.histo=plt.plot(hist)
+        plt.xlim([0,256])
+        #Affichage
+        ani = animation.FuncAnimation(self.fig, self.histo, interval=5)
+        plt.show(block=False)
+        return
+
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enrigistré avec l'horodatage """
         ts = datetime.datetime.now()
@@ -184,8 +198,8 @@ class Fenetre():
             raise Exception() #Quitte la fonction si la valeur est fausse, 2eme sécurité
         else :
             img_gris=cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  #Transforme l'image en noir/blanc
-            width = int(self.frame.shape[1]*0.05)
-            height = int(self.frame.shape[0]*0.05)
+            width = int(self.frame.shape[1]*0.5)
+            height = int(self.frame.shape[0]*0.5)
             dim = (width, height)
             self.gray = cv2.resize(img_gris,dim, interpolation = cv2.INTER_AREA)
             self.blur = cv2.GaussianBlur(self.gray,(5,5),0) #Mets un flou gaussien
@@ -197,9 +211,36 @@ class Fenetre():
                     if data2[i,j]==255 :
                         data2[i,j]=data1[i,j]
             self.frame=data2
-        return
-        
+            self.frame = cv2.cvtColor(self.frame, cv2.COLOR_GRAY2RGB)
+            # find contours in the binary image
+            contours, hierarchy = cv2.findContours(self.otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+            for c in contours:
+            # calculate moments for each contour
+                M = cv2.moments(c)
 
+            # calculate x,y coordinate of center
+                if M["m00"] != 0:
+                    cX = int(M["m10"] / M["m00"])
+                    cY = int(M["m01"] / M["m00"])
+                else:
+                    cX, cY = 0, 0
+
+                cv2.circle(self.frame, (cX, cY), 5, (0, 0, 255), -1)
+            
+            M=cv2.moments(self.otsu)
+            # calculate x,y coordinate of center
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
+
+            # put text and highlight the center
+            
+            cv2.line(self.frame, (cX, 0), (cX, height), (0, 255, 0), 1)
+            cv2.line(self.frame, (0, cY), (width, cY), (255, 0, 0), 1)
+
+        return
+    
+
+        
 
 root = Fenetre()
 root.window.mainloop() # Lancement de la boucle principale
