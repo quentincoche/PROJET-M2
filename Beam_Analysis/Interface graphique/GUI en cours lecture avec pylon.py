@@ -15,7 +15,7 @@ import datetime #Bibliothèque permettant de récupérer la date
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
-
+import oneCameraCapture
 #####################################################################
 #                                                                   #
 #           Programme d'interfaçage de faisceaux                    #
@@ -32,18 +32,16 @@ class Fenetre():
 
         """Initialisation de la camera"""
         
-        self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
-        self.temp_exp=50.0
-        self.camera.Open()
-        self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
+        self.vid = oneCameraCapture.cameraCapture()
+        #self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
         #self.auto_exposure()
-        self.camera.PixelFormat.SetValue('Mono12')
-        self.camera.AcquisitionMode.SetValue('Continuous') #SingleFrame
-        self.camera.GainAuto.SetValue("Continuous")
-        self.camera.AcquisitionFrameRate.SetValue(60.0)
-        self.camera.ExposureTime.SetValue(self.temp_exp)
-        self.camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly) 
-        self.converter = pylon.ImageFormatConverter()
+        #self.camera.PixelFormat.SetValue('Mono12')
+        #self.camera.AcquisitionMode.SetValue('Continuous') #SingleFrame
+        #self.camera.GainAuto.SetValue("Continuous")
+        #self.camera.AcquisitionFrameRate.SetValue(60.0)
+        #self.camera.ExposureTime.SetValue(self.temp_exp)
+        #self.camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly) 
+        #self.converter = pylon.ImageFormatConverter()
         
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
@@ -61,7 +59,8 @@ class Fenetre():
 
 
         self.Interface() #Lance la fonction Interface
-        self.video_loop() #lance la fonction d'acquisition de la caméra
+        self.delay=100
+        self.update() #boucle la fonction d'acquisition de la caméra
     
 ##########################################    
     def Interface(self):
@@ -84,11 +83,11 @@ class Fenetre():
         self.cmdup.grid_rowconfigure(0, weight=1)
         btnvideo = tk.Button(self.cmdup,text="Afficher video")
         btnvideo.grid(row=0,column=0,sticky="nsew")
-        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp",command=self.auto_exposure)
+        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp")
         btnexp.grid(row=0,column=1,sticky="nsew")
 
         #cadre video
-        self.display1 = tk.Label(self.window,padx=5,pady=5,bg="green")  # Initialisation de l'écran 1
+        self.display1 = tk.Canvas(self.window,width=1000,height=600,bg="green")  # Initialisation de l'écran 1
         self.display1.grid(row=1,column=1,sticky="NSEW")
         self.display1.grid_columnconfigure(0,weight=1)
         self.display1.grid_rowconfigure(0,weight=1)
@@ -102,56 +101,19 @@ class Fenetre():
         print("[INFO] closing...")
         self.window.destroy() # Ferme la fenêtre
 
-    def auto_exposure(self):
-        """ Fonction d''auto-exposition uniquement pour la caméra Basler actuellement """
-        self.camera.AcquisitionMode.SetValue('SingleFrame') #Utilise la caméra en mode photo
-        exp_ok=False #Variable permettant de définir l'état de l'ajustement de l'exposition
-        
-        max=self.max_photo() #variable du max d'intensité de l'image
+    def update(self):
+        #Get a frame from cameraCapture
+        frame = self.vid.getFrame() #This is an array
+        #https://stackoverflow.com/questions/48121916/numpy-resize-rescale-image/48121996
+        frame = cv2.resize(frame, dsize=(1000, 600), interpolation=cv2.INTER_CUBIC)
 
-        while exp_ok == False: #Définit l'augmentation ou la diminution des valeurs d'exposition en fonction du max d'intensité de l'image
-            if max<=150:
-                self.temp_exp=self.temp_exp*2.
-                max=self.max_photo()
-                print(self.temp_exp)
-                self.camera.ExposureTime.SetValue(self.temp_exp)
-            elif max >=250 :
-                self.temp_exp=self.temp_exp/1.8
-                max=self.max_photo()
-                print(self.temp_exp)
-                self.camera.ExposureTime.SetValue(self.temp_exp)
-            elif self.temp_exp>=40000.0:
-                exp_ok=True
-                print('Exp time too big')
-                break
-            elif self.temp_exp<=100:
-                exp_ok=True
-                print('Exp time too short')
-                break
-            else:
-                exp_ok=True
-                break
-        return
-                
-    def max_photo(self):
-        """" Fonction permettant de retourner le max d'intensité sur l'image """
-        self.camera.ExposureTime.SetValue(self.temp_exp)
-        self.camera.StartGrabbing() #Permet la récupération des infos de la caméra
-        grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) #Récupère tous les flux de la caméra
-        pht=grabResult.GetArray() #Transforme l'image en matrice
-        max_photo=np.amax(pht) #cherche la valeur max de la matrice
-        grabResult.Release() #Relache le flux
-        self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
-        return max_photo #Renvoie la valeur du max
+        #OpenCV bindings for Python store an image in a NumPy array
+        #Tkinter stores and displays images using the PhotoImage class
+        # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
+        self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
+        self.display1.create_image(500,300,image=self.photo)
 
-    def video_loop(self):
-        while self.camera.IsGrabbing():
-            self.grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException)
-            if self.grabResult.GrabSucceeded():
-                # Access the image data
-                self.image = self.converter.Convert(self.grabResult)
-                self.img = self.image.GetArray()
-            self.grabResult.Release()
+        self.window.after(self.delay, self.update)
 
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enrigistré avec l'horodatage """
