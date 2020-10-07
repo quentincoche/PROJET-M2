@@ -29,6 +29,7 @@ import matplotlib.animation as animation
 class Fenetre():
     cam0 = int(input("Port de périphérique USB de la caméra : "))
     propre=input('Veux-tu avoir une image propre (True/False) : ')
+
     def __init__(self, output_path = "./"): #Fonction d'initialisation du programme
 
         self.output_path = output_path  # chemin de sortie de la photo
