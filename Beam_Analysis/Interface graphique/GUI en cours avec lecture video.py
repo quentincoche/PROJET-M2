@@ -34,7 +34,11 @@ class Fenetre():
         """Initialisation de la camera"""
         self.cap0 = cv2.VideoCapture(self.cam0) # Acquisition du flux vidéo des périphériques
         self.temp_exp=50.0 #Définition d'un temps d'exposition volontairement faible qui sera ajuster ensuite
+        self.temp_exp_conv=-13
         self.auto_exposure() #Lance le programme d'auto-exposition
+        #self.conversion_temp_exp()
+        #print(self.temp_exp_conv)
+        #self.cap0.set(cv2.CAP_PROP_EXPOSURE, self.temp_exp_conv)
         self.cap0.set(3, 5472) # Redéfinition de la taille du flux
         self.cap0.set(4, 3648) # Max (5472 par 3648)
         self.cap0.set(cv2.CAP_PROP_AUTO_EXPOSURE,0.75) #On utilise pas l'auto-exposition d'opencv
@@ -46,6 +50,8 @@ class Fenetre():
         self.window.title("Beam analyzer Python")
         self.window.config(background="#FFFFFF") # Couleur de la fenêtre
         self.window.protocol('WM_DELETE_WINDOW', self.destructor) #La croix de la fenetre va fermer le programme
+
+        """Edition fenetre affichage capture"""
 
         """"definition des proportions pour les frames"""
         #self.window.grid_columnconfigure(0, weight=1)
@@ -116,7 +122,7 @@ class Fenetre():
                 max=self.max_photo()
                 print(self.temp_exp)
                 self.camera.ExposureTime.SetValue(self.temp_exp)
-            elif max >=250 :
+            elif max >=220 :
                 self.temp_exp=self.temp_exp/1.9
                 max=self.max_photo()
                 print(self.temp_exp)
@@ -132,6 +138,11 @@ class Fenetre():
             else:
                 exp_ok=True
                 break
+
+        self.camera.ExposureTime.SetValue(self.temp_exp)
+        self.camera.UserSetSelector = "UserSet1" 
+        self.camera.UserSetSave.Execute()
+        self.camera.UserSetDefaultSelector = self.camera.UserSetSelector
         self.camera.Close() #Ferme la communication avec la caméra
         self.cap0 = cv2.VideoCapture(self.cam0) #Lance l'acquisition avec le module opencv
         return
@@ -177,7 +188,23 @@ class Fenetre():
         self.im0.save(p, "PNG")  # Sauvegarde l'image sous format png
         print("[INFO] saved {}".format(filename))
         
-
+    def conversion_temp_exp(self):
+        self.temp_exp_conv =-1
+        if self.temp_exp <=150 :
+            self.temp_exp_conv = -20
+        elif self.temp_exp <=650:
+            self.temp_exp_conv = -18
+        elif self.temp_exp <=2500:
+            self.temp_exp_conv =-17
+        elif self.temp_exp <=13000:
+            self.temp_exp_conv =-16
+        elif self.temp_exp <=40000:
+            self.temp_exp_conv =-15
+        elif self.temp_exp <=160000:
+            self.temp_exp_conv =-10
+        elif self.temp_exp >=640000:
+            self.temp_exp_conv =-1
+        return self.temp_exp_conv
 
 root = Fenetre()
 root.window.mainloop() # Lancement de la boucle principale
