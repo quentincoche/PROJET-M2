@@ -61,11 +61,11 @@ class Fenetre():
         self.cmdleft.grid(row=1,column=0, sticky='NSEW')
         self.cmdleft.grid_columnconfigure(0, weight=1)
         self.cmdleft.grid_rowconfigure(0, weight=1)
-        btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=1,column=0,sticky="nsew")
         btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
         btncap.grid(row=0,column=0,sticky="nsew")
-
+        btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
+        btnquit.grid(row=1,column=0,sticky="nsew")
+        
         #commandes superieures
         self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="blue")
         self.cmdup.grid(row=0,column=1, sticky="NSEW")
@@ -112,7 +112,67 @@ class Fenetre():
         p = os.path.join(self.output_path, filename)  # construit le chemin de sortie
         self.im0.save(p, "PNG")  # Sauvegarde l'image sous format png
         print("[INFO] saved {}".format(filename))
-        
+
+    def nettoyage(self):
+        """ Test d'amélioration de l'image par binarisation d'Otsu """
+        i,j=0,0
+        #print(self.propre)
+        if self.propre=="False" :
+            raise Exception() #Quitte la fonction si la valeur est fausse, 2eme sécurité
+        else :
+            img_gris=cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  #Transforme l'image en noir/blanc
+            width = int(self.frame.shape[1]*0.5) #Redimensionne l'image pour plus de rapidité (flux réel)
+            height = int(self.frame.shape[0]*0.5)
+            dim = (width, height)
+            self.gray = cv2.resize(img_gris,dim, interpolation = cv2.INTER_AREA) #Redimensionne l'image pour plus de rapidité (flux réel)
+            self.blur = cv2.GaussianBlur(self.gray,(5,5),0) #Mets un flou gaussien
+            ret3,self.otsu = cv2.threshold(self.blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
+            data1 = np.asarray(self.gray) #Récupère la matrice de l'image initiale
+            data2 = np.asarray(self.otsu) #Récupère la matrice de l'image filtrée
+            for i in range (data2.shape[0]): #Interverti les pixels blancs de la deuxième matrice par ceux nuancés de la première
+                for j in range (data2.shape[1]):
+                    if data2[i,j]==255 :
+                        data2[i,j]=data1[i,j]
+            self.frame=data2 #Nouvelle image dont le fond est filtré en fonction de l'intensité du reste de l'image
+
+            #Remet l'image en RGB pour y dessiner toutes les formes par la suite et en couleur
+            self.frame = cv2.cvtColor(self.frame, cv2.COLOR_GRAY2RGB)
+            
+            # find contours in the binary image
+            contours, hierarchy = cv2.findContours(self.otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+            for c in contours:
+            # calculate moments for each contour
+                M = cv2.moments(c)
+
+            # calculate x,y coordinate of center
+                if M["m00"] != 0:
+                    cX = int(M["m10"] / M["m00"])
+                    cY = int(M["m01"] / M["m00"])
+                else:
+                    cX, cY = 0, 0
+
+                #Dessine un cercle sur tous les blobs de l'image (formes blanches)
+                cv2.circle(self.frame, (cX, cY), 2, (0, 0, 255), -1)
+
+                # permet de fit une ellipse sur toutes les formes identifiés sur l'image
+                if len(c) < 5:
+                    break
+                ellipse = cv2.fitEllipse(c)
+                thresh = cv2.ellipse(self.frame,ellipse,(0,255,0),1)
+                
+            M=cv2.moments(self.otsu)
+            # calculate x,y coordinate of center
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
+
+            # dessine les contours des formes qu'il a identifiés
+            cv2.drawContours (self.frame, contours, 3, (255,215,0), 3)
+            
+            #Dessine une croix sur le barycentre de l'image
+            cv2.line(self.frame, (cX, 0), (cX, height), (255, 0, 0), 1)
+            cv2.line(self.frame, (0, cY), (width, cY), (255, 0, 0), 1)
+
+        return        
 
 
 root = Fenetre()
