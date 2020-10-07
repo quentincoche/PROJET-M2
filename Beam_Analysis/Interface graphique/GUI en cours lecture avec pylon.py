@@ -31,18 +31,8 @@ class Fenetre():
         self.output_path = output_path  # chemin de sortie de la photo
 
         """Initialisation de la camera"""
-        
         self.vid = oneCameraCapture.cameraCapture()
-        #self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
-        #self.auto_exposure()
-        #self.camera.PixelFormat.SetValue('Mono12')
-        #self.camera.AcquisitionMode.SetValue('Continuous') #SingleFrame
-        #self.camera.GainAuto.SetValue("Continuous")
-        #self.camera.AcquisitionFrameRate.SetValue(60.0)
-        #self.camera.ExposureTime.SetValue(self.temp_exp)
-        #self.camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly) 
-        #self.converter = pylon.ImageFormatConverter()
-        
+
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
         self.window.geometry("920x613") #taille de la fenetre
@@ -59,7 +49,7 @@ class Fenetre():
 
 
         self.Interface() #Lance la fonction Interface
-        self.delay=100
+        self.delay=15
         self.update() #boucle la fonction d'acquisition de la caméra
     
 ##########################################    
@@ -87,7 +77,7 @@ class Fenetre():
         btnexp.grid(row=0,column=1,sticky="nsew")
 
         #cadre video
-        self.display1 = tk.Canvas(self.window,width=1000,height=600,bg="green")  # Initialisation de l'écran 1
+        self.display1 = tk.Canvas(self.window,bg="green")  # Initialisation de l'écran 1
         self.display1.grid(row=1,column=1,sticky="NSEW")
         self.display1.grid_columnconfigure(0,weight=1)
         self.display1.grid_rowconfigure(0,weight=1)
