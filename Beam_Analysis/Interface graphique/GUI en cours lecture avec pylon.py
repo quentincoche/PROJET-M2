@@ -27,7 +27,6 @@ import oneCameraCapture
 
 class Fenetre():
     def __init__(self, output_path = "./"): #Fonction d'initialisation du programme
-
         self.output_path = output_path  # chemin de sortie de la photo
 
         """Initialisation de la camera"""
@@ -50,6 +49,7 @@ class Fenetre():
 
         self.Interface() #Lance la fonction Interface
         self.delay=15
+        #self.vid.__init__()
         self.update() #boucle la fonction d'acquisition de la caméra
     
 ##########################################    
@@ -73,7 +73,7 @@ class Fenetre():
         self.cmdup.grid_rowconfigure(0, weight=1)
         btnvideo = tk.Button(self.cmdup,text="Afficher video")
         btnvideo.grid(row=0,column=0,sticky="nsew")
-        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp")
+        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.vid.auto_exposure)
         btnexp.grid(row=0,column=1,sticky="nsew")
 
         #cadre video
