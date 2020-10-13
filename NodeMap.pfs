@@ -31,7 +31,7 @@ RemoveParameterLimitSelector	Gain
 PgiMode	Off
 ShutterMode	Rolling
 ExposureMode	Timed
-ExposureTime	352.0
+ExposureTime	464.0
 AcquisitionBurstFrameCount	1
 TriggerSelector	FrameBurstStart
 TriggerMode	Off
