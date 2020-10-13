@@ -146,6 +146,7 @@ class Fenetre():
         # find contours in the binary image
         contours, hierarchy = cv2.findContours(self.otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
         incr=0
+        print(contours)
         for c in contours:
             incr=incr+1
         # calculate moments for each contour
