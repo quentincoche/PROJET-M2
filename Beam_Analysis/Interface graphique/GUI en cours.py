@@ -109,7 +109,7 @@ class Fenetre():
         self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
         self.display1.create_image(event.width/2,event.height/2,image=self.photo)
 
-        self.window.after(self.delay, self.update)
+        self.window.after(self.delay, self.auto_size)
     # def update(self):
     #     #Get a frame from cameraCapture
     #     frame = self.vid.getFrame() #This is an array
