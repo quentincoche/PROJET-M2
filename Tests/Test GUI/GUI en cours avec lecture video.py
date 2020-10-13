@@ -16,6 +16,7 @@ import os #Bibliothèque permettant de communiquer avec l'os et notamment le "pa
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 import matplotlib.animation as animation
+from statistics import mean
 
 #####################################################################
 #                                                                   #
@@ -194,13 +195,14 @@ class Fenetre():
     def nettoyage(self):
         """ Test d'amélioration de l'image par binarisation d'Otsu """
         i,j=0,0
+        l=[]
         #print(self.propre)
         if self.propre=="False" :
             raise Exception() #Quitte la fonction si la valeur est fausse, 2eme sécurité
         else :
-            img_gris=cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  #Transforme l'image en noir/blanc
-            width = int(self.frame.shape[1]*0.5) #Redimensionne l'image pour plus de rapidité (flux réel)
-            height = int(self.frame.shape[0]*0.5)
+            img_gris=self.frame #cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  #Transforme l'image en noir/blanc
+            width = int(self.frame.shape[1]*0.1) #Redimensionne l'image pour plus de rapidité (flux réel)
+            height = int(self.frame.shape[0]*0.1)
             dim = (width, height)
             self.gray = cv2.resize(img_gris,dim, interpolation = cv2.INTER_AREA) #Redimensionne l'image pour plus de rapidité (flux réel)
             self.blur = cv2.GaussianBlur(self.gray,(5,5),0) #Mets un flou gaussien
@@ -209,9 +211,13 @@ class Fenetre():
             data2 = np.asarray(self.otsu) #Récupère la matrice de l'image filtrée
             for i in range (data2.shape[0]): #Interverti les pixels blancs de la deuxième matrice par ceux nuancés de la première
                 for j in range (data2.shape[1]):
-                    if data2[i,j]==255 :
-                        data2[i,j]=data1[i,j]
-            self.frame=data2 #Nouvelle image dont le fond est filtré en fonction de l'intensité du reste de l'image
+                    if data2[i,j]==0 :
+                        l.append(data1[i,j])
+            self.moy_fond=mean(l)
+            for i in range (data1.shape[0]): #Interverti les pixels blancs de la deuxième matrice par ceux nuancés de la première
+                for j in range (data1.shape[1]):
+                    data1[i,j]=data1[i,j]-self.moy_fond
+            self.frame=data1 #Nouvelle image dont le fond est filtré en fonction de l'intensité du reste de l'image
 
             #Remet l'image en RGB pour y dessiner toutes les formes par la suite et en couleur
             self.frame = cv2.cvtColor(self.frame, cv2.COLOR_GRAY2RGB)
