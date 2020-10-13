@@ -46,8 +46,8 @@ class Fenetre():
         self.window.grid_columnconfigure(1, weight=8)
         self.window.grid_rowconfigure(1, weight=8)
 
-        Screen_x = 1200
-        Screen_y = 800
+        self.Screen_x = 1200
+        self.Screen_y = 800
 
         self.Interface() #Lance la fonction Interface
         self.delay=15
@@ -80,7 +80,7 @@ class Fenetre():
 
         #cadre video
         
-        self.display1 = tk.Canvas(self.window, width=self.x,height=self.y, bg="green")  # Initialisation de l'écran 1
+        self.display1 = tk.Canvas(self.window, width=self.Screen_x,height=self.Screen_y, bg="green")  # Initialisation de l'écran 1
         self.display1.bind("<Configure>",self.auto_size)
         self.display1.grid(row=1,column=1,sticky="NSEW")
         self.display1.grid_columnconfigure(0,weight=1)
@@ -107,7 +107,7 @@ class Fenetre():
         #Tkinter stores and displays images using the PhotoImage class
         # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
         self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
-        self.display1.create_image(500,300,image=self.photo)
+        self.display1.create_image(event.width/2,event.height/2,image=self.photo)
 
         self.window.after(self.delay, self.update)
     # def update(self):
