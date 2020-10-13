@@ -120,6 +120,12 @@ class Fenetre():
         i,j=0,0
         l=[]
 
+        """
+        ROI = cv2.selectROI(img)
+        if ROI!=(0,0,0,0):
+            imgCrop = img[int(ROI[1]):int(ROI[1]+ROI[3]), int(ROI[0]):int(ROI[0]+ROI[2])]
+        """
+
         #img_gris=self.frame
         self.gray=cv2.normalize(self.frame, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         width = int(self.gray.shape[1]*1) #Redimensionne l'image pour plus de rapidité (flux réel)
@@ -170,14 +176,14 @@ class Fenetre():
             cv2.circle(self.frame, (cX, cY), 2, (0, 0, 255), -1)
 
             ellipse = cv2.fitEllipse(c)
-            thresh = cv2.ellipse(self.frame,ellipse,(0,255,0),3)
+            thresh = cv2.ellipse(self.frame,ellipse,(0,255,0),1)
             print('Ellipse : ', ellipse)
 
             x,y,w,h = cv2.boundingRect(c)
-            rectangle = cv2.rectangle(self.frame,(x,y),(x+w,y+h),(0,175,175),3)
+            rectangle = cv2.rectangle(self.frame,(x,y),(x+w,y+h),(0,175,175),1)
             print('Rectangle : Position = ', x,',',y,'; Size = ',w,',',h)
             # dessine les contours des formes qu'il a identifiés
-            cv2.drawContours (self.frame, contours, -1, (255,215,0), 1)
+            #cv2.drawContours (self.frame, contours, -1, (255,215,0), 1)
 
         M=cv2.moments(self.otsu)
         # calculate x,y coordinate of center
@@ -186,12 +192,14 @@ class Fenetre():
         print('barycentre : ', cX, ',', cY)
 
         #Dessine une croix sur le barycentre de l'image
-        cv2.line(self.frame, (cX, 0), (cX, self.gray.shape[0]), (255, 0, 0), 3)
-        cv2.line(self.frame, (0, cY), (self.gray.shape[1], cY), (255, 0, 0), 3)
+        cv2.line(self.frame, (cX, 0), (cX, self.gray.shape[0]), (255, 0, 0), 1)
+        cv2.line(self.frame, (0, cY), (self.gray.shape[1], cY), (255, 0, 0), 1)
 
-        img=cv2.resize(self.frame, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
+        crop_img = self.frame[y:y+h, x:x+w]
+
+        #img=cv2.resize(self.frame, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
         #otsu=cv2.resize(self.otsu, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
-        cv2.imshow('image',img)
+        cv2.imshow('image',crop_img)
         #cv2.imshow('Otsu', otsu)
 
         return 
