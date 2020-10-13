@@ -83,7 +83,6 @@ class Fenetre():
         self.display1.grid_columnconfigure(0,weight=1)
         self.display1.grid_rowconfigure(0,weight=1)
 
-        
     
 ##########################################    
     

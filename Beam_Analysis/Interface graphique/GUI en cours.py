@@ -81,7 +81,7 @@ class Fenetre():
         #cadre video
 
         self.display1 = tk.Canvas(self.window, width=self.Screen_x,height=self.Screen_y, bg="green")  # Initialisation de l'écran 1
-        self.display1.bind("<Configure>",self.update)
+        self.display1.bind("<Configure>",self.auto_size)
         self.display1.grid(row=1,column=1,sticky="NSEW")
         self.display1.grid_columnconfigure(0,weight=1)
         self.display1.grid_rowconfigure(0,weight=1)
@@ -95,34 +95,32 @@ class Fenetre():
         print("[INFO] closing...")
         self.window.destroy() # Ferme la fenêtre
 
-    # def auto_size(self,event):
-    #     """redimensionnement de l'image pour correspondre à la taille de la fenêtre"""
-    #     frame = self.vid.getFrame() #This is an array
-    #     try:
-    #         self.display1.delete(self.display1.image)
-    #     except:
-    #         pass
-    #     self.photo=cv2.resize(frame,dsize=(event.width,event.height), interpolation=cv2.INTER_CUBIC)
-    #     #OpenCV bindings for Python store an image in a NumPy array
-    #     #Tkinter stores and displays images using the PhotoImage class
-    #     # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
-    #     self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
-    #     self.display1.create_image(event.width/2,event.height/2,image=self.photo)
-    #     self.display1.bind("<Configure>",self.auto_size)
+    def auto_size(self,event):
+        """redimensionnement de l'image pour correspondre à la taille de la fenêtre"""
+        #frame = self.vid.getFrame() #This is an array
+        try:
+            self.display1.delete(self.display1.image)
+        except:
+            pass
+        #self.photo=cv2.resize(frame,dsize=(event.width,event.height), interpolation=cv2.INTER_CUBIC)
+        #
+        self.Screen_x = event.width
+        self.Screen_y = event.height
+        #
+        #self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
+        #self.display1.create_image(event.width/2,event.height/2,image=self.photo)
+        self.window.after(self.delay, self.update)
 
-    #     self.window.after(self.delay, self.update)
-    def update(self,event):
+    def update(self):
         #Get a frame from cameraCapture
         frame = self.vid.getFrame() #This is an array
-        #https://stackoverflow.com/questions/48121916/numpy-resize-rescale-image/48121996
-        frame = cv2.resize(frame, dsize=(event.width,event.height), interpolation=cv2.INTER_CUBIC)
+        frame = cv2.resize(frame, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_CUBIC)
 
         #OpenCV bindings for Python store an image in a NumPy array
         #Tkinter stores and displays images using the PhotoImage class
         # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
         self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
-        self.display1.create_image(event.width/2,event.height/2,image=self.photo)
-
+        self.display1.create_image(self.Screen_x/2,self.Screen_y/2,image=self.photo)
         self.window.after(self.delay, self.update)
 
     def capture(self):

@@ -1,7 +1,7 @@
 import os
 
 os.environ["PYLON_CAMEMU"] = "3"
-
+import pypylon
 from pypylon import genicam
 from pypylon import pylon
 import sys
@@ -131,9 +131,9 @@ class cameraCapture(tk.Frame):
         self.camera.ExposureTime.SetValue(self.temp_exp)
         self.camera.StartGrabbing() #Permet la récupération des infos de la caméra
         grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) #Récupère tous les flux de la caméra
-        img=cv2.GaussianBlur(grabResult,(20,20),0)
-        pht=img.GetArray() #Transforme l'image en matrice
-        max_photo=np.amax(pht) #cherche la valeur max de la matrice
+        pht=grabResult.GetArray() #Transforme l'image en matrice
+        img=cv2.blur(pht,(20,20))
+        max_photo=np.amax(img) #cherche la valeur max de la matrice
         grabResult.Release() #Relache le flux
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
         return max_photo #Renvoie la valeur du max
