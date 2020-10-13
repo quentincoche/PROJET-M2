@@ -122,12 +122,10 @@ class Fenetre():
 
         #img_gris=self.frame
         self.gray=cv2.normalize(self.frame, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
-        """
-        width = int(img_gris.shape[1]*0.15) #Redimensionne l'image pour plus de rapidité (flux réel)
-        height = int(img_gris.shape[0]*0.15)
+        width = int(self.gray.shape[1]*0.8) #Redimensionne l'image pour plus de rapidité (flux réel)
+        height = int(self.gray.shape[0]*0.8)
         dim = (width, height)
-        self.gray = cv2.resize(img_gris,dim, interpolation = cv2.INTER_AREA) #Redimensionne l'image pour plus de rapidité (flux réel)
-        """
+        self.gray = cv2.resize(self.gray,dim, interpolation = cv2.INTER_AREA) #Redimensionne l'image pour plus de rapidité (flux réel)
         self.blur = cv2.GaussianBlur(self.gray,(5,5),0) #Mets un flou gaussien
         ret3,self.otsu = cv2.threshold(self.blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         data1 = np.asarray(self.gray) #Récupère la matrice de l'image initiale
@@ -147,7 +145,9 @@ class Fenetre():
             
         # find contours in the binary image
         contours, hierarchy = cv2.findContours(self.otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+        incr=0
         for c in contours:
+            incr=incr+1
         # calculate moments for each contour
             M = cv2.moments(c)
 
@@ -164,24 +164,32 @@ class Fenetre():
             # permet de fit une ellipse sur toutes les formes identifiés sur l'image
             if len(c) < 5:
                 break
+            
+            area = cv2.contourArea(c)
+            if area <= 50:  # skip ellipses smaller then 10x10
+                continue
             ellipse = cv2.fitEllipse(c)
-            thresh = cv2.ellipse(self.frame,ellipse,(0,255,0),1)
-                
+            thresh = cv2.ellipse(self.frame,ellipse,(0,255,0),3)
+            print('Ellipse : ', ellipse)
+            # dessine les contours des formes qu'il a identifiés
+            cv2.drawContours (self.frame, contours, -1, (255,215,0), 3)
+
+        print(incr)
+
         M=cv2.moments(self.otsu)
         # calculate x,y coordinate of center
         cX = int(M["m10"] / M["m00"])
         cY = int(M["m01"] / M["m00"])
-
-        # dessine les contours des formes qu'il a identifiés
-        #cv2.drawContours (self.frame, contours, 3, (255,215,0), 3)
             
         #Dessine une croix sur le barycentre de l'image
         cv2.line(self.frame, (cX, 0), (cX, self.gray.shape[0]), (255, 0, 0), 1)
         cv2.line(self.frame, (0, cY), (self.gray.shape[1], cY), (255, 0, 0), 1)
         img=cv2.resize(self.frame, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
-        cv2.imshow('Fenetre',img)
+        otsu=cv2.resize(self.otsu, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
+        cv2.imshow('image',img)
+        cv2.imshow('Otsu', otsu)
 
-        return        
+        return 
 
 
 root = Fenetre()
