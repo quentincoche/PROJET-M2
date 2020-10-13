@@ -108,6 +108,7 @@ class Fenetre():
         # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
         self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
         self.display1.create_image(event.width/2,event.height/2,image=self.photo)
+        self.display1.bind("<Configure>",self.auto_size)
 
         self.window.after(self.delay, self.auto_size)
     # def update(self):
