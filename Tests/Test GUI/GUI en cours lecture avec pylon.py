@@ -120,11 +120,14 @@ class Fenetre():
         i,j=0,0
         l=[]
 
-        img_gris=self.frame
-        width = int(self.frame.shape[1]*0.15) #Redimensionne l'image pour plus de rapidité (flux réel)
-        height = int(self.frame.shape[0]*0.15)
+        #img_gris=self.frame
+        self.gray=cv2.normalize(self.frame, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
+        """
+        width = int(img_gris.shape[1]*0.15) #Redimensionne l'image pour plus de rapidité (flux réel)
+        height = int(img_gris.shape[0]*0.15)
         dim = (width, height)
         self.gray = cv2.resize(img_gris,dim, interpolation = cv2.INTER_AREA) #Redimensionne l'image pour plus de rapidité (flux réel)
+        """
         self.blur = cv2.GaussianBlur(self.gray,(5,5),0) #Mets un flou gaussien
         ret3,self.otsu = cv2.threshold(self.blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         data1 = np.asarray(self.gray) #Récupère la matrice de l'image initiale
@@ -170,11 +173,13 @@ class Fenetre():
         cY = int(M["m01"] / M["m00"])
 
         # dessine les contours des formes qu'il a identifiés
-        cv2.drawContours (self.frame, contours, 3, (255,215,0), 3)
+        #cv2.drawContours (self.frame, contours, 3, (255,215,0), 3)
             
         #Dessine une croix sur le barycentre de l'image
-        cv2.line(self.frame, (cX, 0), (cX, height), (255, 0, 0), 1)
-        cv2.line(self.frame, (0, cY), (width, cY), (255, 0, 0), 1)
+        cv2.line(self.frame, (cX, 0), (cX, self.gray.shape[0]), (255, 0, 0), 1)
+        cv2.line(self.frame, (0, cY), (self.gray.shape[1], cY), (255, 0, 0), 1)
+        img=cv2.resize(self.frame, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
+        cv2.imshow('Fenetre',img)
 
         return        
 
