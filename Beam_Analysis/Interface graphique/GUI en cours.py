@@ -34,8 +34,7 @@ class Fenetre():
 
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
-        self.window.geometry("920x613") #taille de la fenetre
-
+        self.window.geometry("1600x1100") #taille de la fenetre
         self.window.title("Beam analyzer Python")
         self.window.config(background="#FFFFFF") # Couleur de la fenêtre
         self.window.protocol('WM_DELETE_WINDOW', self.destructor) #La croix de la fenetre va fermer le programme
@@ -46,17 +45,15 @@ class Fenetre():
         self.window.grid_columnconfigure(1, weight=8)
         self.window.grid_rowconfigure(1, weight=8)
 
-        self.Screen_x = 1200
-        self.Screen_y = 800
+        self.Screen_x = 1500
+        self.Screen_y = 1000
 
         self.Interface() #Lance la fonction Interface
-        self.delay=15
-        #self.vid.__init__()
-        #self.update() #boucle la fonction d'acquisition de la caméra
+        self.update() #boucle la fonction d'acquisition de la caméra
 
 ##########################################
     def Interface(self):
-        """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
+        """ Fonction permettant de créer l'interface dans laquelle seront placées toutes les commandes et visualisations permettant d'utiliser le programme """
 
         #commandes gauche
         self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="red")
@@ -79,14 +76,10 @@ class Fenetre():
         btnexp.grid(row=0,column=1,sticky="nsew")
 
         #cadre video
-
         self.display1 = tk.Canvas(self.window, width=self.Screen_x,height=self.Screen_y, bg="green")  # Initialisation de l'écran 1
-        self.display1.bind("<Configure>",self.auto_size)
         self.display1.grid(row=1,column=1,sticky="NSEW")
         self.display1.grid_columnconfigure(0,weight=1)
         self.display1.grid_rowconfigure(0,weight=1)
-
-
 
 ##########################################
 
@@ -95,32 +88,33 @@ class Fenetre():
         print("[INFO] closing...")
         self.window.destroy() # Ferme la fenêtre
 
-    def auto_size(self,event):
-        """redimensionnement de l'image pour correspondre à la taille de la fenêtre"""
-        #frame = self.vid.getFrame() #This is an array
-        try:
-            self.display1.delete(self.display1.image)
-        except:
-            pass
-        #self.photo=cv2.resize(frame,dsize=(event.width,event.height), interpolation=cv2.INTER_CUBIC)
-        #
-        self.Screen_x = event.width
-        self.Screen_y = event.height
-        #
-        #self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
-        #self.display1.create_image(event.width/2,event.height/2,image=self.photo)
-        self.window.after(self.delay, self.update)
-
     def update(self):
+
+        self.delay=15
+
+        #Get display size
+        self.Screen_x = self.display1.winfo_width()
+        self.Screen_y = self.display1.winfo_height()
+        r = float(self.Screen_x/self.Screen_y)
+
         #Get a frame from cameraCapture
         frame = self.vid.getFrame() #This is an array
+        ratio = self.vid.ratio
+        #keep ratio
+        if r > ratio:
+            self.Screen_x = int(round(self.display1.winfo_height()*ratio))
+        elif r < ratio:
+            self.Screen_y = int(round(self.display1.winfo_width()/ratio))
+
+        frame = cv2.flip(frame,0)
         frame = cv2.resize(frame, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_CUBIC)
 
         #OpenCV bindings for Python store an image in a NumPy array
         #Tkinter stores and displays images using the PhotoImage class
         # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
         self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
-        self.display1.create_image(self.Screen_x/2,self.Screen_y/2,image=self.photo)
+        self.display1.create_image(self.Screen_x/2,self.Screen_x/(2*ratio),image=self.photo)
+
         self.window.after(self.delay, self.update)
 
     def capture(self):

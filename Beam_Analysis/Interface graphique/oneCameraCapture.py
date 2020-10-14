@@ -1,7 +1,7 @@
 import os
 
 os.environ["PYLON_CAMEMU"] = "3"
-
+import pypylon
 from pypylon import genicam
 from pypylon import pylon
 import sys
@@ -15,22 +15,22 @@ class cameraCapture(tk.Frame):
         self.img0 = []
         nodeFile = "NodeMap.pfs"
         self.windowName = 'title'
-        #self.start_time = time.time()
 
         try:
             # Create an instant camera object with the camera device found first.
             self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
             self.camera.Open() #Ouvre la communication avec la caméra
+            self.width = self.camera.Width.GetValue()
+            self.height = self.camera.Height.GetValue()
+            self.ratio = float(self.width/self.height)
 
-            self.camera.Width=5472
-            self.camera.Height=3648
             self.camera.PixelFormat.SetValue('Mono12')
             pylon.FeaturePersistence.Save(nodeFile, self.camera.GetNodeMap())
 
             # Print the model name of the camera.
             print("Using device ", self.camera.GetDeviceInfo().GetModelName())
             print("Exposure time ", self.camera.ExposureTime.GetValue())
-            print("Pixels formats :", self.camera.PixelFormat.Symbolics)
+            #print("Pixels formats :", self.camera.PixelFormat.Symbolics)
             
 
             self.auto_exposure() #This line HAS TO STAY HERE :')         
@@ -64,14 +64,12 @@ class cameraCapture(tk.Frame):
             if self.grabResult.GrabSucceeded():
                 image = self.converter.Convert(self.grabResult) # Access the openCV image data
                 self.img0 = image.GetArray()
-
             else:
                 print("Error: ", self.grabResult.ErrorCode)
     
             self.grabResult.Release()
-            #time.sleep(0.01)
 
-            return self.img0
+            return self.img0 
             
         except genicam.GenericException as e:
             # Error handling
@@ -93,7 +91,7 @@ class cameraCapture(tk.Frame):
         #print(max)
 
         while exp_ok == False: #Définit l'augmentation ou la diminution des valeurs d'exposition en fonction du max d'intensité de l'image
-            if max<=3900:
+            if max<=4000:
                 self.temp_exp=self.temp_exp*2.
                 max=self.max_photo()
                 #print(self.temp_exp)
@@ -132,7 +130,8 @@ class cameraCapture(tk.Frame):
         self.camera.StartGrabbing() #Permet la récupération des infos de la caméra
         grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) #Récupère tous les flux de la caméra
         pht=grabResult.GetArray() #Transforme l'image en matrice
-        max_photo=np.amax(pht) #cherche la valeur max de la matrice
+        img=cv2.blur(pht,(20,20))
+        max_photo=np.amax(img) #cherche la valeur max de la matrice
         grabResult.Release() #Relache le flux
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
         return max_photo #Renvoie la valeur du max

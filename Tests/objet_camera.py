@@ -46,7 +46,7 @@ class Camera():
             self.grabResult.Release()
             
         #Printing technical data
-        """
+        
         print("Using device ", self.camera.GetDeviceInfo().GetModelName())
         print("Matrice : ", self.grabResult.Width, " x ", self.grabResult.Height)
         print("Bit pixel : ", self.camera.PixelFormat.GetValue())
@@ -56,7 +56,7 @@ class Camera():
         print("Gain : ", self.camera.Gain.GetValue())
         print("Frame rate : ",self.camera.AcquisitionFrameRate.GetValue())
         print(self.img)
-        """
+        
        
     #def ending_acquisition(self):
         # Releasing the resource    
@@ -101,3 +101,5 @@ class Camera():
         photo.Release()
         self.camera.StopGrabbing()
         return(max_photo)
+
+Camera()
