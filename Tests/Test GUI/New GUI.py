@@ -49,6 +49,9 @@ class Fenetre(Thread):
         self.window.grid_columnconfigure(1, weight=8)
         self.window.grid_rowconfigure(1, weight=8)
 
+        self.Screen_x = 1500
+        self.Screen_y = 1000
+
         self.display()
         self.flux_cam()
         self.Interface() #Lance la fonction Interface
@@ -80,13 +83,15 @@ class Fenetre(Thread):
 
     def display(self):
         #cadre video
-        self.display1 = tk.Canvas(self.window,bg="green")  # Initialisation de l'écran 1
+        self.display1 = tk.Canvas(self.window, width=self.Screen_x,height=self.Screen_y, bg="green")  # Initialisation de l'écran 1
         self.display1.grid(row=1,column=1,sticky="NSEW")
         self.display1.grid_columnconfigure(0,weight=1)
         self.display1.grid_rowconfigure(0,weight=1)
+        self.Screen_x = self.display1.winfo_width()
+        self.Screen_y = self.display1.winfo_height()
 
     def flux_cam(self):
-        self.t1=camera(self.window, self.display1) #boucle la fonction d'acquisition de la caméra
+        self.t1=camera(self.window, self.display1, self.Screen_x, self.Screen_y) #boucle la fonction d'acquisition de la caméra
         self.t1.start()
     
     def destructor(self):
@@ -98,11 +103,13 @@ class Fenetre(Thread):
 
 class camera(Thread):
 
-    def __init__(self, window, display1, output_path = "./"):
+    def __init__(self, window, display1, Screen_x, Screen_y, output_path = "./"):
         Thread.__init__(self)
         self.output_path = output_path  # chemin de sortie de la photo
         self.window=window
         self.display1=display1
+        self.Screen_x = Screen_x
+        self.Screen_y = Screen_y
         self.vid = oneCameraCapture.cameraCapture()
         self.trmt = Img_Traitement.Traitement()
 
@@ -114,14 +121,28 @@ class camera(Thread):
         self.frame0 = self.vid.getFrame() #This is an array
         self.frame=cv2.flip(self.frame0,0)
 
+        #Get display size
+        self.Screen_x = self.display1.winfo_width()
+        self.Screen_y = self.display1.winfo_height()
+        r = float(self.Screen_x/self.Screen_y)
+
+        #Get a frame from cameraCapture
+        ratio = self.vid.ratio
+        #keep ratio
+        if r > ratio:
+            self.Screen_x = int(round(self.display1.winfo_height()*ratio))
+        elif r < ratio:
+            self.Screen_y = int(round(self.display1.winfo_width()/ratio))
+
+
         #https://stackoverflow.com/questions/48121916/numpy-resize-rescale-image/48121996
-        frame = cv2.resize(self.frame, dsize=(1000, 600), interpolation=cv2.INTER_CUBIC)
+        frame = cv2.resize(self.frame, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_AREA)
 
         #OpenCV bindings for Python store an image in a NumPy array
         #Tkinter stores and displays images using the PhotoImage class
         # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
         self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
-        self.display1.create_image(500,300,image=self.photo)
+        self.display1.create_image(self.Screen_x/2,self.Screen_x/(2*ratio),image=self.photo)
 
         self.window.after(self.delay, self.update)
 

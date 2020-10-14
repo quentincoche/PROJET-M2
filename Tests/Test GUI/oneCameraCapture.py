@@ -20,6 +20,11 @@ class cameraCapture(tk.Frame):
             # Create an instant camera object with the camera device found first.
             self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
             self.camera.Open() #Ouvre la communication avec la caméra
+
+            self.width = self.camera.Width.GetValue()
+            self.height = self.camera.Height.GetValue()
+            self.ratio = float(self.width/self.height)
+
             self.camera.PixelFormat.SetValue('Mono12')
             pylon.FeaturePersistence.Save(nodeFile, self.camera.GetNodeMap())
 
@@ -60,17 +65,13 @@ class cameraCapture(tk.Frame):
             if self.grabResult.GrabSucceeded():
                 image = self.converter.Convert(self.grabResult) # Access the openCV image data
                 self.img0 = image.GetArray()
-                self.camera.Width = self.grabResult.Width
-                self.camera.Height = self.grabResult.Height
-                self.ratio = float(self.camera.Width/self.camera.Height)
-                print(self.ratio)
             else:
                 print("Error: ", self.grabResult.ErrorCode)
     
             self.grabResult.Release()
             #time.sleep(0.01)
 
-            return self.img0, self.ratio 
+            return self.img0
             
         except genicam.GenericException as e:
             # Error handling
