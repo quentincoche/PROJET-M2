@@ -30,14 +30,8 @@ import Img_Traitement
 
 
 class Fenetre(Thread):
-    def __init__(self, output_path = "./"): #Fonction d'initialisation du programme
-        
-        Thread.__init__(self)
-        self.output_path = output_path  # chemin de sortie de la photo
 
-        """Initialisation de la camera"""
-        self.vid = oneCameraCapture.cameraCapture()
-        self.trmt = Img_Traitement.Traitement()
+    def __init__(self): #Fonction d'initialisation du programme
 
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
@@ -53,13 +47,12 @@ class Fenetre(Thread):
         self.window.grid_columnconfigure(1, weight=8)
         self.window.grid_rowconfigure(1, weight=8)
 
-
+        self.display()
+        self.flux_cam()
         self.Interface() #Lance la fonction Interface
-        self.delay=15
-        #self.vid.__init__()
-        self.thread_update() #boucle la fonction d'acquisition de la caméra
-    
-##########################################    
+        self.t1.update()
+        
+
     def Interface(self):
         """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
         
@@ -68,7 +61,7 @@ class Fenetre(Thread):
         self.cmdleft.grid(row=1,column=0, sticky='NSEW')
         self.cmdleft.grid_columnconfigure(0, weight=1)
         self.cmdleft.grid_rowconfigure(0, weight=1)
-        btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
+        btncap = tk.Button(self.cmdleft,text="Capture",command=self.t1.capture)
         btncap.grid(row=0,column=0,sticky="nsew")
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
         btnquit.grid(row=1,column=0,sticky="nsew")
@@ -78,24 +71,41 @@ class Fenetre(Thread):
         self.cmdup.grid(row=0,column=1, sticky="NSEW")
         self.cmdup.grid_columnconfigure(0, weight=1)
         self.cmdup.grid_rowconfigure(0, weight=1)
-        btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool)
+        btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.t1.video_tool)
         btnvideo.grid(row=0,column=0,sticky="nsew")
-        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.vid.auto_exposure)
+        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.t1.exp)
         btnexp.grid(row=0,column=1,sticky="nsew")
 
+    def display(self):
         #cadre video
         self.display1 = tk.Canvas(self.window,bg="green")  # Initialisation de l'écran 1
         self.display1.grid(row=1,column=1,sticky="NSEW")
         self.display1.grid_columnconfigure(0,weight=1)
         self.display1.grid_rowconfigure(0,weight=1)
 
-    
-##########################################    
+    def flux_cam(self):
+        self.t1=camera(self.window, self.display1) #boucle la fonction d'acquisition de la caméra
+        self.t1.start()
     
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
         print("[INFO] closing...")
         self.window.destroy() # Ferme la fenêtre
+
+
+
+class camera(Thread):
+
+    def __init__(self, window, display1, output_path = "./"):
+        Thread.__init__(self)
+        self.output_path = output_path  # chemin de sortie de la photo
+        self.window=window
+        self.display1=display1
+        self.vid = oneCameraCapture.cameraCapture()
+        self.trmt = Img_Traitement.Traitement()
+
+        self.delay=15
+
 
     def update(self):
         #Get a frame from cameraCapture
@@ -118,18 +128,17 @@ class Fenetre(Thread):
         ts = datetime.datetime.now()
         filename = "image_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
         p = os.path.join(self.output_path, filename)  # construit le chemin de sortie
-        self.im0.save(p, "PNG")  # Sauvegarde l'image sous format png
+        self.frame.save(p, "PNG")  # Sauvegarde l'image sous format png
         print("[INFO] saved {}".format(filename))
 
     def video_tool(self):
         thread2 = self.trmt.traitement(self.frame)
         thread2.start()
-        thread2.join()
+
+    def exp(self):
+        self.exposure=self.vid.auto_exposure()
+
     
-    def thread_update(self):
-        thread1 = self.update()
-        thread1.start()
-        thread1.join()
 
         
 
