@@ -38,7 +38,7 @@ class Traitement():
         otsu = cv2.GaussianBlur(img,(5,5),0) #Mets un flou gaussien
         ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         img_opn = cv2.morphologyEx(otsu, cv2.MORPH_OPEN, kernel)
-        frame= cv2.fastNlMeansDenoising( img , None , 2 , 7 , 21)
+        frame= cv2.fastNlMeansDenoising( img , None , 10 , 7 , 21)
     
         return frame, img_opn
 
