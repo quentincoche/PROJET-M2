@@ -38,19 +38,7 @@ class Traitement():
         otsu = cv2.GaussianBlur(img,(5,5),0) #Mets un flou gaussien
         ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         img_opn = cv2.morphologyEx(otsu, cv2.MORPH_OPEN, kernel)
-        data1 = np.asarray(img) #Récupère la matrice de l'image initiale
-        """
-        data2 = np.asarray(img_opn) #Récupère la matrice de l'image filtrée
-        for i in range (data2.shape[0]): #Interverti les pixels blancs de la deuxième matrice par ceux nuancés de la première
-            for j in range (data2.shape[1]):
-                if data2[i,j]==0 :
-                    l.append(data1[i,j])
-        moy_fond=mean(l)
-        for i in range (data1.shape[0]): #Interverti les pixels blancs de la deuxième matrice par ceux nuancés de la première
-            for j in range (data1.shape[1]):
-                data1[i,j]=data1[i,j]-moy_fond
-        """
-        frame=data1 #Nouvelle image dont le fond est filtré en fonction de l'intensité du reste de l'image
+        frame= cv2.fastNlMeansDenoising( img , None , 2 , 7 , 21)
     
         return frame, img_opn
 

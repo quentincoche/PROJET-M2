@@ -100,7 +100,12 @@ class Fenetre(Thread):
         self.display1.grid_rowconfigure(0,weight=1)
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
-    
+
+        #cadre video
+        self.display2 = tk.Canvas(self.window, width=500, height=500, bg="green")  # Initialisation de l'écran 1
+        self.display2.grid(row=1,column=2,sticky="NSEW")
+        self.display2.grid_columnconfigure(0,weight=1)
+        self.display2.grid_rowconfigure(0,weight=1)
 
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
@@ -155,8 +160,13 @@ class Fenetre(Thread):
         print("[INFO] saved {}".format(filename))
 
     def video_tool(self):
-        self.t2 = Thread(target=self.trmt.traitement, args=(self.frame,))
+        self.t2 = Thread(target=self.disp_traitement)
         self.t2.start()
+
+    def disp_traitement(self):
+        frame=self.trmt.traitement(self.frame)
+        self.photo2 = ImageTk.PhotoImage(image = Img.fromarray(frame))
+        self.display2.create_image(500,500,image=self.photo2)
 
     def exp(self):
         self.exposure=self.vid.auto_exposure()
