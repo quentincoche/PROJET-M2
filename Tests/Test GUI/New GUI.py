@@ -33,7 +33,13 @@ import Img_Traitement
 
 class Fenetre(Thread):
 
-    def __init__(self): #Fonction d'initialisation du programme
+    def __init__(self, output_path = "./"): #Fonction d'initialisation du programme
+
+        Thread.__init__(self)
+
+        self.vid = oneCameraCapture.cameraCapture()
+        self.trmt = Img_Traitement.Traitement()
+        self.output_path = output_path  # chemin de sortie de la photo
 
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
@@ -51,12 +57,17 @@ class Fenetre(Thread):
 
         self.Screen_x = 1500
         self.Screen_y = 1000
+        self.delay=15
 
         self.display()
-        self.flux_cam()
         self.Interface() #Lance la fonction Interface
-        self.t1.update()
-        
+        self.flux_cam()
+
+
+    #########################
+    #   Partie Interface    # 
+    #########################       
+
 
     def Interface(self):
         """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
@@ -66,7 +77,7 @@ class Fenetre(Thread):
         self.cmdleft.grid(row=1,column=0, sticky='NSEW')
         self.cmdleft.grid_columnconfigure(0, weight=1)
         self.cmdleft.grid_rowconfigure(0, weight=1)
-        btncap = tk.Button(self.cmdleft,text="Capture",command=self.t1.capture)
+        btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
         btncap.grid(row=0,column=0,sticky="nsew")
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
         btnquit.grid(row=1,column=0,sticky="nsew")
@@ -76,9 +87,9 @@ class Fenetre(Thread):
         self.cmdup.grid(row=0,column=1, sticky="NSEW")
         self.cmdup.grid_columnconfigure(0, weight=1)
         self.cmdup.grid_rowconfigure(0, weight=1)
-        btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.t1.video_tool)
+        btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool)
         btnvideo.grid(row=0,column=0,sticky="nsew")
-        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.t1.exp)
+        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
         btnexp.grid(row=0,column=1,sticky="nsew")
 
     def display(self):
@@ -89,32 +100,22 @@ class Fenetre(Thread):
         self.display1.grid_rowconfigure(0,weight=1)
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
-
-    def flux_cam(self):
-        self.t1=camera(self.window, self.display1, self.Screen_x, self.Screen_y) #boucle la fonction d'acquisition de la caméra
-        self.t1.start()
     
+
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
         print("[INFO] closing...")
         self.window.destroy() # Ferme la fenêtre
 
 
+    #####################
+    #   Partie Camera   # 
+    #####################
 
-class camera(Thread):
 
-    def __init__(self, window, display1, Screen_x, Screen_y, output_path = "./"):
-        Thread.__init__(self)
-        self.output_path = output_path  # chemin de sortie de la photo
-        self.window=window
-        self.display1=display1
-        self.Screen_x = Screen_x
-        self.Screen_y = Screen_y
-        self.vid = oneCameraCapture.cameraCapture()
-        self.trmt = Img_Traitement.Traitement()
-
-        self.delay=15
-
+    def flux_cam(self):
+        self.t1=Thread(target=self.update(), args=(self.window, self.display1, self.Screen_x, self.Screen_y)) #boucle la fonction d'acquisition de la caméra
+        self.t1.start()
 
     def update(self):
         #Get a frame from cameraCapture
@@ -133,7 +134,6 @@ class camera(Thread):
             self.Screen_x = int(round(self.display1.winfo_height()*ratio))
         elif r < ratio:
             self.Screen_y = int(round(self.display1.winfo_width()/ratio))
-
 
         #https://stackoverflow.com/questions/48121916/numpy-resize-rescale-image/48121996
         frame = cv2.resize(self.frame, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_AREA)
@@ -155,8 +155,8 @@ class camera(Thread):
         print("[INFO] saved {}".format(filename))
 
     def video_tool(self):
-        thread2 = self.trmt.traitement(self.frame)
-        thread2.start()
+        self.t2 = Thread(target=self.trmt.traitement, args=(self.frame,))
+        self.t2.start()
 
     def exp(self):
         self.exposure=self.vid.auto_exposure()
