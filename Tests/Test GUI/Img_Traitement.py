@@ -26,7 +26,7 @@ class Traitement():
         #cv2.imshow('20%', img020)
         img_trait, img_bin=self.binarisation(gray)
         img100=self.calcul_traitement(img_trait, img_bin)
-        cv2.imshow('100%', img100)
+        #cv2.imshow('100%', img100)
         return img100
 
     def binarisation(self,img):
@@ -38,9 +38,13 @@ class Traitement():
         otsu = cv2.GaussianBlur(img,(5,5),0) #Mets un flou gaussien
         ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         img_opn = cv2.morphologyEx(otsu, cv2.MORPH_OPEN, kernel)
+<<<<<<< Updated upstream
         frame= cv2.fastNlMeansDenoising( img , None , 10 , 7 , 21)
+=======
+        #frame= cv2.fastNlMeansDenoising( img , None , 2 , 7 , 21)
+>>>>>>> Stashed changes
     
-        return frame, img_opn
+        return img, img_opn
 
 
 
