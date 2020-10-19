@@ -18,12 +18,6 @@ class Traitement():
     def traitement(self, img):
         #img_gris=self.frame
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
-        width = int(gray.shape[1]*0.2) #Redimensionne l'image pour plus de rapidité (flux réel)
-        height = int(gray.shape[0]*0.2)
-        dim = (width, height)
-        gris = cv2.resize(gray,dim, interpolation = cv2.INTER_AREA) #Redimensionne l'image pour plus de rapidité (flux réel)
-        #img020=self.calcul_traitement(gris)
-        #cv2.imshow('20%', img020)
         img_trait, img_bin=self.binarisation(gray)
         img100=self.calcul_traitement(img_trait, img_bin)
         #cv2.imshow('100%', img100)
@@ -38,11 +32,8 @@ class Traitement():
         otsu = cv2.GaussianBlur(img,(5,5),0) #Mets un flou gaussien
         ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         img_opn = cv2.morphologyEx(otsu, cv2.MORPH_OPEN, kernel)
-<<<<<<< Updated upstream
-        frame= cv2.fastNlMeansDenoising( img , None , 10 , 7 , 21)
-=======
-        #frame= cv2.fastNlMeansDenoising( img , None , 2 , 7 , 21)
->>>>>>> Stashed changes
+        #frame= cv2.fastNlMeansDenoising( img , None , 10 , 7 , 21)
+
     
         return img, img_opn
 
