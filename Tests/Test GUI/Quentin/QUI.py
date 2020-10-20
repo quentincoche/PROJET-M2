@@ -51,8 +51,6 @@ class Fenetre(Thread):
         self.window.protocol('WM_DELETE_WINDOW', self.destructor) #La croix de la fenetre va fermer le programme
 
         """"definition des proportions pour les frames"""
-        #self.window.grid_columnconfigure(0, weight=1)
-        #self.window.grid_rowconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2,weight=2)
         self.window.grid_rowconfigure(1, weight=5)
@@ -88,8 +86,10 @@ class Fenetre(Thread):
         self.cmdleft.grid(row=1,column=0, sticky='NSEW')
         btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
         btncap.grid(row=0,column=0,sticky="nsew")
+        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.profil)
+        btnprofiles.grid(row=1,column=0,sticky="nsew")
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=1,column=0,sticky="nsew")
+        btnquit.grid(row=2,column=0,sticky="nsew")
         
         #commandes superieures
         self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="gray")
@@ -224,11 +224,14 @@ class Fenetre(Thread):
         self.ellipse_width.set(int(self.ellipse[1][1]))
         self.ellipse_height.set(int(self.ellipse[1][0]))
         self.ellipse_angle.set(int(self.ellipse[2]))
+
         self.window.after(self.delay, self.affich_traitement)
 
     def exp(self):
         self.exposure=self.vid.auto_exposure()
 
+    def profil(self):
+        self.prof=self.trmt.trace_profil()
     
 
         

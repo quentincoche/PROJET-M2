@@ -50,13 +50,16 @@ class Fenetre(Thread):
         self.window.protocol('WM_DELETE_WINDOW', self.destructor) #La croix de la fenetre va fermer le programme
 
         """"definition des proportions pour les frames"""
-        #self.window.grid_columnconfigure(0, weight=1)
-        #self.window.grid_rowconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2,weight=2)
-        self.window.grid_rowconfigure(1, weight=8)
+        self.window.grid_rowconfigure(1, weight=5)
         
-
+        """Definition de certaines variables nécessaires au demarrage de l'interface"""
+        self.cX = IntVar()
+        self.cY = IntVar()
+        self.ellipse_width = DoubleVar()
+        self.ellipse_height = DoubleVar()
+        self.ellipse_angle =DoubleVar()
         self.Screen_x = 1500
         self.Screen_y = 1000
         self.Screen2_x = 750
@@ -78,10 +81,8 @@ class Fenetre(Thread):
         """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
         
         #commandes gauche
-        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="red")
+        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray")
         self.cmdleft.grid(row=1,column=0, sticky='NSEW')
-        self.cmdleft.grid_columnconfigure(0, weight=1)
-        self.cmdleft.grid_rowconfigure(0, weight=1)
         btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
         btncap.grid(row=0,column=0,sticky="nsew")
         btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.profil)
@@ -93,8 +94,6 @@ class Fenetre(Thread):
         #commandes superieures
         self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="blue")
         self.cmdup.grid(row=0,column=1, sticky="NSEW")
-        self.cmdup.grid_columnconfigure(0, weight=1)
-        self.cmdup.grid_rowconfigure(0, weight=1)
         btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool)
         btnvideo.grid(row=0,column=0,sticky="nsew")
         btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
@@ -107,11 +106,40 @@ class Fenetre(Thread):
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
 
-        #cadre video
-        self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y)  # Initialisation de l'écran 1
+        #cadre traitement
+        self.title_display2 = tk.Label(self.window,text="Fit ellipse",bg="gray")
+        self.title_display2.grid(row=0,column=2,sticky="NSEW")
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y, bg="green")  # Initialisation de l'écran 1
         self.display2.grid(row=1,column=2,sticky="NSE")
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
+
+        #zone affichage résultats
+        self.results = tk.Frame(self.window,padx=5,pady=5,bg="gray")
+        self.results.grid(row=2,column=2,sticky="NSE")
+        #barycentres
+        self.label01 = tk.Label(self.results,text="barycentre X = ")
+        self.label01.grid(row=0,column=0,sticky="nsew")
+        self.label1 = tk.Label(self.results,textvariable=self.cX)
+        self.label1.grid(row=0,column=1,sticky="nsew")
+        self.label02 = tk.Label(self.results,text="barycentre Y = ")
+        self.label02.grid(row=1,column=0,sticky="nsew")
+        self.label2 = tk.Label(self.results,textvariable=self.cY)
+        self.label2.grid(row=1,column=1,sticky="nsew")
+        
+        #parametres ellipse
+        self.label03 = tk.Label(self.results,text="Grand axe ellipse = ")
+        self.label03.grid(row=2,column=0,sticky="nsew")
+        self.label3 = tk.Label(self.results,textvariable=self.ellipse_width)
+        self.label3.grid(row=2,column=1,sticky="nsew")
+        self.label04 = tk.Label(self.results,text="Petit axe ellipse = ")
+        self.label04.grid(row=3,column=0,sticky="nsew")
+        self.label4 = tk.Label(self.results,textvariable=self.ellipse_height)
+        self.label4.grid(row=3,column=1,sticky="nsew")
+        self.label05 = tk.Label(self.results,text="Angle ellipse = ")
+        self.label05.grid(row=4,column=0,sticky="nsew")
+        self.label5 = tk.Label(self.results,textvariable=self.ellipse_angle)
+        self.label5.grid(row=4,column=1,sticky="nsew")
 
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
@@ -169,7 +197,7 @@ class Fenetre(Thread):
         self.t2.start()
 
     def disp_traitement(self):
-        self.frame2=self.trmt.traitement(self.frame)
+        self.frame2, self.ellipse, self.baryX, self.baryY = self.trmt.traitement(self.frame)
         self.affich_traitement()
     
     def affich_traitement(self):
@@ -189,7 +217,14 @@ class Fenetre(Thread):
         frame = cv2.resize(self.frame2, dsize=(self.Screen2_x,self.Screen2_y), interpolation=cv2.INTER_AREA)
         self.photo2 = ImageTk.PhotoImage(image = Img.fromarray(frame))
         self.display2.create_image(self.Screen2_x/2,self.Screen2_x/(2*ratio),image=self.photo2)
-
+        
+        #pour affichage des parametres
+        self.cX.set(self.baryX)
+        self.cY.set(self.baryY)
+        self.ellipse_width.set(int(self.ellipse[1][1]))
+        self.ellipse_height.set(int(self.ellipse[1][0]))
+        self.ellipse_angle.set(int(self.ellipse[2]))
+        
         self.window.after(self.delay, self.affich_traitement)
 
     def exp(self):
