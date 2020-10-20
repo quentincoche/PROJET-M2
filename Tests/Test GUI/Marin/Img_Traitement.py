@@ -21,9 +21,9 @@ class Traitement():
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         img_trait, img_bin=self.binarisation(gray)
         self.img=img_trait
-        img100=self.calcul_traitement(img_trait, img_bin)
+        img100, ellipse, cX, cY=self.calcul_traitement(img_trait, img_bin)
         #cv2.imshow('100%', img100)
-        return img100
+        return img100, ellipse, cX, cY
 
 
     def binarisation(self,img):
@@ -105,7 +105,7 @@ class Traitement():
         #otsu=cv2.resize(self.otsu, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
         #cv2.imshow('Otsu', otsu)
 
-        return crop_img
+        return crop_img, ellipse, cX, cY
 
 
     def crop(self,frame):
@@ -144,29 +144,25 @@ class Traitement():
         print(img_x,img_y)
         print(self.w, self.h)
         for iy in range(img_y):
-            Ly.append(img[iy, self.w])
+            Ly=np.append(Ly,img[iy, self.w])
         for ix in range(img_x):
-            Lx.append(img[self.h, ix])
+            Lx=np.append(Lx, img[self.h, ix])
         x=np.arange( img_x)
         y=np.arange(img_y)
 
-        """
-        x1=np.vectorize(x)
-        y1=np.vectorize(y)
-        Ly1=np.vectorize(Ly)
-        Lx1=np.vectorize(Lx)
-        
-        nx = len(x1)                         #the number of data
-        meanx = sum(x1*Lx1)/nx                   #note this correction
-        sigmax = sum(Lx1*(x1-meanx)**2)/nx 
-        poptx,pcovx = curve_fit(self.gaus,x1,Lx1,p0=[1,meanx,sigmax])
+        gauss2=np.vectorize(self.gaus)
+    
+        nx = len(x)                         #the number of data
+        meanx = sum(x*Lx)/nx                   #note this correction
+        sigmax = sum(Lx*(x-meanx)**2)/nx 
+        poptx,pcovx = curve_fit(gauss2,x,Lx,p0=[1,meanx,sigmax])
 
-        ny = len(y1)                         #the number of data
-        meany = sum(y1*Ly1)/ny                   #note this correction
-        sigmay = sum(Ly1*(y1-meany)**2)/ny 
-        popty,pcovy = curve_fit(self.gaus,y1,Ly1,p0=[1,meany,sigmay])
+        ny = len(y)                         #the number of data
+        meany = sum(y*Ly)/ny                   #note this correction
+        sigmay = sum(Ly*(y-meany)**2)/ny 
+        popty,pcovy = curve_fit(gauss2,y,Ly,p0=[1,meany,sigmay])
         
-        """
+    
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
