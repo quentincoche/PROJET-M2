@@ -22,6 +22,7 @@ class Traitement():
         #cv2.imshow('100%', img100)
         return img100
 
+
     def binarisation(self,img):
         """ Filtrage de l'image et binarisation de celle-ci"""
         i,j=0,0
@@ -33,7 +34,6 @@ class Traitement():
         img_opn = cv2.morphologyEx(otsu, cv2.MORPH_OPEN, kernel)
         #frame= cv2.fastNlMeansDenoising( img , None , 10 , 7 , 21)
 
-    
         return img, img_opn
 
 
@@ -104,6 +104,8 @@ class Traitement():
 
 
     def crop(self,frame,x,y,w,h):
+        """ Fonction qui crop le centre d'intérêt à 2 fois sa taille"""
+        
         X=x-ceil(w/2)
         Y=y-ceil(h/2)
         if X<0:
