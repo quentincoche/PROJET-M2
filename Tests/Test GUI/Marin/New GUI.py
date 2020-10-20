@@ -105,7 +105,7 @@ class Fenetre(Thread):
         self.Screen_y = self.display1.winfo_height()
 
         #cadre video
-        self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y, bg="green")  # Initialisation de l'écran 1
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y)  # Initialisation de l'écran 1
         self.display2.grid(row=1,column=2,sticky="NSE")
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
