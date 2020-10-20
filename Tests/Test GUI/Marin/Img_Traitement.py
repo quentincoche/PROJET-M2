@@ -9,6 +9,7 @@ import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 from math import *
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
+from scipy.optimize import curve_fit
 from statistics import mean
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
     
@@ -86,7 +87,7 @@ class Traitement():
             
             #Fit un rectangle sur la zone d'intérêt pour la zoomer par la suite
             self.x,self.y,self.w,self.h = cv2.boundingRect(c)
-            rectangle = cv2.rectangle(frame,(self.x,self.y),(self.x+self.w,self.y+self.h),(0,175,175),1)
+            #rectangle = cv2.rectangle(frame,(self.x,self.y),(self.x+self.w,self.y+self.h),(0,175,175),1)
             print('Rectangle : Position = ', self.x,',',self.y,'; Size = ',self.w,',',self.h)
 
             # dessine les contours des formes qu'il a identifiés
@@ -136,24 +137,49 @@ class Traitement():
 
 
     def trace_profil(self):
+        """Trace le profil d'intensité sur les axes du barycentre de l'image"""
         img=self.crop_img
+        print(img.shape)
         Lx,Ly=[],[]
-        for iy in range(img.shape[1]):
+        for iy in range(0,img.shape[0]+1):
             Ly.append(img[self.w, iy])
-        for ix in range(img.shape[0]):
+        for ix in range(0,img.shape[1]+1):
             Lx.append(img[ix, self.h])
-        x=np.arange( 0, img.shape[0])
-        y=np.arange(0, img.shape[1])
+        x=np.arange( img.shape[1]+1)
+        y=np.arange(img.shape[0]+1)
+        x1=np.vectorize(x)
+        y1=np.vectorize(y)
+        Ly1=np.vectorize(Ly)
+        Lx1=np.vectorize(Lx)
+        
+        nx = len(x1)                         #the number of data
+        meanx = sum(x1*Lx1)/nx                   #note this correction
+        sigmax = sum(Lx1*(x1-meanx)**2)/nx 
+        poptx,pcovx = curve_fit(self.gaus,x1,Lx1,p0=[1,meanx,sigmax])
+
+        ny = len(y1)                         #the number of data
+        meany = sum(y1*Ly1)/ny                   #note this correction
+        sigmay = sum(Ly1*(y1-meany)**2)/ny 
+        popty,pcovy = curve_fit(self.gaus,y1,Ly1,p0=[1,meany,sigmay])
+        
+        
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
+        ax.plot(x,self.gaus(x1,*poptx),'ro:',label='fit')
         ax2 = fig.add_subplot(1, 2, 2)
         ax2.plot(y,Ly)
+        ax2.plot(y,self.gaus(y1,*popty),'ro:',label='fit')
         ax.set_title('X profil')
         ax.set_xlabel ('Axe x')
         ax.set_ylabel ('Axe y')
         ax2.set_title ('Y profil')
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
+
         plt.show()
+
+
+    def gaus(self, x,a,x0,sigma):
+        return a*exp(-(x-x0)**2/(2*sigma**2))
 

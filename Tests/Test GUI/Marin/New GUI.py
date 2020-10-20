@@ -84,7 +84,7 @@ class Fenetre(Thread):
         self.cmdleft.grid_rowconfigure(0, weight=1)
         btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
         btncap.grid(row=0,column=0,sticky="nsew")
-        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.)
+        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.profil)
         btnprofiles.grid(row=1,column=0,sticky="nsew")
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
         btnquit.grid(row=2,column=0,sticky="nsew")
@@ -179,7 +179,7 @@ class Fenetre(Thread):
         r = float(self.Screen2_x/self.Screen2_y)
 
         #Get a frame from cameraCapture
-        ratio = self.frame2.shape[0]/self.frame2.shape[1]
+        ratio = self.frame2.shape[1]/self.frame2.shape[0]
         #keep ratio
         if r > ratio:
             self.Screen2_x = int(round(self.display2.winfo_height()*ratio))
@@ -194,6 +194,9 @@ class Fenetre(Thread):
 
     def exp(self):
         self.exposure=self.vid.auto_exposure()
+
+    def profil(self):
+        self.prof=self.trmt.trace_profil()
 
     
 
