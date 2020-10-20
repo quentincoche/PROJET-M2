@@ -54,7 +54,7 @@ class Fenetre(Thread):
         #self.window.grid_rowconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2,weight=2)
-        self.window.grid_rowconfigure(1, weight=8)
+        self.window.grid_rowconfigure(1, weight=5)
         
 
         self.Screen_x = 1500
@@ -78,20 +78,17 @@ class Fenetre(Thread):
         """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
         
         #commandes gauche
-        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="red")
+        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="black")
         self.cmdleft.grid(row=1,column=0, sticky='NSEW')
         self.cmdleft.grid_columnconfigure(0, weight=1)
         self.cmdleft.grid_rowconfigure(0, weight=1)
         btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
         btncap.grid(row=0,column=0,sticky="nsew")
-        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.)
-        btnprofiles.grid(row=1,column=0,sticky="nsew")
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=2,column=0,sticky="nsew")
-
+        btnquit.grid(row=1,column=0,sticky="nsew")
         
         #commandes superieures
-        self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="blue")
+        self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="black")
         self.cmdup.grid(row=0,column=1, sticky="NSEW")
         self.cmdup.grid_columnconfigure(0, weight=1)
         self.cmdup.grid_rowconfigure(0, weight=1)
@@ -194,6 +191,10 @@ class Fenetre(Thread):
 
     def exp(self):
         self.exposure=self.vid.auto_exposure()
+
+    def affich_param(self):
+        
+
 
     
 
