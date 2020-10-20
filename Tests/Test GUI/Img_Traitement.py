@@ -13,7 +13,6 @@ import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
     
     
 class Traitement():
-
     
     def traitement(self, img):
         #img_gris=self.frame

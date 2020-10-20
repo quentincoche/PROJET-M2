@@ -53,11 +53,16 @@ class Fenetre(Thread):
         #self.window.grid_columnconfigure(0, weight=1)
         #self.window.grid_rowconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=8)
+        self.window.grid_columnconfigure(2,weight=2)
         self.window.grid_rowconfigure(1, weight=8)
+        
 
         self.Screen_x = 1500
         self.Screen_y = 1000
+        self.Screen2_x = 750
+        self.Screen2_y = 750
         self.delay=15
+        self.frame2=[]
 
         self.display()
         self.Interface() #Lance la fonction Interface
@@ -94,18 +99,16 @@ class Fenetre(Thread):
 
     def display(self):
         #cadre video
-        self.display1 = tk.Canvas(self.window, width=self.Screen_x,height=self.Screen_y, bg="green")  # Initialisation de l'écran 1
-        self.display1.grid(row=1,column=1,sticky="NSEW")
-        self.display1.grid_columnconfigure(0,weight=1)
-        self.display1.grid_rowconfigure(0,weight=1)
+        self.display1 = tk.Canvas(self.window, width=self.Screen_x,height=self.Screen_y)  # Initialisation de l'écran 1
+        self.display1.grid(row=1,column=1,sticky="NSW")
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
 
         #cadre video
-        self.display2 = tk.Canvas(self.window, width=500, height=500, bg="green")  # Initialisation de l'écran 1
-        self.display2.grid(row=1,column=2,sticky="NSEW")
-        self.display2.grid_columnconfigure(0,weight=1)
-        self.display2.grid_rowconfigure(0,weight=1)
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y, bg="green")  # Initialisation de l'écran 1
+        self.display2.grid(row=1,column=2,sticky="NSE")
+        self.Screen2_x = self.display2.winfo_width()
+        self.Screen2_y = self.display2.winfo_height()
 
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
@@ -140,7 +143,6 @@ class Fenetre(Thread):
         elif r < ratio:
             self.Screen_y = int(round(self.display1.winfo_width()/ratio))
 
-        #https://stackoverflow.com/questions/48121916/numpy-resize-rescale-image/48121996
         frame = cv2.resize(self.frame, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_AREA)
 
         #OpenCV bindings for Python store an image in a NumPy array
@@ -164,9 +166,28 @@ class Fenetre(Thread):
         self.t2.start()
 
     def disp_traitement(self):
-        frame=self.trmt.traitement(self.frame)
+        self.frame2=self.trmt.traitement(self.frame)
+        self.affich_traitement()
+    
+    def affich_traitement(self):
+        #Get display size
+        self.Screen2_x = self.display2.winfo_width()
+        self.Screen2_y = self.display2.winfo_height()
+        r = float(self.Screen2_x/self.Screen2_y)
+
+        #Get a frame from cameraCapture
+        ratio = self.frame2.shape[0]/self.frame2.shape[1]
+        #keep ratio
+        if r > ratio:
+            self.Screen2_x = int(round(self.display2.winfo_height()*ratio))
+        elif r < ratio:
+            self.Screen2_y = int(round(self.display2.winfo_width()/ratio))
+
+        frame = cv2.resize(self.frame2, dsize=(self.Screen2_x,self.Screen2_y), interpolation=cv2.INTER_AREA)
         self.photo2 = ImageTk.PhotoImage(image = Img.fromarray(frame))
-        self.display2.create_image(500,500,image=self.photo2)
+        self.display2.create_image(self.Screen2_x/2,self.Screen2_x/(2*ratio),image=self.photo2)
+
+        self.window.after(self.delay, self.affich_traitement)
 
     def exp(self):
         self.exposure=self.vid.auto_exposure()
