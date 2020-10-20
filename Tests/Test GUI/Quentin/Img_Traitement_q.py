@@ -95,38 +95,68 @@ class Traitement():
         cv2.line(frame, (cX, 0), (cX, frame.shape[0]), (255, 0, 0), 1)
         cv2.line(frame, (0, cY), (frame.shape[1], cY), (255, 0, 0), 1)
 
-        crop_img = self.crop(frame,x,y,w,h)
+        crop_img = self.crop(frame)
+        self.crop_img = self.crop(self.img)
+        
         #img=cv2.resize(self.frame, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
         #otsu=cv2.resize(self.otsu, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
         #cv2.imshow('Otsu', otsu)
 
-        return crop_img, ellipse, cX, cY
-
-
-    def crop(self,frame,x,y,w,h):
-        """ Fonction qui crop le centre d'intérêt à 2 fois sa taille"""
-        
-        X=x-ceil(w/2)
-        Y=y-ceil(h/2)
-        if X<0:
-            X=0
-            off_x=x-X
-            W=w+2*off_x
-        if Y<0:
-            Y=0
-            off_y=y-Y
-            H=h+2*off_y
-        if X+2*w>frame.shape[0]:
-            W=frame.shape[0]-(X+w)
-            X=X+w-W
-        if Y+2*h>frame.shape[1]:
-            H=frame.shape[1]-(Y+h)
-            Y=Y+h-H
-        
-        W=2*w
-        H=2*h
-
-        crop_img = frame[Y:Y+H, X:X+W]
         return crop_img
 
 
+    def crop(self,frame):
+        """ Fonction qui crop le centre d'intérêt à 2 fois sa taille"""
+
+        X=self.x-ceil(self.w/2)
+        Y=self.y-ceil(self.h/2)
+        W=2*self.w
+        H=2*self.h
+        
+        if X<0:
+            X=0
+            off_x=self.x-X
+            W=self.w+2*off_x
+        if Y<0:
+            Y=0
+            off_y=self.y-Y
+            H=self.h+2*off_y
+        if X+2*self.w>frame.shape[0]:
+            W=frame.shape[0]-(X+self.w)
+            X=X+self.w-W
+        if Y+2*self.h>frame.shape[1]:
+            H=frame.shape[1]-(Y+self.h)
+            Y=Y+self.h-H
+
+        crop_img = frame[Y:Y+H,X:X+W]
+        return crop_img
+
+
+    def trace_profil(self):
+        """Trace le profil d'intensité sur les axes du barycentre de l'image"""
+        img=self.crop_img
+        Lx,Ly=[],[]
+        img_y=img.shape[0]
+        img_x=img.shape[1]
+        print(img_x,img_y)
+        print(self.w, self.h)
+        for iy in range(img_y):
+            Ly.append(img[iy, self.w])
+        for ix in range(img_x):
+            Lx.append(img[self.h, ix])
+        x=np.arange( img_x)
+        y=np.arange(img_y)
+
+        fig = plt.figure(figsize=plt.figaspect(0.5))
+        ax = fig.add_subplot(1 ,2 ,1)
+        ax.plot(x,Lx)
+        ax2 = fig.add_subplot(1, 2, 2)
+        ax2.plot(y,Ly)
+        ax.set_title('X profil')
+        ax.set_xlabel ('Axe x')
+        ax.set_ylabel ('Axe y')
+        ax2.set_title ('Y profil')
+        ax2.set_xlabel ('Axe x')
+        ax2.set_ylabel ('Axe y')
+
+        plt.show()

@@ -40,7 +40,6 @@ class Traitement():
         return img, img_opn
 
 
-
     def calcul_traitement(self,frame, otsu):
         """ Amélioration de l'image par binarisation d'Otsu """
 
@@ -139,14 +138,19 @@ class Traitement():
     def trace_profil(self):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
         img=self.crop_img
-        print(img.shape)
         Lx,Ly=[],[]
-        for iy in range(0,img.shape[0]+1):
-            Ly.append(img[self.w, iy])
-        for ix in range(0,img.shape[1]+1):
-            Lx.append(img[ix, self.h])
-        x=np.arange( img.shape[1]+1)
-        y=np.arange(img.shape[0]+1)
+        img_y=img.shape[0]
+        img_x=img.shape[1]
+        print(img_x,img_y)
+        print(self.w, self.h)
+        for iy in range(img_y):
+            Ly.append(img[iy, self.w])
+        for ix in range(img_x):
+            Lx.append(img[self.h, ix])
+        x=np.arange( img_x)
+        y=np.arange(img_y)
+
+        """
         x1=np.vectorize(x)
         y1=np.vectorize(y)
         Ly1=np.vectorize(Ly)
@@ -162,14 +166,14 @@ class Traitement():
         sigmay = sum(Ly1*(y1-meany)**2)/ny 
         popty,pcovy = curve_fit(self.gaus,y1,Ly1,p0=[1,meany,sigmay])
         
-        
+        """
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
-        ax.plot(x,self.gaus(x1,*poptx),'ro:',label='fit')
+        #ax.plot(x,self.gaus(x1,*poptx),'ro:',label='fit')
         ax2 = fig.add_subplot(1, 2, 2)
         ax2.plot(y,Ly)
-        ax2.plot(y,self.gaus(y1,*popty),'ro:',label='fit')
+        #ax2.plot(y,self.gaus(y1,*popty),'ro:',label='fit')
         ax.set_title('X profil')
         ax.set_xlabel ('Axe x')
         ax.set_ylabel ('Axe y')
