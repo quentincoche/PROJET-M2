@@ -43,7 +43,7 @@ class Fenetre(Thread):
 
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
-        self.window.geometry("920x613") #taille de la fenetre
+        self.window.state('zoomed')
          
         self.window.title("Beam analyzer Python")
         self.window.config(background="#FFFFFF") # Couleur de la fenêtre
@@ -166,7 +166,7 @@ class Fenetre(Thread):
         self.Screen_y = self.display1.winfo_height()
         r = float(self.Screen_x/self.Screen_y)
 
-        #Get a frame from cameraCapture
+        #Get picture ratio from oneCameraCapture
         ratio = self.vid.ratio
         #keep ratio
         if r > ratio:
@@ -221,7 +221,7 @@ class Fenetre(Thread):
         #pour affichage des parametres
         self.cX.set(self.baryX)
         self.cY.set(self.baryY)
-        self.ellipse_width.set(int(self.ellipse[1][1]))
+        self.ellipse_width.set(int(self.ellipse[1][1])) #3 lignes pour extraction des données du tuple ellipse
         self.ellipse_height.set(int(self.ellipse[1][0]))
         self.ellipse_angle.set(int(self.ellipse[2]))
         

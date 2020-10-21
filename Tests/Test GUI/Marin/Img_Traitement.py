@@ -18,12 +18,10 @@ import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 class Traitement():
     
     def traitement(self, img):
-        #img_gris=self.frame
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         img_trait, img_bin=self.binarisation(gray)
         self.img=img_trait
         img100, ellipse, cX, cY=self.calcul_traitement(img_trait, img_bin)
-        #cv2.imshow('100%', img100)
         return img100, ellipse, cX, cY
 
 
@@ -33,7 +31,7 @@ class Traitement():
         l=[]
         kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(10,10))
 
-        otsu = cv2.GaussianBlur(img,(5,5),0) #Mets un flou gaussien
+        otsu = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
         ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         img_opn = cv2.morphologyEx(otsu, cv2.MORPH_OPEN, kernel)
         #frame= cv2.fastNlMeansDenoising( img , None , 10 , 7 , 21)
@@ -56,7 +54,7 @@ class Traitement():
         # find contours in the binary image
         contours, hierarchy = cv2.findContours(otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         contours = sorted(contours, key = cv2.contourArea, reverse = True)[:5]
-        #print(contours)
+
         for c in contours:
             # permet de fit une ellipse sur toutes les formes identifiés sur l'image
             if len(c) < 5:
