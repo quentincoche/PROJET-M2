@@ -152,9 +152,10 @@ class Traitement():
         y=np.arange(img_y)
 
         fitter = modeling.fitting.LevMarLSQFitter()
-        model = modeling.models.Gaussian1D()   # depending on the data you need to give some initial values
-        x_fitted_model = fitter(model, x, Lx)
-        y_fitted_model = fitter(model, y, Ly)
+        modelx = modeling.models.Gaussian1D(amplitude=250, mean=w, stddev=w/2)   # depending on the data you need to give some initial values
+        modely = modeling.models.Gaussian1D(amplitude=250, mean=h, stddev=h/2)
+        x_fitted_model = fitter(modelx, x, Lx)
+        y_fitted_model = fitter(modely, y, Ly)
     
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(1 ,2 ,1)
