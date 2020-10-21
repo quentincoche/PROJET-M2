@@ -32,9 +32,6 @@ class cameraCapture(tk.Frame):
             # Print the model name of the camera.
             print("Using device ", self.Model)
             print("Exposure time ", self.camera.ExposureTime.GetValue())
-            
-            # Get pixel size for the camera
-            self.PixelSize = self.GetPixelSize()
 
             # Run auto exposure at camera launch 
             self.auto_exposure() #This line HAS TO STAY HERE :')         
@@ -128,8 +125,6 @@ class cameraCapture(tk.Frame):
         grabResult.Release() #Relache le flux
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
         return max_photo #Renvoie la valeur du max
-
-    def GetPixelSize(self)
 
 
 if __name__ == "__main__":

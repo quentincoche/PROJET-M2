@@ -43,12 +43,13 @@ class Fenetre(Thread):
 
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
-        self.window.geometry("920x613") #taille de la fenetre
+
+        self.window.state('zoomed')
          
         self.window.title("Beam analyzer Python")
         self.window.config(background="#FFFFFF") #Couleur de la fenêtre
         self.window.protocol('WM_DELETE_WINDOW', self.destructor) #La croix de la fenetre va fermer le programme
-        self.window.attributes("-fullscreen", True) #Demarre l'interface en plein ecran
+        #self.window.attributes("-fullscreen", True) #Demarre l'interface en plein ecran
 
         """"definition des proportions pour les frames"""
         self.window.grid_columnconfigure(1, weight=3)

@@ -18,6 +18,7 @@ class Traitement():
         #img_gris=self.frame
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         img_trait, img_bin=self.binarisation(gray)
+        self.img = img_trait
         img100, ellipse, cX, cY=self.calcul_traitement(img_trait, img_bin)
         #cv2.imshow('100%', img100)
         return img100, ellipse, cX, cY
@@ -77,13 +78,9 @@ class Traitement():
 
             
             #Fit un rectangle sur la zone d'intérêt pour la zoomer par la suite
-            x,y,w,h = cv2.boundingRect(c)
-            rectangle = cv2.rectangle(frame,(x,y),(x+w,y+h),(0,175,175),1)
-            print('Rectangle : Position = ', x,',',y,'; Size = ',w,',',h)
-
-
-            # dessine les contours des formes qu'il a identifiés
-            #cv2.drawContours (self.frame, contours, -1, (255,215,0), 1)
+            self.x,self.y,self.w,self.h = cv2.boundingRect(c)
+            rectangle = cv2.rectangle(frame,(self.x,self.y),(self.x+self.w,self.y+self.h),(0,175,175),1)
+            print('Rectangle : Position = ', self.x,',',self.y,'; Size = ',self.w,',',self.h)
 
         M=cv2.moments(otsu)
         # calculate x,y coordinate of center
@@ -97,12 +94,8 @@ class Traitement():
 
         crop_img = self.crop(frame)
         self.crop_img = self.crop(self.img)
-        
-        #img=cv2.resize(self.frame, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
-        #otsu=cv2.resize(self.otsu, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
-        #cv2.imshow('Otsu', otsu)
 
-        return crop_img
+        return crop_img, ellipse, cX, cY
 
 
     def crop(self,frame):
