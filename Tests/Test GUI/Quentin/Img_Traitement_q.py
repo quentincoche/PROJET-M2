@@ -70,23 +70,23 @@ class Traitement():
 
         # calculate x,y coordinate of center
             if M["m00"] != 0:
-                cX = int(M["m10"] / M["m00"])
-                cY = int(M["m01"] / M["m00"])
+                self.cX = int(M["m10"] / M["m00"])
+                self.cY = int(M["m01"] / M["m00"])
             else:
-                cX, cY = 0, 0
+                self.cX, self.cY = 0, 0
 
             #Dessine un cercle sur tous les blobs de l'image (formes blanches)
-            cv2.circle(frame, (cX, cY), 2, (0, 0, 255), -1)
+            cv2.circle(frame, (self.cX, self.cY), 2, (0, 0, 255), -1)
 
             #Fit une ellipse sur le(s) faisceau(x)
-            ellipse = cv2.fitEllipse(c)
-            thresh = cv2.ellipse(frame,ellipse,(0,255,0),1)
-            print('Ellipse : ', ellipse)
+            self.ellipse = cv2.fitEllipse(c)
+            thresh = cv2.ellipse(frame,self.ellipse,(0,255,0),1)
+            print('Ellipse : ', self.ellipse)
 
             
             #Fit un rectangle sur la zone d'intérêt pour la zoomer par la suite
             self.x,self.y,self.w,self.h = cv2.boundingRect(c)
-            rectangle = cv2.rectangle(frame,(self.x,self.y),(self.x+self.w,self.y+self.h),(0,175,175),1)
+            #rectangle = cv2.rectangle(frame,(self.x,self.y),(self.x+self.w,self.y+self.h),(0,175,175),1)
             print('Rectangle : Position = ', self.x,',',self.y,'; Size = ',self.w,',',self.h)
 
         #Dessine les formes sur l'image
@@ -96,7 +96,7 @@ class Traitement():
         crop_img = self.crop(frame)
         self.crop_img = self.crop(self.img)
 
-        return crop_img, ellipse, cX, cY
+        return crop_img, self.ellipse, cX, cY
 
 
     def crop(self,frame):
@@ -104,25 +104,25 @@ class Traitement():
 
         X=self.x-ceil(self.w/2)
         Y=self.y-ceil(self.h/2)
-        W=2*self.w
-        H=2*self.h
+        self.W=2*self.w
+        self.H=2*self.h
         
         if X<0:
             X=0
             off_x=self.x-X
-            W=self.w+2*off_x
+            self.W=self.w+2*off_x
         if Y<0:
             Y=0
             off_y=self.y-Y
-            H=self.h+2*off_y
-        if X+2*self.w>frame.shape[0]:
-            W=frame.shape[0]-(X+self.w)
+            self.H=self.h+2*off_y
+        if X+self.W>frame.shape[1]:
+            W=frame.shape[1]-(X+self.w)
             X=X+self.w-W
-        if Y+2*self.h>frame.shape[1]:
-            H=frame.shape[1]-(Y+self.h)
-            Y=Y+self.h-H
+        if Y+self.H>frame.shape[0]:
+            self.H=frame.shape[0]-(Y+self.h)
+            Y=Y+self.h-self.H
 
-        crop_img = frame[Y:Y+H,X:X+W]
+        crop_img = frame[Y:Y+self.H,X:X+self.W]
         return crop_img
 
 
@@ -132,20 +132,29 @@ class Traitement():
         Lx,Ly=[],[]
         img_y=img.shape[0]
         img_x=img.shape[1]
+        w=ceil(self.W/2)
+        h=ceil(self.H/2)
         print(img_x,img_y)
-        print(self.w, self.h)
+        print(w,h)
         for iy in range(img_y):
-            Ly.append(img[iy, self.w])
+            Ly=np.append(Ly,img[iy, w])
         for ix in range(img_x):
-            Lx.append(img[self.h, ix])
-        x=np.arange( img_x)
+            Lx=np.append(Lx, img[h, ix])
+        x=np.arange(img_x)
         y=np.arange(img_y)
 
+        fitter = modeling.fitting.LevMarLSQFitter()
+        model = modeling.models.Gaussian1D()   # depending on the data you need to give some initial values
+        x_fitted_model = fitter(model, x, Lx)
+        y_fitted_model = fitter(model, y, Ly)
+    
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
+        ax.plot(x, x_fitted_model(x))
         ax2 = fig.add_subplot(1, 2, 2)
         ax2.plot(y,Ly)
+        ax2.plot(y, y_fitted_model(y))
         ax.set_title('X profil')
         ax.set_xlabel ('Axe x')
         ax.set_ylabel ('Axe y')
@@ -154,3 +163,21 @@ class Traitement():
         ax2.set_ylabel ('Axe y')
 
         plt.show()
+
+    def trace_ellipse(self):
+        img=self.crop_img
+        img_y=img.shape[0]
+        img_x=img.shape[1]
+        cx_ell=self.ellipse[1][1]-self.x-self.w
+        cy_ell=self.ellipse[1][0]-self.y-self.h
+        ang_ell=self.ellipse[2]
+        #print(ang_ell)
+        GP1x, GP1y, GP2x, GP2y, pP1x, pP1y, pP2x, pP2y =0,0,0,0,0,0,0,0
+        if 0<=ang_ell<45 or 135<ang_ell<=180:
+            GP1x=img_y*tan(ang_ell)+cx_ell
+            GP1y=img_y
+        elif 45<=ang_ell<=135:
+            GP1x=img_x
+            GP1y=img_x/tan(ang_ell)+cy_ell
+        
+        print(GP1x, GP1y)

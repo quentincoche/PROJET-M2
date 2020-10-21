@@ -170,8 +170,6 @@ class Traitement():
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
 
-        #self.trace_ellipse()
-
         plt.show()
 
     def trace_ellipse(self):
