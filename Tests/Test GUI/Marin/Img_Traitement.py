@@ -10,6 +10,7 @@ import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 from math import *
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from scipy.optimize import curve_fit
+from astropy import modeling
 from statistics import mean
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
     
@@ -150,26 +151,20 @@ class Traitement():
         x=np.arange( img_x)
         y=np.arange(img_y)
 
-        gauss2=np.vectorize(self.gaus)
-    
-        nx = len(x)                         #the number of data
-        meanx = sum(x*Lx)/nx                   #note this correction
-        sigmax = sum(Lx*(x-meanx)**2)/nx 
-        poptx,pcovx = curve_fit(gauss2,x,Lx,p0=[1,meanx,sigmax])
-
-        ny = len(y)                         #the number of data
-        meany = sum(y*Ly)/ny                   #note this correction
-        sigmay = sum(Ly*(y-meany)**2)/ny 
-        popty,pcovy = curve_fit(gauss2,y,Ly,p0=[1,meany,sigmay])
-        
+        fitter = modeling.fitting.LevMarLSQFitter()
+        model = modeling.models.Gaussian1D()   # depending on the data you need to give some initial values
+        x_fitted_model = fitter(model, x, Lx)
+        y_fitted_model = fitter(model, y, Ly)
     
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
-        #ax.plot(x,self.gaus(x1,*poptx),'ro:',label='fit')
+        ax.plot(x, x_fitted_model(x))
+        #ax.plot(x,np.vectorize(self.gaus(x,*poptx)),'ro:',label='fit')
         ax2 = fig.add_subplot(1, 2, 2)
         ax2.plot(y,Ly)
-        #ax2.plot(y,self.gaus(y1,*popty),'ro:',label='fit')
+        ax2.plot(y, y_fitted_model(y))
+        #ax2.plot(y,np.vectorize(self.gaus(y,*popty)),'ro:',label='fit')
         ax.set_title('X profil')
         ax.set_xlabel ('Axe x')
         ax.set_ylabel ('Axe y')
@@ -178,8 +173,4 @@ class Traitement():
         ax2.set_ylabel ('Axe y')
 
         plt.show()
-
-
-    def gaus(self, x,a,x0,sigma):
-        return a*exp(-(x-x0)**2/(2*sigma**2))
 
