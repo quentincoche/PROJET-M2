@@ -23,7 +23,6 @@ import Img_Traitement_q as Img_Traitement
 
 #####################################################################
 #                                                                   #
-
 #           Programme d'interfaçage de faisceaux                    #
 #                                                                   #
 #####################################################################
@@ -40,15 +39,16 @@ class Fenetre(Thread):
 
         self.vid = oneCameraCapture.cameraCapture()
         self.trmt = Img_Traitement.Traitement()
-        self.output_path = output_path  # chemin de sortie de la photo
+        self.output_path = output_path  #Chemin de sortie de la photo
 
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
         self.window.geometry("920x613") #taille de la fenetre
          
         self.window.title("Beam analyzer Python")
-        self.window.config(background="#FFFFFF") # Couleur de la fenêtre
+        self.window.config(background="#FFFFFF") #Couleur de la fenêtre
         self.window.protocol('WM_DELETE_WINDOW', self.destructor) #La croix de la fenetre va fermer le programme
+        self.window.attributes("-fullscreen", True) #Demarre l'interface en plein ecran
 
         """"definition des proportions pour les frames"""
         self.window.grid_columnconfigure(1, weight=3)
@@ -166,7 +166,7 @@ class Fenetre(Thread):
         self.Screen_y = self.display1.winfo_height()
         r = float(self.Screen_x/self.Screen_y)
 
-        #Get a frame from cameraCapture
+        #Get picture ratio from oneCameraCapture
         ratio = self.vid.ratio
         #keep ratio
         if r > ratio:
@@ -185,7 +185,7 @@ class Fenetre(Thread):
         self.window.after(self.delay, self.update)
 
     def capture(self):
-        """ Fonction permettant de capturer une image et de l'enrigistré avec l'horodatage """
+        """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
         ts = datetime.datetime.now()
         filename = "image_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
         p = os.path.join(self.output_path, filename)  # construit le chemin de sortie
@@ -221,13 +221,14 @@ class Fenetre(Thread):
         #pour affichage des parametres
         self.cX.set(self.baryX)
         self.cY.set(self.baryY)
-        self.ellipse_width.set(int(self.ellipse[1][1]))
+        self.ellipse_width.set(int(self.ellipse[1][1])) #3 lignes pour extraction des données du tuple ellipse
         self.ellipse_height.set(int(self.ellipse[1][0]))
         self.ellipse_angle.set(int(self.ellipse[2]))
 
         self.window.after(self.delay, self.affich_traitement)
 
     def exp(self):
+        """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
         self.exposure=self.vid.auto_exposure()
 
     def profil(self):
