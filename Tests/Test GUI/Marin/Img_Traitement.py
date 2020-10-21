@@ -142,8 +142,8 @@ class Traitement():
         img_x=img.shape[1]
         w=ceil(self.W/2)
         h=ceil(self.H/2)
-        print(img_x,img_y)
-        print(w,h)
+        #print(img_x,img_y)
+        #print(w,h)
         for iy in range(img_y):
             Ly=np.append(Ly,img[iy, w])
         for ix in range(img_x):
@@ -173,20 +173,172 @@ class Traitement():
 
         plt.show()
 
+    def points_ellipse(self):
+        """
+        Permet de récupérer les points extremes de l'image selon le grand et
+        petit axe de l'ellipse pour par la suite fiter la gaussienne sur ces lignes
+        """
+        img=self.crop_img #On récupère l'image
+        img_l=img.shape[0] #le nombre de ligne de l'image
+        img_c=img.shape[1] #le nombre de colonne de l'image
+        
+        #le milieu de l'image en ligne et colonne
+        cl_ell=img_l/2 
+        cc_ell=img_c/2
+        
+        #On récupère l'angle de l'ellipse et on le met en radians
+        ang_ell=self.ellipse[2]
+        ang=radians(ang_ell)
+
+        #On initialise les points de coordonnées
+        GP1c, GP1l, GP2c, GP2l, PP1c, PP1l, PP2c, PP2l=0,0,0,0,0,0,0,0
+
+        #Dans le cas où l'ellipse est orientée verticalement
+        if 0<=ang_ell<45 or 135<= ang_ell <=180:
+            #Les points de lignes sont aux extrémitées de l'image
+            GP1l=0 #Grand axe
+            GP2l=img_l
+
+            PP1c=img_c #Petit axe
+            PP2c=0
+
+            #Les points des colonnes sont dépendant de l'angle de l'ellipse
+            GP1c=cc_ell+floor(cl_ell*tan(ang))#Grand axe
+            GP2c=cc_ell-floor(cl_ell*tan(ang))
+
+            PP1l=cl_ell+floor(cc_ell*tan(ang))#Petit axe
+            PP2l=cl_ell-floor(cc_ell*tan(ang))
+
+        #Dans le cas où l'ellipse est orientée horizontalement
+        if 45<= ang_ell <135:
+            #Les points de colonnes sont aux extrémitées de l'image
+            GP1c=img_c#Grand axe
+            GP2c=0
+
+            PP1l=0#Petit axe
+            PP2l=img_l
+
+            #Les points des colonnes sont dépendant de l'angle de l'ellipse
+            GP1l=cl_ell-floor(cc_ell/tan(ang))#Grand axe
+            GP2l=cl_ell+floor(cc_ell/tan(ang))
+
+            PP1c=cc_ell+floor(cl_ell/tan(ang))#Petit axe
+            PP2c=cc_ell-floor(cl_ell/tan(ang))
+
+        #Création des tuples de points
+        GP1, GP2=[GP1l,GP1c], [GP2l,GP2c]
+        PP1, PP2=[PP1l,PP1c], [PP2l,PP2c]
+
+        return GP1, GP2, PP1, PP2
+
+
+
     def trace_ellipse(self):
         img=self.crop_img
+        Lx,Ly=[],[]
         img_y=img.shape[0]
         img_x=img.shape[1]
-        cx_ell=self.ellipse[1][1]-self.x-self.w
-        cy_ell=self.ellipse[1][0]-self.y-self.h
-        ang_ell=self.ellipse[2]
-        #print(ang_ell)
-        GP1x, GP1y, GP2x, GP2y, pP1x, pP1y, pP2x, pP2y =0,0,0,0,0,0,0,0
-        if 0<=ang_ell<45 or 135<ang_ell<=180:
-            GP1x=img_y*tan(ang_ell)+cx_ell
-            GP1y=img_y
-        elif 45<=ang_ell<=135:
-            GP1x=img_x
-            GP1y=img_x/tan(ang_ell)+cy_ell
-        
-        print(GP1x, GP1y)
+        width=self.ellipse[1][1]
+        height=self.ellipse[1][0]
+        GP1, GP2, PP1, PP2=self.points_ellipse()
+        line_G=self.createLineIterator(GP1, GP2, img)
+        line_P=self.createLineIterator(PP1, PP2, img)
+        G=len(line_G)
+        Ig=line_G[3]
+        P=len(line_P)
+        Ip=line_P[3]
+
+        fitter = modeling.fitting.LevMarLSQFitter()
+        modelG = modeling.models.Gaussian1D(amplitude=250, mean=width, stddev=width/2)   # depending on the data you need to give some initial values
+        modelP = modeling.models.Gaussian1D(amplitude=250, mean=height, stddev=height/2)
+        G_fitted_model = fitter(modelG, G, Ig)
+        P_fitted_model = fitter(modelP, P, Ip)
+
+        fig = plt.figure(figsize=plt.figaspect(0.5))
+        ax = fig.add_subplot(1 ,2 ,1)
+        ax.plot(G,Ig)
+        ax.plot(G, G_fitted_model(G))
+        ax2 = fig.add_subplot(1, 2, 2)
+        ax2.plot(P,Ig)
+        ax2.plot(P, P_fitted_model(P))
+        ax.set_title('Grand axe profil')
+        ax.set_xlabel ('Axe x')
+        ax.set_ylabel ('Axe y')
+        ax2.set_title ('Petit axe profil')
+        ax2.set_xlabel ('Axe x')
+        ax2.set_ylabel ('Axe y')
+
+        plt.show()
+
+
+
+    def createLineIterator(P1, P2, img):
+        """
+        Produces and array that consists of the coordinates and intensities of each pixel in a line between two points
+
+        Parameters:
+            -P1: a numpy array that consists of the coordinate of the first point (x,y)
+            -P2: a numpy array that consists of the coordinate of the second point (x,y)
+            -img: the image being processed
+
+        Returns:
+            -it: a numpy array that consists of the coordinates and intensities of each pixel in the radii (shape: [numPixels, 3], row = [x,y,intensity])     
+        """
+        #define local variables for readability
+        imageH = img.shape[0]
+        imageW = img.shape[1]
+        P1X = P1[0]
+        P1Y = P1[1]
+        P2X = P2[0]
+        P2Y = P2[1]
+
+        #difference and absolute difference between points
+        #used to calculate slope and relative location between points
+        dX = P2X - P1X
+        dY = P2Y - P1Y
+        dXa = np.abs(dX)
+        dYa = np.abs(dY)
+
+        #predefine numpy array for output based on distance between points
+        itbuffer = np.empty(shape=(np.maximum(dYa,dXa),3),dtype=np.float32)
+        itbuffer.fill(np.nan)
+
+        #Obtain coordinates along the line using a form of Bresenham's algorithm
+        negY = P1Y > P2Y
+        negX = P1X > P2X
+        if P1X == P2X: #vertical line segment
+            itbuffer[:,0] = P1X
+            if negY:
+                itbuffer[:,1] = np.arange(P1Y - 1,P1Y - dYa - 1,-1)
+            else:
+                itbuffer[:,1] = np.arange(P1Y+1,P1Y+dYa+1)              
+        elif P1Y == P2Y: #horizontal line segment
+            itbuffer[:,1] = P1Y
+            if negX:
+                itbuffer[:,0] = np.arange(P1X-1,P1X-dXa-1,-1)
+            else:
+                itbuffer[:,0] = np.arange(P1X+1,P1X+dXa+1)
+        else: #diagonal line segment
+            steepSlope = dYa > dXa
+            if steepSlope:
+                slope = dX.astype(np.float32)/dY.astype(np.float32)
+                if negY:
+                    itbuffer[:,1] = np.arange(P1Y-1,P1Y-dYa-1,-1)
+                else:
+                    itbuffer[:,1] = np.arange(P1Y+1,P1Y+dYa+1)
+                itbuffer[:,0] = (slope*(itbuffer[:,1]-P1Y)).astype(np.int) + P1X
+            else:
+                slope = dY.astype(np.float32)/dX.astype(np.float32)
+                if negX:
+                    itbuffer[:,0] = np.arange(P1X-1,P1X-dXa-1,-1)
+                else:
+                    itbuffer[:,0] = np.arange(P1X+1,P1X+dXa+1)
+                itbuffer[:,1] = (slope*(itbuffer[:,0]-P1X)).astype(np.int) + P1Y
+
+        #Remove points outside of image
+        colX = itbuffer[:,0]
+        colY = itbuffer[:,1]
+        itbuffer = itbuffer[(colX >= 0) & (colY >=0) & (colX<imageW) & (colY<imageH)]
+
+
+

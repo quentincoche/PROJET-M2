@@ -17,8 +17,8 @@ import os #Bibliothèque permettant de communiquer avec l'os et notamment le "pa
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from statistics import mean
-import oneCameraCapture
-import Img_Traitement
+import oneCameraCapture as oneCameraCapture
+import Img_Traitement as Img_Traitement
 
 
 #####################################################################
@@ -39,16 +39,16 @@ class Fenetre(Thread):
 
         self.vid = oneCameraCapture.cameraCapture()
         self.trmt = Img_Traitement.Traitement()
-        self.output_path = output_path  # chemin de sortie de la photo
+        self.output_path = output_path  #Chemin de sortie de la photo
 
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
         self.window.state('zoomed')
          
         self.window.title("Beam analyzer Python")
-        self.window.config(background="#FFFFFF") # Couleur de la fenêtre
+        self.window.config(background="#FFFFFF") #Couleur de la fenêtre
         self.window.protocol('WM_DELETE_WINDOW', self.destructor) #La croix de la fenetre va fermer le programme
-
+        
         """"definition des proportions pour les frames"""
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2,weight=2)
@@ -89,10 +89,9 @@ class Fenetre(Thread):
         btnprofiles.grid(row=1,column=0,sticky="nsew")
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
         btnquit.grid(row=2,column=0,sticky="nsew")
-
         
         #commandes superieures
-        self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="blue")
+        self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="gray")
         self.cmdup.grid(row=0,column=1, sticky="NSEW")
         btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool)
         btnvideo.grid(row=0,column=0,sticky="nsew")
@@ -109,7 +108,7 @@ class Fenetre(Thread):
         #cadre traitement
         self.title_display2 = tk.Label(self.window,text="Fit ellipse",bg="gray")
         self.title_display2.grid(row=0,column=2,sticky="NSEW")
-        self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y)  # Initialisation de l'écran 1
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y, bg="green")  # Initialisation de l'écran 1
         self.display2.grid(row=1,column=2,sticky="NSE")
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
@@ -185,7 +184,7 @@ class Fenetre(Thread):
         self.window.after(self.delay, self.update)
 
     def capture(self):
-        """ Fonction permettant de capturer une image et de l'enrigistré avec l'horodatage """
+        """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
         ts = datetime.datetime.now()
         filename = "image_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
         p = os.path.join(self.output_path, filename)  # construit le chemin de sortie
@@ -217,22 +216,22 @@ class Fenetre(Thread):
         frame = cv2.resize(self.frame2, dsize=(self.Screen2_x,self.Screen2_y), interpolation=cv2.INTER_AREA)
         self.photo2 = ImageTk.PhotoImage(image = Img.fromarray(frame))
         self.display2.create_image(self.Screen2_x/2,self.Screen2_x/(2*ratio),image=self.photo2)
-        
+
         #pour affichage des parametres
         self.cX.set(self.baryX)
         self.cY.set(self.baryY)
         self.ellipse_width.set(int(self.ellipse[1][1])) #3 lignes pour extraction des données du tuple ellipse
         self.ellipse_height.set(int(self.ellipse[1][0]))
         self.ellipse_angle.set(int(self.ellipse[2]))
-        
+
         self.window.after(self.delay, self.affich_traitement)
 
     def exp(self):
+        """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
         self.exposure=self.vid.auto_exposure()
 
     def profil(self):
         self.prof=self.trmt.trace_profil()
-
     
 
         
