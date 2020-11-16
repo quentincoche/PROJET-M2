@@ -109,7 +109,7 @@ class Traitement():
 
     def crop(self,frame):
         """ Fonction qui crop le centre d'intérêt à 2 fois sa taille"""
-
+        #on défini les tailles de crop, les conditions qui suivent sont là pour éviter les problèmes de bord
         X=self.x-ceil(self.w/2)
         Y=self.y-ceil(self.h/2)
         self.W=2*self.w
@@ -136,7 +136,8 @@ class Traitement():
 
     def trace_profil(self):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
-        img=self.crop_img
+        img=self.crop_img # on récupère l'image
+        #on pose les variables et on récupère les informations de l'image
         Lx,Ly=[],[]
         img_y=img.shape[0]
         img_x=img.shape[1]
@@ -144,19 +145,25 @@ class Traitement():
         h=ceil(self.H/2)
         #print(img_x,img_y)
         #print(w,h)
+        # on récupère la valeur des pixels selon les axes
         for iy in range(img_y):
             Ly=np.append(Ly,img[iy, w])
         for ix in range(img_x):
             Lx=np.append(Lx, img[h, ix])
+        #on fait une liste de ces valeurs
         x=np.arange(img_x)
         y=np.arange(img_y)
 
+        #on prépare la fonction de fit gaussien en précisant la méthode de fit
         fitter = modeling.fitting.LevMarLSQFitter()
+        #courbe gaussien selon les axes x et y
         modelx = modeling.models.Gaussian1D(amplitude=250, mean=w, stddev=w/2)   # depending on the data you need to give some initial values
         modely = modeling.models.Gaussian1D(amplitude=250, mean=h, stddev=h/2)
+        #fit des courbes et des données
         x_fitted_model = fitter(modelx, x, Lx)
         y_fitted_model = fitter(modely, y, Ly)
-    
+
+        #On affiche les courbes résultantes
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
@@ -232,25 +239,33 @@ class Traitement():
 
 
     def trace_ellipse(self):
+        """ Trace le fit gaussien selon les axes de l'ellipse"""
+        #on pose les variables et on récupère les informations de l'image
         img=self.crop_img
         Lx,Ly=[],[]
         img_y=img.shape[0]
         img_x=img.shape[1]
         width=self.ellipse[1][1]
         height=self.ellipse[1][0]
+        #on récupère les points des axes de la fonction précédente
         GP1, GP2, PP1, PP2=self.points_ellipse()
+        #on récupère les valeurs des pixels selon la ligne qui relie les pixels trouvés précedemment
         Gr, Gc, Gval = line_aa(GP1[0], GP1[1], GP2[0], GP2[1])
         Pr, Pc, Pval = line_aa(PP1[0], PP1[1], PP2[0], PP2[1])
         G=len(Gval)
         P=len(Pval)
         print(G)
 
+        #model du fit
         fitter = modeling.fitting.LevMarLSQFitter()
+        #fonction gaussienne
         modelG = modeling.models.Gaussian1D(amplitude=250, mean=width, stddev=width/2)   # depending on the data you need to give some initial values
         modelP = modeling.models.Gaussian1D(amplitude=250, mean=height, stddev=height/2)
+        #Fit de la courbe et des données
         G_fitted_model = fitter(modelG, G, Gval)
         P_fitted_model = fitter(modelP, P, Pval)
 
+        #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(G,Gval)
