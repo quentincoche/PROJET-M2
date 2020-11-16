@@ -11,6 +11,7 @@ from math import *
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from scipy.optimize import curve_fit
 from astropy import modeling
+from skimage.draw import line_aa
 from statistics import mean
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
     
@@ -53,7 +54,7 @@ class Traitement():
             
         # find contours in the binary image
         contours, hierarchy = cv2.findContours(otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        contours = sorted(contours, key = cv2.contourArea, reverse = True)[:5]
+        contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
 
         for c in contours:
             # permet de fit une ellipse sur toutes les formes identifiés sur l'image
@@ -81,8 +82,7 @@ class Traitement():
             self.ellipse = cv2.fitEllipse(c)
             thresh = cv2.ellipse(frame,self.ellipse,(0,255,0),1)
             print('Ellipse : ', self.ellipse)
-
-            
+ 
             #Fit un rectangle sur la zone d'intérêt pour la zoomer par la suite
             self.x,self.y,self.w,self.h = cv2.boundingRect(c)
             #rectangle = cv2.rectangle(frame,(self.x,self.y),(self.x+self.w,self.y+self.h),(0,175,175),1)
@@ -171,8 +171,6 @@ class Traitement():
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
 
-        plt.show()
-
     def points_ellipse(self):
         """
         Permet de récupérer les points extremes de l'image selon le grand et
@@ -226,8 +224,8 @@ class Traitement():
             PP2c=cc_ell-floor(cl_ell/tan(ang))
 
         #Création des tuples de points
-        GP1, GP2=[GP1l,GP1c], [GP2l,GP2c]
-        PP1, PP2=[PP1l,PP1c], [PP2l,PP2c]
+        GP1, GP2=[int(GP1l),int(GP1c)], [int(GP2l),int(GP2c)]
+        PP1, PP2=[int(PP1l),int(PP1c)], [int(PP2l),int(PP2c)]
 
         return GP1, GP2, PP1, PP2
 
@@ -241,25 +239,24 @@ class Traitement():
         width=self.ellipse[1][1]
         height=self.ellipse[1][0]
         GP1, GP2, PP1, PP2=self.points_ellipse()
-        line_G=self.createLineIterator(GP1, GP2, img)
-        line_P=self.createLineIterator(PP1, PP2, img)
-        G=len(line_G)
-        Ig=line_G[3]
-        P=len(line_P)
-        Ip=line_P[3]
+        Gr, Gc, Gval = line_aa(GP1[0], GP1[1], GP2[0], GP2[1])
+        Pr, Pc, Pval = line_aa(PP1[0], PP1[1], PP2[0], PP2[1])
+        G=len(Gval)
+        P=len(Pval)
+        print(G)
 
         fitter = modeling.fitting.LevMarLSQFitter()
         modelG = modeling.models.Gaussian1D(amplitude=250, mean=width, stddev=width/2)   # depending on the data you need to give some initial values
         modelP = modeling.models.Gaussian1D(amplitude=250, mean=height, stddev=height/2)
-        G_fitted_model = fitter(modelG, G, Ig)
-        P_fitted_model = fitter(modelP, P, Ip)
+        G_fitted_model = fitter(modelG, G, Gval)
+        P_fitted_model = fitter(modelP, P, Pval)
 
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(1 ,2 ,1)
-        ax.plot(G,Ig)
+        ax.plot(G,Gval)
         ax.plot(G, G_fitted_model(G))
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(P,Ig)
+        ax2.plot(P,Pval)
         ax2.plot(P, P_fitted_model(P))
         ax.set_title('Grand axe profil')
         ax.set_xlabel ('Axe x')
@@ -267,78 +264,4 @@ class Traitement():
         ax2.set_title ('Petit axe profil')
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
-
-        plt.show()
-
-
-
-    def createLineIterator(P1, P2, img):
-        """
-        Produces and array that consists of the coordinates and intensities of each pixel in a line between two points
-
-        Parameters:
-            -P1: a numpy array that consists of the coordinate of the first point (x,y)
-            -P2: a numpy array that consists of the coordinate of the second point (x,y)
-            -img: the image being processed
-
-        Returns:
-            -it: a numpy array that consists of the coordinates and intensities of each pixel in the radii (shape: [numPixels, 3], row = [x,y,intensity])     
-        """
-        #define local variables for readability
-        imageH = img.shape[0]
-        imageW = img.shape[1]
-        P1X = P1[0]
-        P1Y = P1[1]
-        P2X = P2[0]
-        P2Y = P2[1]
-
-        #difference and absolute difference between points
-        #used to calculate slope and relative location between points
-        dX = P2X - P1X
-        dY = P2Y - P1Y
-        dXa = np.abs(dX)
-        dYa = np.abs(dY)
-
-        #predefine numpy array for output based on distance between points
-        itbuffer = np.empty(shape=(np.maximum(dYa,dXa),3),dtype=np.float32)
-        itbuffer.fill(np.nan)
-
-        #Obtain coordinates along the line using a form of Bresenham's algorithm
-        negY = P1Y > P2Y
-        negX = P1X > P2X
-        if P1X == P2X: #vertical line segment
-            itbuffer[:,0] = P1X
-            if negY:
-                itbuffer[:,1] = np.arange(P1Y - 1,P1Y - dYa - 1,-1)
-            else:
-                itbuffer[:,1] = np.arange(P1Y+1,P1Y+dYa+1)              
-        elif P1Y == P2Y: #horizontal line segment
-            itbuffer[:,1] = P1Y
-            if negX:
-                itbuffer[:,0] = np.arange(P1X-1,P1X-dXa-1,-1)
-            else:
-                itbuffer[:,0] = np.arange(P1X+1,P1X+dXa+1)
-        else: #diagonal line segment
-            steepSlope = dYa > dXa
-            if steepSlope:
-                slope = dX.astype(np.float32)/dY.astype(np.float32)
-                if negY:
-                    itbuffer[:,1] = np.arange(P1Y-1,P1Y-dYa-1,-1)
-                else:
-                    itbuffer[:,1] = np.arange(P1Y+1,P1Y+dYa+1)
-                itbuffer[:,0] = (slope*(itbuffer[:,1]-P1Y)).astype(np.int) + P1X
-            else:
-                slope = dY.astype(np.float32)/dX.astype(np.float32)
-                if negX:
-                    itbuffer[:,0] = np.arange(P1X-1,P1X-dXa-1,-1)
-                else:
-                    itbuffer[:,0] = np.arange(P1X+1,P1X+dXa+1)
-                itbuffer[:,1] = (slope*(itbuffer[:,0]-P1X)).astype(np.int) + P1Y
-
-        #Remove points outside of image
-        colX = itbuffer[:,0]
-        colY = itbuffer[:,1]
-        itbuffer = itbuffer[(colX >= 0) & (colY >=0) & (colX<imageW) & (colY<imageH)]
-
-
 

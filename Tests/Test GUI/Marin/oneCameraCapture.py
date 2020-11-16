@@ -132,7 +132,7 @@ class cameraCapture(tk.Frame):
         self.camera.StartGrabbing() #Permet la récupération des infos de la caméra
         grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) #Récupère tous les flux de la caméra
         pht=grabResult.GetArray() #Transforme l'image en matrice
-        img=cv2.blur(pht,(10,10))
+        img=cv2.blur(pht,(5,5))
         max_photo=np.amax(pht) #cherche la valeur max de la matrice
         grabResult.Release() #Relache le flux
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
@@ -147,7 +147,6 @@ if __name__ == "__main__":
         #If window has been closed using the X button, close program
         # getWindowProperty() returns -1 as soon as the window is closed
         if cv2.getWindowProperty(testWidget.windowName, 0) < 0:
-            cv2.imshow('Frame', self.img0)
             cv2.destroyAllWindows()
             break
         if testWidget.k == 27: #If press ESC key

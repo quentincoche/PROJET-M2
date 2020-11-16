@@ -232,7 +232,10 @@ class Fenetre(Thread):
         self.exposure=self.vid.auto_exposure()
 
     def profil(self):
-        self.prof=self.trmt.trace_profil()
+        self.prof1=self.trmt.trace_profil()
+        self.prof2=self.trmt.trace_ellipse()
+        plt.show()
+
     
 
         
