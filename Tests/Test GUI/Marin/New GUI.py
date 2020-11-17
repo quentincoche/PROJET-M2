@@ -233,7 +233,8 @@ class Fenetre(Thread):
 
     def profil(self):
         self.prof1=self.trmt.trace_profil()
-        self.prof2=self.trmt.trace_ellipse()
+        #self.prof2=self.trmt.trace_ellipse()
+        self.prof3=self.trmt.plot_2D()
         plt.show()
 
     
