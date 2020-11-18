@@ -33,7 +33,6 @@ Created on Mon Sep 28 09:22:21 2020
 
 
 
-
 from pypylon import pylon #Bibliothèque Basler d'interfaçage de la caméra
 from PIL import Image as Img #Bibliothèque de traitement d'image
 from PIL import ImageTk

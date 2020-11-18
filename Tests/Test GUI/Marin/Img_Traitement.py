@@ -185,8 +185,10 @@ class Traitement():
 
         z=self.plot_2D()
 
-        ax3 = fig.add_subplot(2,1,2,projection='3d')
-        ax3.plot_surface(x, y, z, rstride=3, cstride=3, linewidth=1, antialiased=True, cmap='viridis')
+        #ax3 = fig.add_subplot(2,1,1,projection='3d')
+        #ax3.plot_surface(x, y, img, rstride=1, cstride=1, cmap='gray')
+        ax4 = fig.add_subplot(2,1,2,projection='3d')
+        ax4.plot_surface(x, y, z, rstride=3, cstride=3, linewidth=1, antialiased=True, cmap='viridis')
         ax.set_title('X profil')
         ax.set_xlabel ('Axe x')
         ax.set_ylabel ('Axe y')
@@ -210,8 +212,8 @@ class Traitement():
         x,y = np.meshgrid(x,y)
 
         # Mean vector and covariance matrix
-        sigma_x = statistics.pstdev(self.Lx)
-        sigma_y = statistics.pstdev(self.Ly)
+        sigma_x = self.w_trace/2
+        sigma_y = self.h_trace/2
 
         z = (1/(2*np.pi*sigma_x*sigma_y) * np.exp(-((x-self.w_trace)**2/(2*sigma_x**2)+ (y-self.h_trace)**2/(2*sigma_y**2))))
 
