@@ -17,8 +17,7 @@ from skimage.draw import line
 import statistics
 from statistics import mean
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
-    
-    
+
 class Traitement():
     
     def traitement(self, img):
@@ -181,7 +180,6 @@ class Traitement():
         else :
             x=np.arange(img_y)
             y=np.arange(img_y)
-
 
         z=self.plot_2D()
 
