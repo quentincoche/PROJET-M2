@@ -4,6 +4,36 @@ Created on Mon Sep 28 09:22:21 2020
 
 @author: Optique
 """
+
+#####################################################################
+#                                                                   #
+#           Programme d'interfaçage de faisceaux                    #
+#                                                                   #
+#####################################################################
+
+
+"""Fonctionnalités"""
+#Ce programme est actuellement composé de 3 fichiers et il permet de récupérer
+#le flux vidéo d'une caméra Basler et permet de l'utiliser dans le cadre d'une
+#analyse de faisceau laser.
+# Il permet :
+#   * Afficher la preview vidéo
+#   * Auto-expose l'image au démarrage et sur appuie du bouton
+#   * Préviens des problèmes sur un temps d'exposition trop long ou trop court
+#   * Permet d'effectuer le traitement de l'image
+#       * Filtrage
+#       * Détection de forme
+#       * Définition automatique de ROI
+#       * Crop sur ROI
+#       * Fit de l'ellipse du faisceau
+#       * Fit gaussien du faisceau en x et y
+#       * Fit 2D Gaussien
+#   * Affichage du traitement d'image
+#   * Affichage des courbes
+
+
+
+
 from pypylon import pylon #Bibliothèque Basler d'interfaçage de la caméra
 from PIL import Image as Img #Bibliothèque de traitement d'image
 from PIL import ImageTk
@@ -21,15 +51,8 @@ import oneCameraCapture as oneCameraCapture
 import Img_Traitement as Img_Traitement
 
 
-#####################################################################
-#                                                                   #
-#           Programme d'interfaçage de faisceaux                    #
-#                                                                   #
-#####################################################################
-
 
 # La Classe Fenetre contient l'ensemble du programme #
-
 
 class Fenetre(Thread):
 
