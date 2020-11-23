@@ -15,6 +15,7 @@ class cameraCapture(tk.Frame):
         self.img0 = []
         nodeFile = "NodeMap.pfs"
         self.windowName = 'title'
+        self.temp_exp = 100.0
 
         try:
             # Create an instant camera object with the camera device found first.
@@ -25,7 +26,7 @@ class cameraCapture(tk.Frame):
             self.height = self.camera.Height.GetValue()
             self.ratio = float(self.width/self.height)
 
-            self.camera.PixelFormat.SetValue('Mono12')
+            self.camera.PixelFormat.SetValue('Mono8')
             pylon.FeaturePersistence.Save(nodeFile, self.camera.GetNodeMap())
             self.Model = self.camera.GetDeviceInfo().GetModelName()
 
@@ -38,7 +39,7 @@ class cameraCapture(tk.Frame):
 
             # converting to opencv bgr format
             self.converter = pylon.ImageFormatConverter()
-            self.converter.OutputPixelFormat = pylon.PixelType_Mono16
+            self.converter.OutputPixelFormat = pylon.PixelType_Mono8
             self.converter.OutputBitAlignment = pylon.OutputBitAlignment_MsbAligned
 
             # According to their default configuration, the cameras are
@@ -74,29 +75,31 @@ class cameraCapture(tk.Frame):
         self.camera.Close()
         self.camera.Open()  #Need to open camera before can use camera.ExposureTime
         self.temp_exp =500
-        self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
+        self.camera.ExposureAuto.SetValue('Off')
         self.camera.ExposureTime.SetValue(self.temp_exp) #établi le temps d'exposition
-        self.camera.AcquisitionMode.SetValue('SingleFrame') #Utilise la caméra en mode photo
+        self.camera.AcquisitionMode.SetValue('Continuous') #Meilleures perfs dans cette config
         
         exp_ok=False #Variable permettant de définir l'état de l'ajustement de l'exposition
         
         max=self.max_photo() #variable du max d'intensité de l'image
-        #print(max)
+        print(max)
 
         while exp_ok == False: #Définit l'augmentation ou la diminution des valeurs d'exposition en fonction du max d'intensité de l'image
-            if max<=4000:
+            if max<=220:
                 self.temp_exp=self.temp_exp*2.
                 max=self.max_photo()
+                print(max)
                 self.camera.ExposureTime.SetValue(self.temp_exp)
-            elif max >=4095 :
-                self.temp_exp=self.temp_exp/1.9
+            elif max >=255 :
+                self.temp_exp=self.temp_exp/1.3
                 max=self.max_photo()
+                print(max)
                 self.camera.ExposureTime.SetValue(self.temp_exp)
             elif self.temp_exp>=10000000.0:
                 exp_ok=True
                 print('Exp time too big')
                 break
-            elif self.temp_exp<=25.0:
+            elif self.temp_exp<=70.0:
                 exp_ok=True
                 print('Exp time too short')
                 break
@@ -116,8 +119,10 @@ class cameraCapture(tk.Frame):
     
     def max_photo(self):
         """" Fonction permettant de retourner le max d'intensité sur l'image """
+        self.camera.StopGrabbing()
+        self.camera.AcquisitionMode.SetValue('SingleFrame')
         self.camera.ExposureTime.SetValue(self.temp_exp)
-        self.camera.StartGrabbing() #Permet la récupération des infos de la caméra
+        self.camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly) #Permet la récupération des infos de la caméra
         grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) #Récupère tous les flux de la caméra
         pht=grabResult.GetArray() #Transforme l'image en matrice
         img=cv2.blur(pht,(5,5))

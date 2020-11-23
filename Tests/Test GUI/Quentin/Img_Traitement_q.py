@@ -9,6 +9,7 @@ import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 from math import *
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
+from matplotlib.figure import Figure
 from scipy.optimize import curve_fit
 from astropy import modeling
 from statistics import mean
@@ -22,7 +23,9 @@ class Traitement():
         img_trait, img_bin=self.binarisation(gray)
         self.img = img_trait
         img100, ellipse, cX, cY=self.calcul_traitement(img_trait, img_bin)
-        return img100, ellipse, cX, cY
+        choix_fig = 1
+        self.trace_profil()
+        return img100, ellipse, cX, cY, choix_fig
 
 
     def binarisation(self,img):
@@ -134,8 +137,8 @@ class Traitement():
         img_x=img.shape[1]
         w=ceil(self.W/2)
         h=ceil(self.H/2)
-        print(img_x,img_y)
-        print(w,h)
+        #print(img_x,img_y)
+        #print(w,h)
         for iy in range(img_y):
             Ly=np.append(Ly,img[iy, w])
         for ix in range(img_x):
@@ -148,7 +151,7 @@ class Traitement():
         x_fitted_model = fitter(model, x, Lx)
         y_fitted_model = fitter(model, y, Ly)
     
-        fig = plt.figure(figsize=plt.figaspect(0.5))
+        fig = Figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
         ax.plot(x, x_fitted_model(x))
@@ -162,7 +165,7 @@ class Traitement():
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
 
-        plt.show()
+        return fig
 
     def trace_ellipse(self):
         img=self.crop_img
@@ -171,7 +174,6 @@ class Traitement():
         cx_ell=self.ellipse[1][1]-self.x-self.w
         cy_ell=self.ellipse[1][0]-self.y-self.h
         ang_ell=self.ellipse[2]
-        #print(ang_ell)
         GP1x, GP1y, GP2x, GP2y, pP1x, pP1y, pP2x, pP2y =0,0,0,0,0,0,0,0
         if 0<=ang_ell<45 or 135<ang_ell<=180:
             GP1x=img_y*tan(ang_ell)+cx_ell

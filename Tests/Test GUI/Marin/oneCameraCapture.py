@@ -25,7 +25,7 @@ class cameraCapture(tk.Frame):
             self.height = self.camera.Height.GetValue()
             self.ratio = float(self.width/self.height)
 
-            self.camera.PixelFormat.SetValue('Mono12')
+            self.camera.PixelFormat.SetValue('Mono8')
             pylon.FeaturePersistence.Save(nodeFile, self.camera.GetNodeMap())
 
             # Print the model name of the camera.
