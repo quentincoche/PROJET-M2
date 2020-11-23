@@ -17,21 +17,17 @@ from skimage.draw import line
 import statistics
 from statistics import mean
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
-import cProfile
-import pstats
 
 
 class Traitement():
-
-    profiler=cProfile.Profile()
-    profiler.enable()
     
     def traitement(self, img):
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         img_trait, img_bin=self.binarisation(gray)
         self.img=img_trait
         img100, ellipse, cX, cY=self.calcul_traitement(img_trait, img_bin)
-        return img100, ellipse, cX, cY
+        choix_fig = 1
+        return img100, ellipse, cX, cY, choix_fig
 
 
     def binarisation(self,img):
@@ -144,6 +140,7 @@ class Traitement():
 
     def trace_profil(self):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
+        print('Start plotting')
         img=self.crop_img # on récupère l'image
         #on pose les variables et on récupère les informations de l'image
         self.Lx,self.Ly=[],[]
@@ -187,19 +184,23 @@ class Traitement():
             x=np.arange(img_y)
             y=np.arange(img_y)
 
+        print("start 2D")
         z=self.plot_2D()
-
+        print('End 2D')
         #ax3 = fig.add_subplot(2,1,1,projection='3d')
         #ax3.plot_surface(x, y, img, rstride=1, cstride=1, cmap='gray')
+        print('Start Plotting 2D')
         ax4 = fig.add_subplot(2,1,2,projection='3d')
-        ax4.plot_surface(x, y, z, rstride=3, cstride=3, linewidth=1, antialiased=True, cmap='viridis')
+        ax4.plot_wireframe(x, y, z, rstride=3, cstride=3, linewidth=1, antialiased=False, cmap='viridis')
+        print('End plotting 2D')
         ax.set_title('X profil')
         ax.set_xlabel ('Axe x')
         ax.set_ylabel ('Axe y')
         ax2.set_title ('Y profil')
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
-        
+        print('End plotting')
+        return fig
 
     
     def plot_2D(self):
@@ -222,22 +223,22 @@ class Traitement():
         z = (1/(2*np.pi*sigma_x*sigma_y) * np.exp(-((x-self.w_trace)**2/(2*sigma_x**2)+ (y-self.h_trace)**2/(2*sigma_y**2))))
 
         return z
-        """
-        #on prépare la fonction de fit gaussien en précisant la méthode de fit
-        fitter = modeling.fitting.LevMarLSQFitter()
+    """
+    #on prépare la fonction de fit gaussien en précisant la méthode de fit
+    fitter = modeling.fitting.LevMarLSQFitter()
 
-        model_2D = modeling.models.Gaussian2D(
-        amplitude=250, x_mean=self.w_trace, y_mean=self.h_trace, x_stddev=self.w_trace/2, y_stddev=self.h_trace/2)
+    model_2D = modeling.models.Gaussian2D(
+    amplitude=250, x_mean=self.w_trace, y_mean=self.h_trace, x_stddev=self.w_trace/2, y_stddev=self.h_trace/2)
 
-        fitted_model = fitter(model_2D, x, y, Lz)
+    fitted_model = fitter(model_2D, x, y, Lz)
 
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        surf = ax.plot_surface(x, y, fitted_model, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-        ax.set_xlabel('X Label')
-        ax.set_ylabel('Y Label')
-        ax.set_zlabel('Z Label')
-        """
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    surf = ax.plot_surface(x, y, fitted_model, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+    """
     
     def points_ellipse(self):
         """
@@ -344,11 +345,3 @@ class Traitement():
         ax2.set_title ('Petit axe profil')
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
-
-
-
-    profiler.disable()
-    profile_stats=pstats.Stats(profiler)
-    profile_stats.strip_dirs()
-    profile_stats.sort_stats('time')
-    profile_stats.print_stats()   

@@ -24,7 +24,6 @@ class Traitement():
         self.img = img_trait
         img100, ellipse, cX, cY=self.calcul_traitement(img_trait, img_bin)
         choix_fig = 1
-        self.trace_profil()
         return img100, ellipse, cX, cY, choix_fig
 
 
@@ -57,7 +56,7 @@ class Traitement():
 
         # find contours in the binary image
         contours, hierarchy = cv2.findContours(otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        contours = sorted(contours, key = cv2.contourArea, reverse = True)[:5]
+        contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
 
         for c in contours:
             # permet de fit une ellipse sur toutes les formes identifiés sur l'image
@@ -131,6 +130,7 @@ class Traitement():
 
     def trace_profil(self):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
+        print('Start plotting')
         img=self.crop_img
         Lx,Ly=[],[]
         img_y=img.shape[0]
@@ -164,6 +164,7 @@ class Traitement():
         ax2.set_title ('Y profil')
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
+        print('End plotting')
 
         return fig
 

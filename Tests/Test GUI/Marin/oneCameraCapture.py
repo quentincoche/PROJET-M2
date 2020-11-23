@@ -1,6 +1,5 @@
 import os
 
-os.environ["PYLON_CAMEMU"] = "3"
 import pypylon
 from pypylon import genicam
 from pypylon import pylon
@@ -15,6 +14,7 @@ class cameraCapture(tk.Frame):
         self.img0 = []
         nodeFile = "NodeMap.pfs"
         self.windowName = 'title'
+        self.temp_exp = 100.0
 
         try:
             # Create an instant camera object with the camera device found first.
@@ -55,13 +55,6 @@ class cameraCapture(tk.Frame):
         try:
             self.grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) #Récupère tous les flux de la caméra
 
-            """
-            interval = time.time() - self.start_time
-            print('Total time in seconds: ', interval)
-            print(self.temp_exp)
-            """
-
-
             if self.grabResult.GrabSucceeded():
                 image = self.converter.Convert(self.grabResult) # Access the openCV image data
                 self.img0 = image.GetArray()
@@ -69,8 +62,6 @@ class cameraCapture(tk.Frame):
                 print("Error: ", self.grabResult.ErrorCode)
     
             self.grabResult.Release()
-            #time.sleep(0.01)
-
             return self.img0
             
         except genicam.GenericException as e:
@@ -93,13 +84,13 @@ class cameraCapture(tk.Frame):
         #print(max)
 
         while exp_ok == False: #Définit l'augmentation ou la diminution des valeurs d'exposition en fonction du max d'intensité de l'image
-            if max<=4000:
+            if max<=220:
                 self.temp_exp=self.temp_exp*2.
                 max=self.max_photo()
                 #print(self.temp_exp)
                 self.camera.ExposureTime.SetValue(self.temp_exp)
-            elif max >=4095 :
-                self.temp_exp=self.temp_exp/1.7
+            elif max >=255 :
+                self.temp_exp=self.temp_exp/1.3
                 max=self.max_photo()
                 #print(max)
                 #print(self.temp_exp)
@@ -108,7 +99,7 @@ class cameraCapture(tk.Frame):
                 exp_ok=True
                 print('Exp time too big')
                 break
-            elif self.temp_exp<=25.0:
+            elif self.temp_exp<=70.0:
                 exp_ok=True
                 print('Exp time too short')
                 break

@@ -45,6 +45,8 @@ import datetime #Bibliothèque permettant de récupérer la date
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from statistics import mean
 import oneCameraCapture as oneCameraCapture
 import Img_Traitement as Img_Traitement
@@ -74,8 +76,11 @@ class Fenetre(Thread):
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2,weight=2)
         self.window.grid_rowconfigure(1, weight=5)
+        self.window.grid_rowconfigure(2, weight=3)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
+        self.choix_fig_XY = IntVar()
+        self.choix_fig_XY = 0
         self.cX = IntVar()
         self.cY = IntVar()
         self.ellipse_width = DoubleVar()
@@ -85,9 +90,10 @@ class Fenetre(Thread):
         self.Screen_y = 1000
         self.Screen2_x = 750
         self.Screen2_y = 750
-        self.delay=15
+        self.delay=50
         self.frame2=[]
 
+        self.plot()
         self.display()
         self.Interface() #Lance la fonction Interface
         self.flux_cam()
@@ -106,7 +112,7 @@ class Fenetre(Thread):
         self.cmdleft.grid(row=1,column=0, sticky='NSEW')
         btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
         btncap.grid(row=0,column=0,sticky="nsew")
-        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.profil)
+        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
         btnprofiles.grid(row=1,column=0,sticky="nsew")
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
         btnquit.grid(row=2,column=0,sticky="nsew")
@@ -164,6 +170,8 @@ class Fenetre(Thread):
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
         print("[INFO] closing...")
+        self.photo, self.photo2 = [],[]
+        self.fig_XY = Figure()
         self.window.destroy() # Ferme la fenêtre
 
 
@@ -218,7 +226,7 @@ class Fenetre(Thread):
         self.t2.start()
 
     def disp_traitement(self):
-        self.frame2, self.ellipse, self.baryX, self.baryY = self.trmt.traitement(self.frame)
+        self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame)
         self.affich_traitement()
     
     def affich_traitement(self):
@@ -252,11 +260,18 @@ class Fenetre(Thread):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
         self.exposure=self.vid.auto_exposure()
 
-    def profil(self):
-        self.prof1=self.trmt.trace_profil()
-        #self.prof2=self.trmt.trace_ellipse()
-        self.prof3=self.trmt.plot_2D()
-        plt.show()
+    def plot(self):
+        "choix_fig_XY = 0 quand le traitement d'image n'a pas encore été effectué, et = 1 après le traitement. le graphe apparait après pression du bouton profils"
+        if self.choix_fig_XY == 0:
+            self.fig_XY = Figure()
+        else : 
+            self.fig_XY = self.trmt.trace_profil()
+
+        #cadre affichage profils XY
+        self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.window)
+        self.cadre_disp_XY = self.disp_XY.get_tk_widget()
+        self.cadre_disp_XY.grid(row=2,column=1)
+        return self.fig_XY
 
     
 
