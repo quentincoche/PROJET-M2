@@ -254,7 +254,7 @@ class Fenetre(Thread):
         self.ellipse_height.set(int(self.ellipse[1][0]))
         self.ellipse_angle.set(int(self.ellipse[2]))
 
-        #self.window.after(self.delay, self.affich_traitement)
+        self.window.after(self.delay, self.affich_traitement)
 
     def exp(self):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
