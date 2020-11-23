@@ -17,8 +17,14 @@ from skimage.draw import line
 import statistics
 from statistics import mean
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
+import cProfile
+import pstats
+
 
 class Traitement():
+
+    profiler=cProfile.Profile()
+    profiler.enable()
     
     def traitement(self, img):
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
@@ -341,4 +347,8 @@ class Traitement():
 
 
 
-
+    profiler.disable()
+    profile_stats=pstats.Stats(profiler)
+    profile_stats.strip_dirs()
+    profile_stats.sort_stats('time')
+    profile_stats.print_stats()   

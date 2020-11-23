@@ -48,11 +48,6 @@ import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from statistics import mean
 import oneCameraCapture as oneCameraCapture
 import Img_Traitement as Img_Traitement
-import cProfile
-import pstats
-    
-profiler=cProfile.Profile()
-profiler.enable()
 
 
 # La Classe Fenetre contient l'ensemble du programme #
@@ -60,7 +55,7 @@ profiler.enable()
 class Fenetre(Thread):
 
     def __init__(self, output_path = "./"): #Fonction d'initialisation du programme
-
+        
         Thread.__init__(self)
 
         self.vid = oneCameraCapture.cameraCapture()
@@ -264,12 +259,6 @@ class Fenetre(Thread):
         plt.show()
 
     
-
-profiler.disable()
-profile_stats=pstats.Stats(profiler)
-profile_stats.strip_dirs()
-profile_stats.sort_stats('time')
-profile_stats.print_stats()   
 
 root = Fenetre()
 root.window.mainloop() # Lancement de la boucle principale
