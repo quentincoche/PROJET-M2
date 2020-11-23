@@ -170,8 +170,6 @@ class Fenetre(Thread):
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
         print("[INFO] closing...")
-        self.photo, self.photo2 = [],[]
-        self.fig_XY = Figure()
         self.window.destroy() # Ferme la fenêtre
 
 
@@ -211,7 +209,7 @@ class Fenetre(Thread):
         self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
         self.display1.create_image(self.Screen_x/2,self.Screen_x/(2*ratio),image=self.photo)
 
-        self.window.after(self.delay, self.update)
+        self.solve=self.window.after(self.delay, self.update)
 
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
