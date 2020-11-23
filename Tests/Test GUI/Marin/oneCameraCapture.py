@@ -126,7 +126,7 @@ class cameraCapture(tk.Frame):
         grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) #Récupère tous les flux de la caméra
         pht=grabResult.GetArray() #Transforme l'image en matrice
         img=cv2.blur(pht,(5,5))
-        max_photo=np.amax(pht) #cherche la valeur max de la matrice
+        max_photo=np.amax(img) #cherche la valeur max de la matrice
         grabResult.Release() #Relache le flux
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
         return max_photo #Renvoie la valeur du max

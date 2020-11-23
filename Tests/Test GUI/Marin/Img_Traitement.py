@@ -32,8 +32,6 @@ class Traitement():
 
     def binarisation(self,img):
         """ Filtrage de l'image et binarisation de celle-ci"""
-        i,j=0,0
-        l=[]
         kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(10,10))
 
         otsu = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
@@ -200,6 +198,7 @@ class Traitement():
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
         print('End plotting')
+        
         return fig
 
     
