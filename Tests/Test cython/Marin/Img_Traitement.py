@@ -4,8 +4,7 @@ Created on Wen Oct 14 10:27:21 2020
 
 @author: Optique
 """
-
-import os    
+    
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 from math import *
@@ -13,7 +12,6 @@ import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from scipy.optimize import curve_fit
-import astropy.io.fits as fits
 from astropy import modeling
 from skimage.draw import line
 import statistics
@@ -144,7 +142,8 @@ class Traitement():
         img=self.crop_img # on récupère l'image
         #on pose les variables et on récupère les informations de l'image
         self.Lx,self.Ly=[],[]
-        img_y, img_x =img.shape
+        img_y=img.shape[0]
+        img_x=img.shape[1]
         self.w_trace=ceil(self.W/2)
         self.h_trace=ceil(self.H/2)
         #print(img_x,img_y)
@@ -158,14 +157,11 @@ class Traitement():
         x=np.arange(img_x)
         y=np.arange(img_y)
 
-        sigma_x = np.std(self.Lx)
-        sigma_y = np.std(self.Ly)
-
         #on prépare la fonction de fit gaussien en précisant la méthode de fit
         fitter = modeling.fitting.LevMarLSQFitter()
         #courbe gaussien selon les axes x et y
-        modelx = modeling.models.Gaussian1D(amplitude=np.max(self.Lx), mean=self.w_trace, stddev=sigma_x)   # depending on the data you need to give some initial values
-        modely = modeling.models.Gaussian1D(amplitude=np.max(self.Ly), mean=self.h_trace, stddev=sigma_y)
+        modelx = modeling.models.Gaussian1D(amplitude=250, mean=self.w_trace, stddev=self.w_trace/2)   # depending on the data you need to give some initial values
+        modely = modeling.models.Gaussian1D(amplitude=250, mean=self.h_trace, stddev=self.h_trace/2)
         #fit des courbes et des données
         x_fitted_model = fitter(modelx, x, self.Lx)
         y_fitted_model = fitter(modely, y, self.Ly)
@@ -178,6 +174,23 @@ class Traitement():
         ax2 = fig.add_subplot(2, 2, 2)
         ax2.plot(y,self.Ly)
         ax2.plot(y, y_fitted_model(y))
+
+        if img_x<img_y :
+            x=np.arange(img_x)
+            y=np.arange(img_x)
+        else :
+            x=np.arange(img_y)
+            y=np.arange(img_y)
+
+        print("start 2D")
+        z=self.plot_2D()
+        print('End 2D')
+        #ax3 = fig.add_subplot(2,1,1,projection='3d')
+        #ax3.plot_surface(x, y, img, rstride=1, cstride=1, cmap='gray')
+        print('Start Plotting 2D')
+        ax4 = fig.add_subplot(2,1,2,projection='3d')
+        ax4.plot_wireframe(x, y, z, rstride=3, cstride=3, linewidth=1, antialiased=False, cmap='viridis')
+        print('End plotting 2D')
         ax.set_title('X profil')
         ax.set_xlabel ('Axe x')
         ax.set_ylabel ('Axe y')
@@ -185,38 +198,46 @@ class Traitement():
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
         print('End plotting')
-
+        
         return fig
 
     
     def plot_2D(self):
+        """Affiche le fit à la gausienne en 2D"""
+        img = self.crop_img  # on récupère l'image
 
-        print("start 2D")
-        img=self.crop_img # on récupère l'image
-        fitter = modeling.fitting.LevMarLSQFitter()
+        if img.shape[1]<img.shape[0] :
+            x=np.arange(img.shape[1])
+            y=np.arange(img.shape[1])
+        else :
+            x=np.arange(img.shape[0])
+            y=np.arange(img.shape[0])
 
-        y0, x0 = np.unravel_index(np.argmax(img), img.shape)
-        sigma = np.std(img)
-        amp=np.max(img)
+        x,y = np.meshgrid(x,y)
 
-        w = modeling.models.Gaussian2D(amp, x0, y0, sigma, sigma)
-        print(w)
+        # Mean vector and covariance matrix
+        sigma_x = self.w_trace/2
+        sigma_y = self.h_trace/2
 
-        yi, xi = np.indices(img.shape)
+        z = (1/(2*np.pi*sigma_x*sigma_y) * np.exp(-((x-self.w_trace)**2/(2*sigma_x**2)+ (y-self.h_trace)**2/(2*sigma_y**2))))
 
-        g = fitter(w, xi, yi, img)
+        return z
+    """
+    #on prépare la fonction de fit gaussien en précisant la méthode de fit
+    fitter = modeling.fitting.LevMarLSQFitter()
 
-        model_data = g(xi, yi)
+    model_2D = modeling.models.Gaussian2D(
+    amplitude=250, x_mean=self.w_trace, y_mean=self.h_trace, x_stddev=self.w_trace/2, y_stddev=self.h_trace/2)
 
-        fig2, ax3 = plt.subplots()
-        eps = np.min(model_data[model_data > 0]) / 10.0
-        # use logarithmic scale for sharp Gaussians
-        ax3.imshow(np.log(eps + model_data), label='Gaussian')
+    fitted_model = fitter(model_2D, x, y, Lz)
 
-        print('End 2D')
-
-        return fig2
-        
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    surf = ax.plot_surface(x, y, fitted_model, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+    """
     
     def points_ellipse(self):
         """
