@@ -58,10 +58,12 @@ class Fenetre(Thread):
         self.window.grid_rowconfigure(2, weight=3)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
+        self.size_pixel_height = DoubleVar()
+        self.size_pixel_width = DoubleVar()
         self.choix_fig_XY = IntVar()
         self.choix_fig_XY = 0
-        self.cX = IntVar()
-        self.cY = IntVar()
+        self.cX = DoubleVar()
+        self.cY = DoubleVar()
         self.ellipse_width = DoubleVar()
         self.ellipse_height = DoubleVar()
         self.ellipse_angle =DoubleVar()
@@ -103,6 +105,16 @@ class Fenetre(Thread):
         btnvideo.grid(row=0,column=0,sticky="nsew")
         btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
         btnexp.grid(row=0,column=1,sticky="nsew")
+        #entree hauteur pixel
+        title_entry_size_height = tk.Label(self.cmdup,text="Hauteur pixel (um) = ",bg="gray")
+        title_entry_size_height.grid(row=0,column=2,sticky="E")
+        entry_size_height = Entry(self.cmdup, textvariable = self.size_pixel_height, width=4)
+        entry_size_height.grid(row=0,column=3,sticky="E")
+        #entree largeur pixel
+        title_entry_size_width = tk.Label(self.cmdup,text="Largeur pixel (um) = ",bg="gray")
+        title_entry_size_width.grid(row=0,column=4,sticky="E")
+        entry_size_width = Entry(self.cmdup, textvariable = self.size_pixel_width, width=4)
+        entry_size_width.grid(row=0,column=5,sticky="E")
 
     def display(self):
         #cadre video
@@ -233,7 +245,6 @@ class Fenetre(Thread):
         self.ellipse_height.set(int(self.ellipse[1][0]))
         self.ellipse_angle.set(int(self.ellipse[2]))
 
-        self.window.after(self.delay, self.affich_traitement)
 
     def exp(self):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
