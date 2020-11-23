@@ -9,13 +9,22 @@ import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 from math import *
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from scipy.optimize import curve_fit
 from astropy import modeling
+from skimage.draw import line
+import statistics
 from statistics import mean
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
-    
-    
+import cProfile
+import pstats
+
+
 class Traitement():
+
+    profiler=cProfile.Profile()
+    profiler.enable()
     
     def traitement(self, img):
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
@@ -53,7 +62,7 @@ class Traitement():
             
         # find contours in the binary image
         contours, hierarchy = cv2.findContours(otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        contours = sorted(contours, key = cv2.contourArea, reverse = True)[:5]
+        contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
 
         for c in contours:
             # permet de fit une ellipse sur toutes les formes identifiés sur l'image
@@ -81,8 +90,7 @@ class Traitement():
             self.ellipse = cv2.fitEllipse(c)
             thresh = cv2.ellipse(frame,self.ellipse,(0,255,0),1)
             print('Ellipse : ', self.ellipse)
-
-            
+ 
             #Fit un rectangle sur la zone d'intérêt pour la zoomer par la suite
             self.x,self.y,self.w,self.h = cv2.boundingRect(c)
             #rectangle = cv2.rectangle(frame,(self.x,self.y),(self.x+self.w,self.y+self.h),(0,175,175),1)
@@ -109,7 +117,7 @@ class Traitement():
 
     def crop(self,frame):
         """ Fonction qui crop le centre d'intérêt à 2 fois sa taille"""
-
+        #on défini les tailles de crop, les conditions qui suivent sont là pour éviter les problèmes de bord
         X=self.x-ceil(self.w/2)
         Y=self.y-ceil(self.h/2)
         self.W=2*self.w
@@ -136,43 +144,101 @@ class Traitement():
 
     def trace_profil(self):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
-        img=self.crop_img
-        Lx,Ly=[],[]
+        img=self.crop_img # on récupère l'image
+        #on pose les variables et on récupère les informations de l'image
+        self.Lx,self.Ly=[],[]
         img_y=img.shape[0]
         img_x=img.shape[1]
-        w=ceil(self.W/2)
-        h=ceil(self.H/2)
+        self.w_trace=ceil(self.W/2)
+        self.h_trace=ceil(self.H/2)
         #print(img_x,img_y)
         #print(w,h)
+        # on récupère la valeur des pixels selon les axes
         for iy in range(img_y):
-            Ly=np.append(Ly,img[iy, w])
+            self.Ly=np.append(self.Ly,img[iy, self.w_trace])
         for ix in range(img_x):
-            Lx=np.append(Lx, img[h, ix])
+            self.Lx=np.append(self.Lx, img[self.h_trace, ix])
+        #on fait une liste de ces valeurs
         x=np.arange(img_x)
         y=np.arange(img_y)
 
+        #on prépare la fonction de fit gaussien en précisant la méthode de fit
         fitter = modeling.fitting.LevMarLSQFitter()
-        modelx = modeling.models.Gaussian1D(amplitude=250, mean=w, stddev=w/2)   # depending on the data you need to give some initial values
-        modely = modeling.models.Gaussian1D(amplitude=250, mean=h, stddev=h/2)
-        x_fitted_model = fitter(modelx, x, Lx)
-        y_fitted_model = fitter(modely, y, Ly)
-    
+        #courbe gaussien selon les axes x et y
+        modelx = modeling.models.Gaussian1D(amplitude=250, mean=self.w_trace, stddev=self.w_trace/2)   # depending on the data you need to give some initial values
+        modely = modeling.models.Gaussian1D(amplitude=250, mean=self.h_trace, stddev=self.h_trace/2)
+        #fit des courbes et des données
+        x_fitted_model = fitter(modelx, x, self.Lx)
+        y_fitted_model = fitter(modely, y, self.Ly)
+
+        #On affiche les courbes résultantes
         fig = plt.figure(figsize=plt.figaspect(0.5))
-        ax = fig.add_subplot(1 ,2 ,1)
-        ax.plot(x,Lx)
+        ax = fig.add_subplot(2 ,2 ,1)
+        ax.plot(x,self.Lx)
         ax.plot(x, x_fitted_model(x))
-        ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(y,Ly)
+        ax2 = fig.add_subplot(2, 2, 2)
+        ax2.plot(y,self.Ly)
         ax2.plot(y, y_fitted_model(y))
+
+        if img_x<img_y :
+            x=np.arange(img_x)
+            y=np.arange(img_x)
+        else :
+            x=np.arange(img_y)
+            y=np.arange(img_y)
+
+        z=self.plot_2D()
+
+        #ax3 = fig.add_subplot(2,1,1,projection='3d')
+        #ax3.plot_surface(x, y, img, rstride=1, cstride=1, cmap='gray')
+        ax4 = fig.add_subplot(2,1,2,projection='3d')
+        ax4.plot_surface(x, y, z, rstride=3, cstride=3, linewidth=1, antialiased=True, cmap='viridis')
         ax.set_title('X profil')
         ax.set_xlabel ('Axe x')
         ax.set_ylabel ('Axe y')
         ax2.set_title ('Y profil')
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
+        
 
-        plt.show()
+    
+    def plot_2D(self):
+        """Affiche le fit à la gausienne en 2D"""
+        img = self.crop_img  # on récupère l'image
 
+        if img.shape[1]<img.shape[0] :
+            x=np.arange(img.shape[1])
+            y=np.arange(img.shape[1])
+        else :
+            x=np.arange(img.shape[0])
+            y=np.arange(img.shape[0])
+
+        x,y = np.meshgrid(x,y)
+
+        # Mean vector and covariance matrix
+        sigma_x = self.w_trace/2
+        sigma_y = self.h_trace/2
+
+        z = (1/(2*np.pi*sigma_x*sigma_y) * np.exp(-((x-self.w_trace)**2/(2*sigma_x**2)+ (y-self.h_trace)**2/(2*sigma_y**2))))
+
+        return z
+        """
+        #on prépare la fonction de fit gaussien en précisant la méthode de fit
+        fitter = modeling.fitting.LevMarLSQFitter()
+
+        model_2D = modeling.models.Gaussian2D(
+        amplitude=250, x_mean=self.w_trace, y_mean=self.h_trace, x_stddev=self.w_trace/2, y_stddev=self.h_trace/2)
+
+        fitted_model = fitter(model_2D, x, y, Lz)
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        surf = ax.plot_surface(x, y, fitted_model, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+        ax.set_xlabel('X Label')
+        ax.set_ylabel('Y Label')
+        ax.set_zlabel('Z Label')
+        """
+    
     def points_ellipse(self):
         """
         Permet de récupérer les points extremes de l'image selon le grand et
@@ -226,40 +292,51 @@ class Traitement():
             PP2c=cc_ell-floor(cl_ell/tan(ang))
 
         #Création des tuples de points
-        GP1, GP2=[GP1l,GP1c], [GP2l,GP2c]
-        PP1, PP2=[PP1l,PP1c], [PP2l,PP2c]
+        GP1, GP2=[int(GP1l),int(GP1c)], [int(GP2l),int(GP2c)]
+        PP1, PP2=[int(PP1l),int(PP1c)], [int(PP2l),int(PP2c)]
 
         return GP1, GP2, PP1, PP2
 
 
 
     def trace_ellipse(self):
+        """ Trace le fit gaussien selon les axes de l'ellipse"""
+        #on pose les variables et on récupère les informations de l'image
         img=self.crop_img
-        Lx,Ly=[],[]
-        img_y=img.shape[0]
-        img_x=img.shape[1]
+        Lg, Lp= [],[]
         width=self.ellipse[1][1]
         height=self.ellipse[1][0]
+        #on récupère les points des axes de la fonction précédente
         GP1, GP2, PP1, PP2=self.points_ellipse()
-        line_G=self.createLineIterator(GP1, GP2, img)
-        line_P=self.createLineIterator(PP1, PP2, img)
-        G=len(line_G)
-        Ig=line_G[3]
-        P=len(line_P)
-        Ip=line_P[3]
+        #on récupère les valeurs des pixels selon la ligne qui relie les pixels trouvés précedemment
+        Gl, Gc = line(GP1[0], GP1[1], GP2[0], GP2[1])
+        Pl, Pc = line(PP1[0], PP1[1], PP2[0], PP2[1])
+        for x1 in range (Gl):
+            for y1 in range (Gc):
+                Lg=np.append(Lg, img[x1,y1])
+        for x2 in range (Pl):
+            for y2 in range (Pc):
+                Lp=np.append(Lp, img[x2,y2])
 
+        G=len(Lg)
+        P=len(Lp)      
+
+        #model du fit
         fitter = modeling.fitting.LevMarLSQFitter()
+        #fonction gaussienne
         modelG = modeling.models.Gaussian1D(amplitude=250, mean=width, stddev=width/2)   # depending on the data you need to give some initial values
         modelP = modeling.models.Gaussian1D(amplitude=250, mean=height, stddev=height/2)
-        G_fitted_model = fitter(modelG, G, Ig)
-        P_fitted_model = fitter(modelP, P, Ip)
+        #Fit de la courbe et des données
+        G_fitted_model = fitter(modelG, G, Lg)
+        P_fitted_model = fitter(modelP, P, Lp)
 
+        #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(1 ,2 ,1)
-        ax.plot(G,Ig)
+        ax.plot(G,Lg)
         ax.plot(G, G_fitted_model(G))
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(P,Ig)
+        ax2.plot(P,Lp)
         ax2.plot(P, P_fitted_model(P))
         ax.set_title('Grand axe profil')
         ax.set_xlabel ('Axe x')
@@ -268,77 +345,10 @@ class Traitement():
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
 
-        plt.show()
 
 
-
-    def createLineIterator(P1, P2, img):
-        """
-        Produces and array that consists of the coordinates and intensities of each pixel in a line between two points
-
-        Parameters:
-            -P1: a numpy array that consists of the coordinate of the first point (x,y)
-            -P2: a numpy array that consists of the coordinate of the second point (x,y)
-            -img: the image being processed
-
-        Returns:
-            -it: a numpy array that consists of the coordinates and intensities of each pixel in the radii (shape: [numPixels, 3], row = [x,y,intensity])     
-        """
-        #define local variables for readability
-        imageH = img.shape[0]
-        imageW = img.shape[1]
-        P1X = P1[0]
-        P1Y = P1[1]
-        P2X = P2[0]
-        P2Y = P2[1]
-
-        #difference and absolute difference between points
-        #used to calculate slope and relative location between points
-        dX = P2X - P1X
-        dY = P2Y - P1Y
-        dXa = np.abs(dX)
-        dYa = np.abs(dY)
-
-        #predefine numpy array for output based on distance between points
-        itbuffer = np.empty(shape=(np.maximum(dYa,dXa),3),dtype=np.float32)
-        itbuffer.fill(np.nan)
-
-        #Obtain coordinates along the line using a form of Bresenham's algorithm
-        negY = P1Y > P2Y
-        negX = P1X > P2X
-        if P1X == P2X: #vertical line segment
-            itbuffer[:,0] = P1X
-            if negY:
-                itbuffer[:,1] = np.arange(P1Y - 1,P1Y - dYa - 1,-1)
-            else:
-                itbuffer[:,1] = np.arange(P1Y+1,P1Y+dYa+1)              
-        elif P1Y == P2Y: #horizontal line segment
-            itbuffer[:,1] = P1Y
-            if negX:
-                itbuffer[:,0] = np.arange(P1X-1,P1X-dXa-1,-1)
-            else:
-                itbuffer[:,0] = np.arange(P1X+1,P1X+dXa+1)
-        else: #diagonal line segment
-            steepSlope = dYa > dXa
-            if steepSlope:
-                slope = dX.astype(np.float32)/dY.astype(np.float32)
-                if negY:
-                    itbuffer[:,1] = np.arange(P1Y-1,P1Y-dYa-1,-1)
-                else:
-                    itbuffer[:,1] = np.arange(P1Y+1,P1Y+dYa+1)
-                itbuffer[:,0] = (slope*(itbuffer[:,1]-P1Y)).astype(np.int) + P1X
-            else:
-                slope = dY.astype(np.float32)/dX.astype(np.float32)
-                if negX:
-                    itbuffer[:,0] = np.arange(P1X-1,P1X-dXa-1,-1)
-                else:
-                    itbuffer[:,0] = np.arange(P1X+1,P1X+dXa+1)
-                itbuffer[:,1] = (slope*(itbuffer[:,0]-P1X)).astype(np.int) + P1Y
-
-        #Remove points outside of image
-        colX = itbuffer[:,0]
-        colY = itbuffer[:,1]
-        itbuffer = itbuffer[(colX >= 0) & (colY >=0) & (colX<imageW) & (colY<imageH)]
-
-
-
+    profiler.disable()
+    profile_stats=pstats.Stats(profiler)
+    profile_stats.strip_dirs()
+    profile_stats.sort_stats('time')
+    profile_stats.print_stats()   

@@ -85,7 +85,7 @@ class cameraCapture(tk.Frame):
         self.temp_exp =500
         self.camera.ExposureAuto.SetValue('Off')#Continuous, SingleFrame
         self.camera.ExposureTime.SetValue(self.temp_exp) #établi le temps d'exposition
-        self.camera.AcquisitionMode.SetValue('SingleFrame') #Utilise la caméra en mode photo
+        self.camera.AcquisitionMode.SetValue('Continuous') #Utilise la caméra en mode photo
         
         exp_ok=False #Variable permettant de définir l'état de l'ajustement de l'exposition
         
@@ -99,7 +99,7 @@ class cameraCapture(tk.Frame):
                 #print(self.temp_exp)
                 self.camera.ExposureTime.SetValue(self.temp_exp)
             elif max >=4095 :
-                self.temp_exp=self.temp_exp/1.9
+                self.temp_exp=self.temp_exp/1.7
                 max=self.max_photo()
                 #print(max)
                 #print(self.temp_exp)
@@ -128,11 +128,13 @@ class cameraCapture(tk.Frame):
     
     def max_photo(self):
         """" Fonction permettant de retourner le max d'intensité sur l'image """
+        self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
+        self.camera.AcquisitionMode.SetValue('SingleFrame') #Utilise la caméra en mode photo
         self.camera.ExposureTime.SetValue(self.temp_exp)
-        self.camera.StartGrabbing() #Permet la récupération des infos de la caméra
+        self.camera.StartGrabbing(pylon.GrabStrategy_LatestImageOnly) #Permet la récupération des infos de la caméra
         grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) #Récupère tous les flux de la caméra
         pht=grabResult.GetArray() #Transforme l'image en matrice
-        img=cv2.blur(pht,(10,10))
+        img=cv2.blur(pht,(5,5))
         max_photo=np.amax(pht) #cherche la valeur max de la matrice
         grabResult.Release() #Relache le flux
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
@@ -147,7 +149,6 @@ if __name__ == "__main__":
         #If window has been closed using the X button, close program
         # getWindowProperty() returns -1 as soon as the window is closed
         if cv2.getWindowProperty(testWidget.windowName, 0) < 0:
-            cv2.imshow('Frame', self.img0)
             cv2.destroyAllWindows()
             break
         if testWidget.k == 27: #If press ESC key
