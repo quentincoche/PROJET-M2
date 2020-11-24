@@ -11,6 +11,7 @@ import tkinter as tk
 
 class cameraCapture(tk.Frame):
     def __init__(self):
+        t=time.time()
         self.img0 = []
         nodeFile = "NodeMap.pfs"
         self.windowName = 'title'
@@ -51,6 +52,9 @@ class cameraCapture(tk.Frame):
             print("An exception occurred.", e.GetDescription())
             exitCode = 1
 
+        temps=time.time()-t
+        print("Temps acquisition caméra  : ", temps)
+
     def getFrame(self):
         try:
             self.grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) #Récupère tous les flux de la caméra
@@ -58,6 +62,7 @@ class cameraCapture(tk.Frame):
             if self.grabResult.GrabSucceeded():
                 image = self.converter.Convert(self.grabResult) # Access the openCV image data
                 self.img0 = image.GetArray()
+                print(self.camera.PixelType)
             else:
                 print("Error: ", self.grabResult.ErrorCode)
     
