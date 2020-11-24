@@ -51,6 +51,7 @@ from statistics import mean
 import oneCameraCapture as oneCameraCapture
 import Img_Traitement as Img_Traitement
 
+t=time.time()
 
 # La Classe Fenetre contient l'ensemble du programme #
 
@@ -90,7 +91,7 @@ class Fenetre(Thread):
         self.Screen_y = 1000
         self.Screen2_x = 750
         self.Screen2_y = 750
-        self.delay=50
+        self.delay=10
         self.frame2=[]
 
         self.plot()
@@ -170,8 +171,6 @@ class Fenetre(Thread):
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
         print("[INFO] closing...")
-        self.photo, self.photo2 = [],[]
-        self.fig_XY = Figure()
         self.window.destroy() # Ferme la fenêtre
 
 
@@ -211,7 +210,7 @@ class Fenetre(Thread):
         self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
         self.display1.create_image(self.Screen_x/2,self.Screen_x/(2*ratio),image=self.photo)
 
-        self.window.after(self.delay, self.update)
+        self.solve=self.window.after(self.delay, self.update)
 
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
@@ -273,7 +272,7 @@ class Fenetre(Thread):
         self.cadre_disp_XY.grid(row=2,column=1)
         return self.fig_XY
 
-    
-
+temps=time.time()-t    
+print('Lancement : ',temps)
 root = Fenetre()
 root.window.mainloop() # Lancement de la boucle principale
