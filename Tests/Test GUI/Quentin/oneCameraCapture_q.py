@@ -21,14 +21,30 @@ class cameraCapture(tk.Frame):
             # Create an instant camera object with the camera device found first.
             self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
             self.camera.Open() #Ouvre la communication avec la caméra
+            self.Model = self.camera.GetDeviceInfo().GetModelName()
+            
+            if self.Model == "acA1920-40uc":
+                self.camera.PixelFormat.SetValue('Mono8')
+                self.tps_exp_min = 50 
+                self.pixel_size = 5.86 #microns (pixels carrés sur les baslers)
+                self.pixel_max = 255
+
+            elif self.Model == "acA5472-17um":
+                self.camera.PixelFormat.SetValue('Mono12')
+                self.tps_exp_min = 50 
+                self.pixel_size = 2.4 #microns (pixels carrés sur les baslers)
+                self.pixel_max = 4095
+
+            else :
+                print("Camera non reconnue")
 
             self.width = self.camera.Width.GetValue()
             self.height = self.camera.Height.GetValue()
             self.ratio = float(self.width/self.height)
 
-            self.camera.PixelFormat.SetValue('Mono8')
+            
             pylon.FeaturePersistence.Save(nodeFile, self.camera.GetNodeMap())
-            self.Model = self.camera.GetDeviceInfo().GetModelName()
+            
 
             # Print the model name of the camera.
             print("Using device ", self.Model)
@@ -85,7 +101,7 @@ class cameraCapture(tk.Frame):
         print(max)
 
         while exp_ok == False: #Définit l'augmentation ou la diminution des valeurs d'exposition en fonction du max d'intensité de l'image
-            if max<=220:
+            if max<=self.pixel_max - 25:
                 if self.temp_exp>=10000000.0:
                     exp_ok=True
                     print('Exp time too big')
@@ -95,8 +111,8 @@ class cameraCapture(tk.Frame):
                     max=self.max_photo()
                     print(max)
                     self.camera.ExposureTime.SetValue(self.temp_exp)
-            elif max >=255 :
-                if self.temp_exp<=50.0:
+            elif max >=self.pixel_max :
+                if self.temp_exp<=self.tps_exp_min:
                     exp_ok=True
                     print('Exp time too short')
                     break
@@ -108,6 +124,7 @@ class cameraCapture(tk.Frame):
             else:
                 exp_ok=True
                 break
+
         self.camera.ExposureTime.SetValue(self.temp_exp)
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
         self.camera.Close() #Ferme la communication avec la caméra
