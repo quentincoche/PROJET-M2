@@ -285,8 +285,8 @@ class Traitement():
             GP1l=cl_ell-floor(cc_ell/tan(ang))#Grand axe
             GP2l=cl_ell+floor(cc_ell/tan(ang))
 
-            PP1c=cc_ell+floor(cl_ell/tan(ang))#Petit axe
-            PP2c=cc_ell-floor(cl_ell/tan(ang))
+            PP1c=cc_ell-floor(cl_ell/tan(ang))#Petit axe
+            PP2c=cc_ell+floor(cl_ell/tan(ang))
 
         #Création des tuples de points
         GP1, GP2=[int(GP1l),int(GP1c)], [int(GP2l),int(GP2c)]
@@ -311,14 +311,17 @@ class Traitement():
         #on récupère les valeurs des pixels selon la ligne qui relie les pixels trouvés précedemment
         G_buffer = self.createLineIterator(GP1, GP2, img)
         P_buffer = self.createLineIterator(PP1, PP2, img)
-        
+
+        print("Grand axe : ", GP1, GP2)
+        print("Petit axe : ", PP1, PP2)
+
         #On récupère uniquement l'intensité des pixels sur la ligne
         Lg = np.array(G_buffer[:,2])
         Lp = np.array(P_buffer[:,2])
 
         #On créer la liste qui sert d'axe pour le fit
         G = np.arange(len(Lg))
-        P = np.arange(len(Lg))
+        P = np.arange(len(Lp))
 
         #Calcul des sigmas sur les valeurs             
         #sigma_g = np.std(Lg)

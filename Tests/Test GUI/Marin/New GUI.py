@@ -51,8 +51,6 @@ from statistics import mean
 import oneCameraCapture as oneCameraCapture
 import Img_Traitement as Img_Traitement
 
-t=time.time()
-
 # La Classe Fenetre contient l'ensemble du programme #
 
 class Fenetre(Thread):
@@ -264,7 +262,7 @@ class Fenetre(Thread):
         if self.choix_fig_XY == 0:
             self.fig_XY = Figure()
         else : 
-            self.fig_XY = self.trmt.trace_profil()
+            self.fig_XY = self.trmt.trace_ellipse()
 
         #cadre affichage profils XY
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.window)
@@ -272,7 +270,6 @@ class Fenetre(Thread):
         self.cadre_disp_XY.grid(row=2,column=1)
         return self.fig_XY
 
-temps=time.time()-t    
-print('Lancement : ',temps)
+
 root = Fenetre()
 root.window.mainloop() # Lancement de la boucle principale
