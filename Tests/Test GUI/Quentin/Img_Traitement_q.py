@@ -9,7 +9,7 @@ import os
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import math
-import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
+from matplotlib.figure import Figure 
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from scipy.optimize import curve_fit
@@ -153,7 +153,7 @@ class Traitement():
         x_fitted_model = fitter(model, x, Lx)
         y_fitted_model = fitter(model, y, Ly)
     
-        fig = plt.figure(figsize=plt.figaspect(0.5))
+        fig = Figure()
         fig.suptitle("Gaussienne x,y")
         ax = fig.add_subplot(2 ,2 ,1)
         ax.plot(x,Lx)
@@ -312,7 +312,7 @@ class Traitement():
         P_fitted_model = fitter(model, P, Lp)
 
         #affichage des résultats
-        fig = plt.figure(figsize=plt.figaspect(0.5))
+        fig = Figure(figsize=plt.figaspect(0.5))
         fig.suptitle("Gaussienne ellipse")
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(G,Lg)

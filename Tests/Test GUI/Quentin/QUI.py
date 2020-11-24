@@ -61,8 +61,6 @@ class Fenetre(Thread):
         self.window.grid_rowconfigure(2, weight=3)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
-        self.size_pixel_height = DoubleVar()
-        self.size_pixel_width = DoubleVar()
         self.choix_fig_XY = IntVar()
         self.choix_fig_XY = 0
         self.cX = DoubleVar()
@@ -248,6 +246,7 @@ class Fenetre(Thread):
         if self.choix_fig_XY == 0:
             self.fig_XY = Figure()
         else : 
+            self.fig_XY.clf()
             self.fig_XY = self.trmt.trace_profil()
 
         #cadre affichage profils XY
