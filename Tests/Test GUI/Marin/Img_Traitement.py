@@ -8,7 +8,7 @@ Created on Wen Oct 14 10:27:21 2020
 import os    
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
-from math import *
+import math
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
@@ -95,9 +95,6 @@ class Traitement():
             #rectangle = cv2.rectangle(frame,(self.x,self.y),(self.x+self.w,self.y+self.h),(0,175,175),1)
             print('Rectangle : Position = ', self.x,',',self.y,'; Size = ',self.w,',',self.h)
 
-            # dessine les contours des formes qu'il a identifiés
-            #cv2.drawContours (self.frame, contours, -1, (255,215,0), 1)
-
 
         #Dessine les formes sur l'image
         cv2.line(frame, (self.cX, 0), (self.cX, frame.shape[0]), (255, 0, 0), 1)#Dessine une croix sur le barycentre de l'image
@@ -117,8 +114,8 @@ class Traitement():
     def crop(self,frame):
         """ Fonction qui crop le centre d'intérêt à 2 fois sa taille"""
         #on défini les tailles de crop, les conditions qui suivent sont là pour éviter les problèmes de bord
-        X=self.x-ceil(self.w/2)
-        Y=self.y-ceil(self.h/2)
+        X=self.x-math.ceil(self.w/2)
+        Y=self.y-math.ceil(self.h/2)
         self.W=2*self.w
         self.H=2*self.h
         
@@ -149,8 +146,8 @@ class Traitement():
         #on pose les variables et on récupère les informations de l'image
         Lx,Ly=[],[]
         img_y, img_x =img.shape
-        w=ceil(self.W/2)
-        h=ceil(self.H/2)
+        w=math.ceil(self.W/2)
+        h=math.ceil(self.H/2)
         #print(img_x,img_y)
         #print(w,h)
         # on récupère la valeur des pixels selon les axes
@@ -251,7 +248,7 @@ class Traitement():
         
         #On récupère l'angle de l'ellipse et on le met en radians
         ang_ell=self.ellipse[2]
-        ang=radians(ang_ell)
+        ang=math.radians(ang_ell)
 
         #On initialise les points de coordonnées
         GP1c, GP1l, GP2c, GP2l, PP1c, PP1l, PP2c, PP2l=0,0,0,0,0,0,0,0
@@ -266,11 +263,11 @@ class Traitement():
             PP2c=0
 
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
-            GP1c=cc_ell+floor(cl_ell*tan(ang))#Grand axe
-            GP2c=cc_ell-floor(cl_ell*tan(ang))
+            GP1c=cc_ell+math.floor(cl_ell*math.tan(ang))#Grand axe
+            GP2c=cc_ell-math.floor(cl_ell*math.tan(ang))
 
-            PP1l=cl_ell+floor(cc_ell*tan(ang))#Petit axe
-            PP2l=cl_ell-floor(cc_ell*tan(ang))
+            PP1l=cl_ell+math.floor(cc_ell*math.tan(ang))#Petit axe
+            PP2l=cl_ell-math.floor(cc_ell*math.tan(ang))
 
         #Dans le cas où l'ellipse est orientée horizontalement
         if 45<= ang_ell <135:
@@ -282,11 +279,11 @@ class Traitement():
             PP2l=img_l
 
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
-            GP1l=cl_ell-floor(cc_ell/tan(ang))#Grand axe
+            GP1l=cl_ell-math.floor(cc_ell/math.tan(ang))#Grand axe
             GP2l=cl_ell+floor(cc_ell/tan(ang))
 
-            PP1c=cc_ell-floor(cl_ell/tan(ang))#Petit axe
-            PP2c=cc_ell+floor(cl_ell/tan(ang))
+            PP1c=cc_ell-math.floor(cl_ell/math.tan(ang))#Petit axe
+            PP2c=cc_ell+math.floor(cl_ell/math.tan(ang))
 
         #Création des tuples de points
         GP1, GP2=[int(GP1l),int(GP1c)], [int(GP2l),int(GP2c)]

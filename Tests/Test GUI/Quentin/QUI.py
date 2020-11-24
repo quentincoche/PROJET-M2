@@ -7,9 +7,11 @@ Created on Mon Sep 28 09:22:21 2020
 from pypylon import pylon #Bibliothèque Basler d'interfaçage de la caméra
 from PIL import Image as Img #Bibliothèque de traitement d'image
 from PIL import ImageTk
-from tkinter import * #Bibliothèque de GUI
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import tkinter as tk
+from tkinter import ttk
+from tkinter import IntVar
+from tkinter import DoubleVar
 from threading import Thread
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date

@@ -36,9 +36,11 @@ Created on Mon Sep 28 09:22:21 2020
 from pypylon import pylon #Bibliothèque Basler d'interfaçage de la caméra
 from PIL import Image as Img #Bibliothèque de traitement d'image
 from PIL import ImageTk
-from tkinter import * #Bibliothèque de GUI
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import tkinter as tk
+from tkinter import ttk
+from tkinter import IntVar
+from tkinter import DoubleVar
 from threading import Thread
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date
@@ -78,10 +80,12 @@ class Fenetre(Thread):
         self.window.grid_rowconfigure(2, weight=3)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
+        self.size_pixel_height = DoubleVar()
+        self.size_pixel_width = DoubleVar()
         self.choix_fig_XY = IntVar()
         self.choix_fig_XY = 0
-        self.cX = IntVar()
-        self.cY = IntVar()
+        self.cX = DoubleVar()
+        self.cY = DoubleVar()
         self.ellipse_width = DoubleVar()
         self.ellipse_height = DoubleVar()
         self.ellipse_angle =DoubleVar()
@@ -89,7 +93,7 @@ class Fenetre(Thread):
         self.Screen_y = 1000
         self.Screen2_x = 750
         self.Screen2_y = 750
-        self.delay=10
+        self.delay=15
         self.frame2=[]
 
         self.plot()
@@ -123,6 +127,16 @@ class Fenetre(Thread):
         btnvideo.grid(row=0,column=0,sticky="nsew")
         btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
         btnexp.grid(row=0,column=1,sticky="nsew")
+        #entree hauteur pixel
+        title_entry_size_height = tk.Label(self.cmdup,text="Hauteur pixel (um) = ",bg="gray")
+        title_entry_size_height.grid(row=0,column=2,sticky="E")
+        entry_size_height = Entry(self.cmdup, textvariable = self.size_pixel_height, width=4)
+        entry_size_height.grid(row=0,column=3,sticky="E")
+        #entree largeur pixel
+        title_entry_size_width = tk.Label(self.cmdup,text="Largeur pixel (um) = ",bg="gray")
+        title_entry_size_width.grid(row=0,column=4,sticky="E")
+        entry_size_width = Entry(self.cmdup, textvariable = self.size_pixel_width, width=4)
+        entry_size_width.grid(row=0,column=5,sticky="E")
 
     def display(self):
         #cadre video
@@ -208,7 +222,7 @@ class Fenetre(Thread):
         self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
         self.display1.create_image(self.Screen_x/2,self.Screen_x/(2*ratio),image=self.photo)
 
-        self.solve=self.window.after(self.delay, self.update)
+        self.window.after(self.delay, self.update)
 
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """

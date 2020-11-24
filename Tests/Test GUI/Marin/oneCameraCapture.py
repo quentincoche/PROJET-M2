@@ -1,5 +1,6 @@
 import os
 
+os.environ["PYLON_CAMEMU"] = "3"
 import pypylon
 from pypylon import genicam
 from pypylon import pylon
@@ -21,12 +22,27 @@ class cameraCapture(tk.Frame):
             # Create an instant camera object with the camera device found first.
             self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
             self.camera.Open() #Ouvre la communication avec la caméra
+            self.Model = self.camera.GetDeviceInfo().GetModelName()
+
+            if self.Model == "acA1920-40uc":
+                self.camera.PixelFormat.SetValue('Mono8')
+                self.tps_exp_min = 50 
+                self.pixel_size = 5.86 #microns (pixels carrés sur les baslers)
+                self.pixel_max = 255
+
+            elif self.Model == "acA5472-17um":
+                self.camera.PixelFormat.SetValue('Mono12')
+                self.tps_exp_min = 50 
+                self.pixel_size = 2.4 #microns (pixels carrés sur les baslers)
+                self.pixel_max = 4095
+
+            else :
+                print("Camera non reconnue")
 
             self.width = self.camera.Width.GetValue()
             self.height = self.camera.Height.GetValue()
             self.ratio = float(self.width/self.height)
 
-            self.camera.PixelFormat.SetValue('Mono8')
             pylon.FeaturePersistence.Save(nodeFile, self.camera.GetNodeMap())
 
             # Print the model name of the camera.
@@ -62,7 +78,6 @@ class cameraCapture(tk.Frame):
             if self.grabResult.GrabSucceeded():
                 image = self.converter.Convert(self.grabResult) # Access the openCV image data
                 self.img0 = image.GetArray()
-                print(self.camera.PixelType)
             else:
                 print("Error: ", self.grabResult.ErrorCode)
     
@@ -89,28 +104,30 @@ class cameraCapture(tk.Frame):
         #print(max)
 
         while exp_ok == False: #Définit l'augmentation ou la diminution des valeurs d'exposition en fonction du max d'intensité de l'image
-            if max<=220:
-                self.temp_exp=self.temp_exp*2.
-                max=self.max_photo()
-                #print(self.temp_exp)
-                self.camera.ExposureTime.SetValue(self.temp_exp)
-            elif max >=255 :
-                self.temp_exp=self.temp_exp/1.3
-                max=self.max_photo()
-                #print(max)
-                #print(self.temp_exp)
-                self.camera.ExposureTime.SetValue(self.temp_exp)
-            elif self.temp_exp>=10000000.0:
-                exp_ok=True
-                print('Exp time too big')
-                break
-            elif self.temp_exp<=70.0:
-                exp_ok=True
-                print('Exp time too short')
-                break
+            if max<=self.pixel_max - 25:
+                if self.temp_exp>=10000000.0:
+                    exp_ok=True
+                    print('Exp time too big')
+                    break
+                else :
+                    self.temp_exp=self.temp_exp*2.
+                    max=self.max_photo()
+                    print(max)
+                    self.camera.ExposureTime.SetValue(self.temp_exp)
+            elif max >=self.pixel_max :
+                if self.temp_exp<=self.tps_exp_min:
+                    exp_ok=True
+                    print('Exp time too short')
+                    break
+                else: 
+                    self.temp_exp=self.temp_exp/1.3
+                    max=self.max_photo()
+                    print(max)
+                    self.camera.ExposureTime.SetValue(self.temp_exp)
             else:
                 exp_ok=True
                 break
+        
         self.camera.ExposureTime.SetValue(self.temp_exp)
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
         self.camera.Close() #Ferme la communication avec la caméra

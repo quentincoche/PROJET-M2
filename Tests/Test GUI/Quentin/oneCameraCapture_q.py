@@ -98,7 +98,7 @@ class cameraCapture(tk.Frame):
         exp_ok=False #Variable permettant de définir l'état de l'ajustement de l'exposition
         
         max=self.max_photo() #variable du max d'intensité de l'image
-        print(max)
+        #print(max)
 
         while exp_ok == False: #Définit l'augmentation ou la diminution des valeurs d'exposition en fonction du max d'intensité de l'image
             if max<=self.pixel_max - 25:
