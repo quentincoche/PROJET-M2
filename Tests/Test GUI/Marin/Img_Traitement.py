@@ -179,6 +179,7 @@ class Traitement():
 
         #On affiche les courbes résultantes
         fig = plt.figure(figsize=plt.figaspect(0.5))
+        fig.suptitle("Gaussienne x,y")
         ax = fig.add_subplot(2 ,2 ,1)
         ax.plot(x,Lx)
         ax.plot(x, x_fitted_model(x))
@@ -186,11 +187,11 @@ class Traitement():
         ax2.plot(y,Ly)
         ax2.plot(y, y_fitted_model(y))
         ax.set_title('X profil')
-        ax.set_xlabel ('Axe x')
-        ax.set_ylabel ('Axe y')
+        ax.set_xlabel ("Largeur de l'image en pixels")
+        ax.set_ylabel ("Intensité sur 8bits")
         ax2.set_title ('Y profil')
-        ax2.set_xlabel ('Axe x')
-        ax2.set_ylabel ('Axe y')
+        ax2.set_xlabel ("Hauteur de l'image en pixels")
+        ax2.set_ylabel ("Intensité sur 8bits")
 
         temps=time.time()-t
         print("Temps plot Gauss x,y : ", temps)
@@ -222,7 +223,12 @@ class Traitement():
         fig2, ax3 = plt.subplots()
         eps = np.min(model_data[model_data > 0]) / 10.0
         # use logarithmic scale for sharp Gaussians
-        ax3.imshow(np.log(eps + model_data), label='Gaussian')
+        cs = ax3.imshow(np.log(eps + model_data), label='Gaussian')
+        cbar = fig2.colorbar(cs)
+        cbar.ax3.set_ylabel('Intensité sur 8bits')
+        ax3.set_title('Gaussienne 2D')
+        ax3.set_xlabel ("Largeur de l'image en pixels")
+        ax3.set_ylabel ("Hauteur de l'image en pixels")
 
         temps=time.time()-t
         print("Temps plot Gauss 2D : ", temps)
@@ -332,6 +338,7 @@ class Traitement():
 
         #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
+        fig.suptitle("Gaussienne ellipse")
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(G,Lg)
         ax.plot(G, G_fitted_model(G))
@@ -339,11 +346,11 @@ class Traitement():
         ax2.plot(P,Lp)
         ax2.plot(P, P_fitted_model(P))
         ax.set_title('Grand axe profil')
-        ax.set_xlabel ('Axe x')
-        ax.set_ylabel ('Axe y')
+        ax.set_xlabel ('Grand axe en pixel')
+        ax.set_ylabel ('Intensité sur 8bits')
         ax2.set_title ('Petit axe profil')
-        ax2.set_xlabel ('Axe x')
-        ax2.set_ylabel ('Axe y')
+        ax2.set_xlabel ('Petit axe en pixel')
+        ax2.set_ylabel ('Intensité sur 8bits')
 
         temps = time.time()-t
         print("Temps plot Gauss ellipse : ", temps)
