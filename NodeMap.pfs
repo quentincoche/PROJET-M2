@@ -12,7 +12,7 @@ CenterX	0
 CenterY	0
 ReverseX	0
 ReverseY	0
-PixelFormat	Mono8
+PixelFormat	Mono12
 TestImageSelector	Off
 GainSelector	All
 Gain	0.00000
@@ -82,7 +82,11 @@ ColorTransformationSelector	RGBtoRGB
 ColorTransformationValueSelector	Gain00
 ShutterMode	Global
 ExposureMode	Timed
-ExposureTime	500.0
+<<<<<<< Updated upstream
+ExposureTime	2448.0
+=======
+ExposureTime	385.0
+>>>>>>> Stashed changes
 AcquisitionBurstFrameCount	1
 TriggerSelector	FrameBurstStart
 TriggerMode	Off
@@ -124,7 +128,7 @@ ChunkSelector	PayloadCRC16
 ChunkEnable	0
 ChunkSelector	Timestamp
 ChunkModeActive	0
-AutoTargetBrightness	0.50196
+AutoTargetBrightness	0.50012
 AutoFunctionProfile	MinimizeGain
 AutoGainLowerLimit	0.00000
 AutoGainUpperLimit	23.90000
