@@ -163,8 +163,8 @@ class Traitement():
         x=np.arange(img_x)
         y=np.arange(img_y)
 
-        sigma_x = np.std(Lx)
-        sigma_y = np.std(Ly)
+        #sigma_x = np.std(Lx)
+        #sigma_y = np.std(Ly)
 
         #on prépare la fonction de fit gaussien en précisant la méthode de fit
         fitter = modeling.fitting.LevMarLSQFitter()
@@ -205,9 +205,9 @@ class Traitement():
         img=self.crop_img # on récupère l'image
         fitter = modeling.fitting.LevMarLSQFitter()
 
-        y0, x0 = np.unravel_index(np.argmax(img), img.shape)
-        sigma = np.std(img)
-        amp=np.max(img)
+        #y0, x0 = np.unravel_index(np.argmax(img), img.shape)
+        #sigma = np.std(img)
+        #amp=np.max(img)
 
         #w = modeling.models.Gaussian2D(amp, x0, y0, sigma, sigma)
         w = modeling.models.Gaussian2D()
@@ -296,8 +296,10 @@ class Traitement():
         #on pose les variables et on récupère les informations de l'image
         img=self.crop_img
         Lg, Lp= [],[]
-        width=self.ellipse[1][1]
-        height=self.ellipse[1][0]
+
+        #width=self.ellipse[1][1]
+        #height=self.ellipse[1][0]
+
         #on récupère les points des axes de la fonction précédente
         GP1, GP2, PP1, PP2=self.points_ellipse()
         #on récupère les valeurs des pixels selon la ligne qui relie les pixels trouvés précedemment
@@ -313,8 +315,8 @@ class Traitement():
         P = np.arange(len(Lg))
 
         #Calcul des sigmas sur les valeurs             
-        sigma_g = np.std(Lg)
-        sigma_p = np.std(Lp) 
+        #sigma_g = np.std(Lg)
+        #sigma_p = np.std(Lp) 
 
         #model du fit
         fitter = modeling.fitting.LevMarLSQFitter()
