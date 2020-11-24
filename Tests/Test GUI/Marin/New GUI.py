@@ -278,6 +278,7 @@ class Fenetre(Thread):
         if self.choix_fig_XY == 0:
             self.fig_XY = Figure()
         else : 
+            self.fig_XY.clf()
             self.fig_XY = self.trmt.trace_ellipse()
 
         #cadre affichage profils XY
