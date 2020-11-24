@@ -51,6 +51,7 @@ from statistics import mean
 import oneCameraCapture as oneCameraCapture
 import Img_Traitement as Img_Traitement
 
+t=time.time()
 
 # La Classe Fenetre contient l'ensemble du programme #
 
@@ -90,7 +91,7 @@ class Fenetre(Thread):
         self.Screen_y = 1000
         self.Screen2_x = 750
         self.Screen2_y = 750
-        self.delay=50
+        self.delay=10
         self.frame2=[]
 
         self.plot()
@@ -271,7 +272,7 @@ class Fenetre(Thread):
         self.cadre_disp_XY.grid(row=2,column=1)
         return self.fig_XY
 
-    
-
+temps=time.time()-t    
+print('Lancement : ',temps)
 root = Fenetre()
 root.window.mainloop() # Lancement de la boucle principale

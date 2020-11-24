@@ -24,11 +24,14 @@ import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 class Traitement():
     
     def traitement(self, img):
+        t=time.time()
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         img_trait, img_bin=self.binarisation(gray)
         self.img=img_trait
         img100, ellipse, cX, cY=self.calcul_traitement(img_trait, img_bin)
         choix_fig = 1
+        temps=time.time()-t
+        print("Temps de traitement de l'image : ", temps)
         return img100, ellipse, cX, cY, choix_fig
 
 
@@ -140,44 +143,47 @@ class Traitement():
 
     def trace_profil(self):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
-        print('Start plotting')
+        t=time.time()
+        print('Start plot Gauss x,y')
         img=self.crop_img # on récupère l'image
         #on pose les variables et on récupère les informations de l'image
-        self.Lx,self.Ly=[],[]
+        Lx,Ly=[],[]
         img_y, img_x =img.shape
-        self.w_trace=ceil(self.W/2)
-        self.h_trace=ceil(self.H/2)
+        w=ceil(self.W/2)
+        h=ceil(self.H/2)
         #print(img_x,img_y)
         #print(w,h)
         # on récupère la valeur des pixels selon les axes
         for iy in range(img_y):
-            self.Ly=np.append(self.Ly,img[iy, self.w_trace])
+            Ly=np.append(Ly,img[iy, w])
         for ix in range(img_x):
-            self.Lx=np.append(self.Lx, img[self.h_trace, ix])
+            Lx=np.append(Lx, img[h, ix])
 
         #on fait une liste de ces valeurs
         x=np.arange(img_x)
         y=np.arange(img_y)
 
-        sigma_x = np.std(self.Lx)
-        sigma_y = np.std(self.Ly)
+        sigma_x = np.std(Lx)
+        sigma_y = np.std(Ly)
 
         #on prépare la fonction de fit gaussien en précisant la méthode de fit
         fitter = modeling.fitting.LevMarLSQFitter()
         #courbe gaussien selon les axes x et y
-        modelx = modeling.models.Gaussian1D(amplitude=np.max(self.Lx), mean=self.w_trace, stddev=sigma_x)   # depending on the data you need to give some initial values
-        modely = modeling.models.Gaussian1D(amplitude=np.max(self.Ly), mean=self.h_trace, stddev=sigma_y)
+        model = modeling.models.Gaussian1D()
+        #modelx = modeling.models.Gaussian1D(amplitude=np.max(Lx), mean=w, stddev=sigma_x)   # depending on the data you need to give some initial values
+        #modely = modeling.models.Gaussian1D(amplitude=np.max(Ly), mean=h, stddev=sigma_y)
+
         #fit des courbes et des données
-        x_fitted_model = fitter(modelx, x, self.Lx)
-        y_fitted_model = fitter(modely, y, self.Ly)
+        x_fitted_model = fitter(model, x, Lx)
+        y_fitted_model = fitter(model, y, Ly)
 
         #On affiche les courbes résultantes
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax = fig.add_subplot(2 ,2 ,1)
-        ax.plot(x,self.Lx)
+        ax.plot(x,Lx)
         ax.plot(x, x_fitted_model(x))
         ax2 = fig.add_subplot(2, 2, 2)
-        ax2.plot(y,self.Ly)
+        ax2.plot(y,Ly)
         ax2.plot(y, y_fitted_model(y))
         ax.set_title('X profil')
         ax.set_xlabel ('Axe x')
@@ -185,14 +191,17 @@ class Traitement():
         ax2.set_title ('Y profil')
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
-        print('End plotting')
+
+        temps=time.time()-t
+        print("Temps plot Gauss x,y : ", temps)
 
         return fig
 
     
     def plot_2D(self):
 
-        print("start 2D")
+        t=time.time()
+        print("start plot Gauss 2D")
         img=self.crop_img # on récupère l'image
         fitter = modeling.fitting.LevMarLSQFitter()
 
@@ -200,8 +209,9 @@ class Traitement():
         sigma = np.std(img)
         amp=np.max(img)
 
-        w = modeling.models.Gaussian2D(amp, x0, y0, sigma, sigma)
-        print(w)
+        #w = modeling.models.Gaussian2D(amp, x0, y0, sigma, sigma)
+        w = modeling.models.Gaussian2D()
+        #print(w)
 
         yi, xi = np.indices(img.shape)
 
@@ -214,7 +224,8 @@ class Traitement():
         # use logarithmic scale for sharp Gaussians
         ax3.imshow(np.log(eps + model_data), label='Gaussian')
 
-        print('End 2D')
+        temps=time.time()-t
+        print("Temps plot Gauss 2D : ", temps)
 
         return fig2
         
@@ -278,9 +289,10 @@ class Traitement():
         return GP1, GP2, PP1, PP2
 
 
-
     def trace_ellipse(self):
         """ Trace le fit gaussien selon les axes de l'ellipse"""
+        t=time.time()
+        print("Start plot Gauss ellipse axis")
         #on pose les variables et on récupère les informations de l'image
         img=self.crop_img
         Lg, Lp= [],[]
@@ -308,12 +320,13 @@ class Traitement():
         fitter = modeling.fitting.LevMarLSQFitter()
 
         #fonction gaussienne
-        modelG = modeling.models.Gaussian1D(amplitude=np.max(Lg), mean=width, stddev=sigma_g)   # depending on the data you need to give some initial values
-        modelP = modeling.models.Gaussian1D(amplitude=np.max(Lp), mean=height, stddev=sigma_p)
+        model = modeling.models.Gaussian1D()
+        #modelG = modeling.models.Gaussian1D(amplitude=np.max(Lg), mean=width, stddev=sigma_g)   # depending on the data you need to give some initial values
+        #modelP = modeling.models.Gaussian1D(amplitude=np.max(Lp), mean=height, stddev=sigma_p)
         
         #Fit de la courbe et des données
-        G_fitted_model = fitter(modelG, G, Lg)
-        P_fitted_model = fitter(modelP, P, Lp)
+        G_fitted_model = fitter(model, G, Lg)
+        P_fitted_model = fitter(model, P, Lp)
 
         #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
@@ -329,6 +342,9 @@ class Traitement():
         ax2.set_title ('Petit axe profil')
         ax2.set_xlabel ('Axe x')
         ax2.set_ylabel ('Axe y')
+
+        temps = time.time()-t
+        print("Temps plot Gauss ellipse : ", temps)
 
         return fig
 
