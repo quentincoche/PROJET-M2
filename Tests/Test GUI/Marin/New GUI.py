@@ -41,6 +41,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import IntVar
 from tkinter import DoubleVar
+from tkinter import Entry
 from threading import Thread
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date

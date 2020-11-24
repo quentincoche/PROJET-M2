@@ -15,7 +15,7 @@ BinningVerticalMode	Sum
 BinningVertical	1
 ReverseX	0
 ReverseY	0
-PixelFormat	Mono8
+PixelFormat	Mono12
 TestImageSelector	Off
 GainSelector	All
 Gain	-0.00000
@@ -31,7 +31,7 @@ RemoveParameterLimitSelector	Gain
 PgiMode	Off
 ShutterMode	Rolling
 ExposureMode	Timed
-ExposureTime	2002.0
+ExposureTime	2448.0
 AcquisitionBurstFrameCount	1
 TriggerSelector	FrameBurstStart
 TriggerMode	Off
@@ -73,7 +73,7 @@ ChunkSelector	PayloadCRC16
 ChunkEnable	0
 ChunkSelector	Timestamp
 ChunkModeActive	0
-AutoTargetBrightness	0.50196
+AutoTargetBrightness	0.50012
 AutoFunctionProfile	MinimizeGain
 AutoGainLowerLimit	-0.00000
 AutoGainUpperLimit	27.04577
