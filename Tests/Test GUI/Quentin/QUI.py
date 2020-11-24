@@ -156,6 +156,7 @@ class Fenetre(Thread):
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
         print("[INFO] closing...")
+        self.window.quit()
         self.window.destroy() # Ferme la fenêtre
 
 

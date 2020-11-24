@@ -82,11 +82,15 @@ ColorTransformationSelector	RGBtoRGB
 ColorTransformationValueSelector	Gain00
 ShutterMode	Global
 ExposureMode	Timed
+<<<<<<< HEAD
+ExposureTime	2368.0
+=======
 <<<<<<< Updated upstream
 ExposureTime	2448.0
 =======
 ExposureTime	385.0
 >>>>>>> Stashed changes
+>>>>>>> 5b83135299e08af031b5230e768d0a6e16f04d6e
 AcquisitionBurstFrameCount	1
 TriggerSelector	FrameBurstStart
 TriggerMode	Off

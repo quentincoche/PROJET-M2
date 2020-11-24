@@ -47,7 +47,7 @@ class cameraCapture(tk.Frame):
 
             # Print the model name of the camera.
             print("Using device ", self.camera.GetDeviceInfo().GetModelName())
-            print("Exposure time ", self.camera.ExposureTime.GetValue())
+            #print("Exposure time ", self.camera.ExposureTime.GetValue())
             #print("Pixels formats :", self.camera.PixelFormat.Symbolics)
             
 
@@ -112,7 +112,7 @@ class cameraCapture(tk.Frame):
                 else :
                     self.temp_exp=self.temp_exp*2.
                     max=self.max_photo()
-                    print(max)
+                    #print(max)
                     self.camera.ExposureTime.SetValue(self.temp_exp)
             elif max >=self.pixel_max :
                 if self.temp_exp<=self.tps_exp_min:
@@ -122,7 +122,7 @@ class cameraCapture(tk.Frame):
                 else: 
                     self.temp_exp=self.temp_exp/1.3
                     max=self.max_photo()
-                    print(max)
+                    #print(max)
                     self.camera.ExposureTime.SetValue(self.temp_exp)
             else:
                 exp_ok=True
