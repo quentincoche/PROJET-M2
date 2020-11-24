@@ -108,16 +108,6 @@ class Fenetre(Thread):
         btnvideo.grid(row=0,column=0,sticky="nsew")
         btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
         btnexp.grid(row=0,column=1,sticky="nsew")
-        #entree hauteur pixel
-        title_entry_size_height = tk.Label(self.cmdup,text="Hauteur pixel (um) = ",bg="gray")
-        title_entry_size_height.grid(row=0,column=2,sticky="E")
-        entry_size_height = Entry(self.cmdup, textvariable = self.size_pixel_height, width=4)
-        entry_size_height.grid(row=0,column=3,sticky="E")
-        #entree largeur pixel
-        title_entry_size_width = tk.Label(self.cmdup,text="Largeur pixel (um) = ",bg="gray")
-        title_entry_size_width.grid(row=0,column=4,sticky="E")
-        entry_size_width = Entry(self.cmdup, textvariable = self.size_pixel_width, width=4)
-        entry_size_width.grid(row=0,column=5,sticky="E")
 
     def display(self):
         #cadre video
