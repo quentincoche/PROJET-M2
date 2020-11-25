@@ -148,8 +148,7 @@ class Traitement():
         img_y, img_x =img.shape
         w=np.ceil(self.W/2)
         h=np.ceil(self.H/2)
-        #print(img_x,img_y)
-        #print(w,h)
+ 
         # on récupère la valeur des pixels selon les axes
         for iy in range(img_y):
             Ly=np.append(Ly,img[iy, w])
@@ -290,7 +289,7 @@ class Traitement():
 
         #Création des tuples de points
         GP1, GP2=[np.int32(GP1l),np.int32(GP1c)], [np.int32(GP2l),np.int32(GP2c)]
-        PP1, PP2=[np.float32(PP1l),np.float32(PP1c)], [np.float32(PP2l),np.float32(PP2c)]
+        PP1, PP2=[np.int32(PP1l),np.int32(PP1c)], [np.int32(PP2l),np.int32(PP2c)]
 
         return GP1, GP2, PP1, PP2
 
@@ -302,28 +301,30 @@ class Traitement():
         #on pose les variables et on récupère les informations de l'image
         img=self.crop_img
         Lg, Lp= [],[]
-
+        i,y = 0,0
         width=self.ellipse[1][1]
         height=self.ellipse[1][0]
+        ang_ell=self.ellipse[2]
 
         #on récupère les points des axes de la fonction précédente
         GP1, GP2, PP1, PP2=self.points_ellipse()
         #on récupère les valeurs des pixels selon la ligne qui relie les pixels trouvés précedemment
         #G_buffer = self.createLineIterator(GP1, GP2, img)
         #P_buffer = self.createLineIterator(PP1, PP2, img)
-        Gr, Gc=line(GP1[0], GP1[1], GP2[0], GP2[1])
-        print(Gr, len(Gr))
-        for i in range (len(Gr)) :
-            Lg=np.append(Lg, img[Gr[i], Gc[i]])
-        print(Lg)
-
-        Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1])
-        for y in range (len(Pr)) :
-            Lp=np.append(Lp, img[Pr[y], Pc[y]])
 
         print("Grand axe : ", GP1, GP2)
-        print("Petit axe : ", PP1, PP2)
+        print("Petit axe : ", PP1, PP2)    
 
+        Gr, Gc=line(GP1[0], GP1[1], GP2[0], GP2[1])
+        Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1])
+        print(Gr, len(Gr), len(Gc))
+
+        for i in range (len(Gr)-1) :
+            Lg=np.append(Lg, img[Gr[i], Gc[i]])
+        print(Lg)  
+        for y in range (len(Pr)-1) :
+            Lp=np.append(Lp, img[Pr[y], Pc[y]])
+        
 
         #On créer la liste qui sert d'axe pour le fit
         G = np.arange(len(Lg))
