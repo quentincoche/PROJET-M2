@@ -318,8 +318,8 @@ class Traitement():
         print(Lg)
 
         Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1])
-        for i in range (len(Pr)) :
-            Lp=np.append(Lp, img[Pr[i], Pc[i]])
+        for y in range (len(Pr)) :
+            Lp=np.append(Lp, img[Pr[y], Pc[y]])
 
         print("Grand axe : ", GP1, GP2)
         print("Petit axe : ", PP1, PP2)
