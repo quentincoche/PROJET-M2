@@ -319,11 +319,12 @@ class Traitement():
         Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1])
         print(Gr, len(Gr), len(Gc))
 
+        for y in range (len(Pr)-1) :
+            Lp=np.append(Lp, img[Pr[y], Pc[y]])
         for i in range (len(Gr)-1) :
             Lg=np.append(Lg, img[Gr[i], Gc[i]])
         print(Lg)  
-        for y in range (len(Pr)-1) :
-            Lp=np.append(Lp, img[Pr[y], Pc[y]])
+        
         
 
         #On créer la liste qui sert d'axe pour le fit
