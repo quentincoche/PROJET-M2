@@ -263,11 +263,27 @@ class Traitement():
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
             l1_ang=np.floor(cl_ell*np.tan(ang))
             GP1c=cc_ell+l1_ang#Grand axe
+            if GP1c > img_c:
+                GP1c=img_c-1
+            if GP1c < 0:
+                GP1c=0
             GP2c=cc_ell-l1_ang
+            if GP2c < 0:
+                GP2c=0
+            if GP2c > img_c:
+                GP2c=img_c-1
 
             c1_ang=np.floor(cc_ell*np.tan(ang))
             PP1l=cl_ell-c1_ang#Petit axe
+            if PP1l < 0:
+                PP1l=0
+            if PP1l > img_l:
+                PP1l= img_l-1
             PP2l=cl_ell+c1_ang
+            if PP2l > img_l:
+                PP2l=img_l-1
+            if PP2l < 0:
+                PP2l=0
 
         #Dans le cas où l'ellipse est orientée horizontalement
         if 45<= ang_ell <135:
@@ -281,11 +297,27 @@ class Traitement():
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
             c2_ang=np.floor(cc_ell/np.tan(ang))
             GP1l=cl_ell-c2_ang#Grand axe
+            if GP1l < 0:
+                GP1l = 0
+            if GP1l > img_l:
+                GP1l = img_l-1
             GP2l=cl_ell+c2_ang
+            if GP2l >img_l :
+                GP2l = img_l-1
+            if GP2l < 0 :
+                GP2l = 0
 
             l2_ang=np.floor(cl_ell/np.tan(ang))
             PP1c=cc_ell-l2_ang#Petit axe
+            if PP1c > img_c:
+                PP1c = img_c-1
+            if PP1c < 0:
+                PP1c = 0
             PP2c=cc_ell+l2_ang
+            if PP2c < 0:
+                PP2c = 0
+            if PP2c > img_c:
+                PP2c = img_c-1
 
         #Création des tuples de points
         GP1, GP2=[np.int32(GP1l),np.int32(GP1c)], [np.int32(GP2l),np.int32(GP2c)]
@@ -305,34 +337,30 @@ class Traitement():
         width=self.ellipse[1][1]
         height=self.ellipse[1][0]
         ang_ell=self.ellipse[2]
+        print( ang_ell)
 
         #on récupère les points des axes de la fonction précédente
         GP1, GP2, PP1, PP2=self.points_ellipse()
         #on récupère les valeurs des pixels selon la ligne qui relie les pixels trouvés précedemment
         #G_buffer = self.createLineIterator(GP1, GP2, img)
-        #P_buffer = self.createLineIterator(PP1, PP2, img)
-
-        print("Grand axe : ", GP1, GP2)
-        print("Petit axe : ", PP1, PP2)    
+        #P_buffer = self.createLineIterator(PP1, PP2, img) 
 
         Gr, Gc=line(GP1[0], GP1[1], GP2[0], GP2[1])
-        Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1])
-        print(Gc, len(Gr), len(Gc))
+        Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1]))
 
-        if Gc[len(Gc)-1]-Gc[0]<0:
+        if 45 <= ang_ell <135:
             for y in range (len(Pr)-1) :
                 Lp=np.append(Lp, img[Pr[y], Pc[y]])
             for i in range (len(Gr)-1) :
-                print("i=",i) 
                 Lg=np.append(Lg, img[Gr[i], len(Gc)-2-i])
+                
         else :
             for y in range (len(Pr)-1) :
                 Lp=np.append(Lp, img[Pr[y], Pc[y]])
             for i in range (len(Gr)-1) :
-                print("i=",i) 
                 Lg=np.append(Lg, img[Gr[i], Gc[i]])
-        
-        
+                
+           
 
         #On créer la liste qui sert d'axe pour le fit
         G = np.arange(len(Lg))
