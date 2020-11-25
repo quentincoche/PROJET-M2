@@ -279,7 +279,7 @@ class Fenetre(Thread):
             self.fig_XY = Figure()
         else : 
             self.fig_XY.clf()
-            self.fig_XY = self.trmt.trace_ellipse()
+            self.fig_XY = self.trmt.trace_profil()
 
         #cadre affichage profils XY
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.window)

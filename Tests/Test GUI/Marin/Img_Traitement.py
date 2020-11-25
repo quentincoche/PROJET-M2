@@ -146,8 +146,8 @@ class Traitement():
         #on pose les variables et on récupère les informations de l'image
         Lx,Ly=[],[]
         img_y, img_x =img.shape
-        w=np.ceil(self.W/2)
-        h=np.ceil(self.H/2)
+        w=math.ceil(self.W/2)
+        h=math.ceil(self.H/2)
  
         # on récupère la valeur des pixels selon les axes
         for iy in range(img_y):
@@ -262,11 +262,13 @@ class Traitement():
 
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
             l1_ang=np.floor(cl_ell*np.tan(ang))
+
             GP1c=cc_ell+l1_ang#Grand axe
-            if GP1c > img_c:
+            if GP1c > img_c: #Condition sur les longueurs dû aux arrondis dans les angles de l'image
                 GP1c=img_c-1
             if GP1c < 0:
                 GP1c=0
+
             GP2c=cc_ell-l1_ang
             if GP2c < 0:
                 GP2c=0
@@ -274,11 +276,13 @@ class Traitement():
                 GP2c=img_c-1
 
             c1_ang=np.floor(cc_ell*np.tan(ang))
+
             PP1l=cl_ell-c1_ang#Petit axe
             if PP1l < 0:
                 PP1l=0
             if PP1l > img_l:
                 PP1l= img_l-1
+
             PP2l=cl_ell+c1_ang
             if PP2l > img_l:
                 PP2l=img_l-1
@@ -296,11 +300,13 @@ class Traitement():
 
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
             c2_ang=np.floor(cc_ell/np.tan(ang))
+
             GP1l=cl_ell-c2_ang#Grand axe
             if GP1l < 0:
                 GP1l = 0
             if GP1l > img_l:
                 GP1l = img_l-1
+
             GP2l=cl_ell+c2_ang
             if GP2l >img_l :
                 GP2l = img_l-1
@@ -308,11 +314,13 @@ class Traitement():
                 GP2l = 0
 
             l2_ang=np.floor(cl_ell/np.tan(ang))
+
             PP1c=cc_ell-l2_ang#Petit axe
             if PP1c > img_c:
                 PP1c = img_c-1
             if PP1c < 0:
                 PP1c = 0
+
             PP2c=cc_ell+l2_ang
             if PP2c < 0:
                 PP2c = 0
@@ -341,13 +349,12 @@ class Traitement():
 
         #on récupère les points des axes de la fonction précédente
         GP1, GP2, PP1, PP2=self.points_ellipse()
+
         #on récupère les valeurs des pixels selon la ligne qui relie les pixels trouvés précedemment
-        #G_buffer = self.createLineIterator(GP1, GP2, img)
-        #P_buffer = self.createLineIterator(PP1, PP2, img) 
-
         Gr, Gc=line(GP1[0], GP1[1], GP2[0], GP2[1])
-        Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1]))
+        Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1])
 
+        #Création des listes d'intensités de l'image en fonction de l'orientation de l'ellipse
         if 45 <= ang_ell <135:
             for y in range (len(Pr)-1) :
                 Lp=np.append(Lp, img[Pr[y], Pc[y]])
@@ -359,9 +366,8 @@ class Traitement():
                 Lp=np.append(Lp, img[Pr[y], Pc[y]])
             for i in range (len(Gr)-1) :
                 Lg=np.append(Lg, img[Gr[i], Gc[i]])
-                
-           
 
+    
         #On créer la liste qui sert d'axe pour le fit
         G = np.arange(len(Lg))
         P = np.arange(len(Lp))
