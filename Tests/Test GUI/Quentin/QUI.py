@@ -154,6 +154,7 @@ class Fenetre(Thread):
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
         print("[INFO] closing...")
+        self.fig_XY.clear()
         self.window.quit()
         self.window.destroy() # Ferme la fenêtre
 
@@ -211,6 +212,8 @@ class Fenetre(Thread):
     def disp_traitement(self):
         self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame)
         self.affich_traitement()
+        GP1, GP2, PP1, PP2 = self.trmt.points_ellipse()
+        print("GP1=",GP1,"GP2=", GP2, "PP1=",PP1, "PP2=",PP2)
     
     def affich_traitement(self):
         #Get display size
@@ -247,7 +250,8 @@ class Fenetre(Thread):
             self.fig_XY = Figure()
         else : 
             self.fig_XY.clf()
-            self.fig_XY = self.trmt.trace_profil()
+            #self.fig_XY = self.trmt.trace_profil()
+            self.fig_XY = self.trmt.trace_ellipse()
 
         #cadre affichage profils XY
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.window)

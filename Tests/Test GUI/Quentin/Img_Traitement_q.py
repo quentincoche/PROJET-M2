@@ -103,7 +103,6 @@ class Traitement():
 
         return crop_img, self.ellipse, cX, cY
 
-
     def crop(self,frame):
         """ Fonction qui crop le centre d'intérêt à 2 fois sa taille"""
 
@@ -130,7 +129,6 @@ class Traitement():
         crop_img = frame[Y:Y+self.H,X:X+self.W]
         return crop_img
 
-
     def trace_profil(self):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
         print('Start plotting')
@@ -152,7 +150,7 @@ class Traitement():
         model = modeling.models.Gaussian1D()   # depending on the data you need to give some initial values
         x_fitted_model = fitter(model, x, Lx)
         y_fitted_model = fitter(model, y, Ly)
-    
+
         fig = Figure()
         fig.suptitle("Gaussienne x,y")
         ax = fig.add_subplot(2 ,2 ,1)
@@ -205,11 +203,11 @@ class Traitement():
         temps=time.time()-t
         print("Temps plot Gauss 2D : ", temps)
 
-        return fig2
-        
+        return fig2    
     
     def points_ellipse(self):
         """
+        OOOOOKKKKK
         Permet de récupérer les points extremes de l'image selon le grand et
         petit axe de l'ellipse pour par la suite fiter la gaussienne sur ces lignes
         """
@@ -255,7 +253,7 @@ class Traitement():
 
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
             GP1l=cl_ell-math.floor(cc_ell/math.tan(ang))#Grand axe
-            GP2l=cl_ell+floor(cc_ell/tan(ang))
+            GP2l=cl_ell+math.floor(cc_ell/math.tan(ang))
 
             PP1c=cc_ell-math.floor(cl_ell/math.tan(ang))#Petit axe
             PP2c=cc_ell+math.floor(cl_ell/math.tan(ang))
@@ -265,7 +263,6 @@ class Traitement():
         PP1, PP2=[int(PP1l),int(PP1c)], [int(PP2l),int(PP2c)]
 
         return GP1, GP2, PP1, PP2
-
 
     def trace_ellipse(self):
         """ Trace le fit gaussien selon les axes de l'ellipse"""
@@ -312,7 +309,7 @@ class Traitement():
         P_fitted_model = fitter(model, P, Lp)
 
         #affichage des résultats
-        fig = Figure(figsize=plt.figaspect(0.5))
+        fig = Figure()
         fig.suptitle("Gaussienne ellipse")
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(G,Lg)
@@ -331,7 +328,6 @@ class Traitement():
         print("Temps plot Gauss ellipse : ", temps)
 
         return fig
-
 
     def createLineIterator(self, P1, P2, img):
         """
