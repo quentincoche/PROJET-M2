@@ -317,13 +317,20 @@ class Traitement():
 
         Gr, Gc=line(GP1[0], GP1[1], GP2[0], GP2[1])
         Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1])
-        print(Gr, len(Gr), len(Gc))
+        print(Gc, len(Gr), len(Gc))
 
-        for y in range (len(Pr)-1) :
-            Lp=np.append(Lp, img[Pr[y], Pc[y]])
-        for i in range (len(Gr)-1) :
-            Lg=np.append(Lg, img[Gr[i], Gc[i]])
-        print(Lg)  
+        if Gc[len(Gc)-1]-Gc[0]<0:
+            for y in range (len(Pr)-1) :
+                Lp=np.append(Lp, img[Pr[y], Pc[y]])
+            for i in range (len(Gr)-1) :
+                print("i=",i) 
+                Lg=np.append(Lg, img[Gr[i], len(Gc)-2-i])
+        else :
+            for y in range (len(Pr)-1) :
+                Lp=np.append(Lp, img[Pr[y], Pc[y]])
+            for i in range (len(Gr)-1) :
+                print("i=",i) 
+                Lg=np.append(Lg, img[Gr[i], Gc[i]])
         
         
 
