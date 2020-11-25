@@ -160,19 +160,19 @@ class Traitement():
         x=np.arange(img_x)
         y=np.arange(img_y)
 
-        #sigma_x = np.std(Lx)
-        #sigma_y = np.std(Ly)
+        sigma_x = np.std(Lx)
+        sigma_y = np.std(Ly)
 
         #on prépare la fonction de fit gaussien en précisant la méthode de fit
         fitter = modeling.fitting.LevMarLSQFitter()
+
         #courbe gaussien selon les axes x et y
-        model = modeling.models.Gaussian1D()
-        #modelx = modeling.models.Gaussian1D(amplitude=np.max(Lx), mean=w, stddev=sigma_x)   # depending on the data you need to give some initial values
-        #modely = modeling.models.Gaussian1D(amplitude=np.max(Ly), mean=h, stddev=sigma_y)
+        modelx = modeling.models.Gaussian1D(amplitude=np.max(Lx), mean=w, stddev=sigma_x)   # depending on the data you need to give some initial values
+        modely = modeling.models.Gaussian1D(amplitude=np.max(Ly), mean=h, stddev=sigma_y)
 
         #fit des courbes et des données
-        x_fitted_model = fitter(model, x, Lx)
-        y_fitted_model = fitter(model, y, Ly)
+        x_fitted_model = fitter(modelx, x, Lx)
+        y_fitted_model = fitter(modely, y, Ly)
 
         #On affiche les courbes résultantes
         fig = plt.figure(figsize=plt.figaspect(0.5))
@@ -203,12 +203,11 @@ class Traitement():
         img=self.crop_img # on récupère l'image
         fitter = modeling.fitting.LevMarLSQFitter()
 
-        #y0, x0 = np.unravel_index(np.argmax(img), img.shape)
-        #sigma = np.std(img)
-        #amp=np.max(img)
+        y0, x0 = np.unravel_index(np.argmax(img), img.shape)
+        sigma = np.std(img)
+        amp=np.max(img)
 
-        #w = modeling.models.Gaussian2D(amp, x0, y0, sigma, sigma)
-        w = modeling.models.Gaussian2D()
+        w = modeling.models.Gaussian2D(amp, x0, y0, sigma, sigma)
         #print(w)
 
         yi, xi = np.indices(img.shape)
@@ -259,15 +258,15 @@ class Traitement():
             GP1l=0 #Grand axe
             GP2l=img_l
 
-            PP1c=img_c #Petit axe
-            PP2c=0
+            PP1c=0 #Petit axe
+            PP2c=img_c
 
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
             GP1c=cc_ell+math.floor(cl_ell*math.tan(ang))#Grand axe
             GP2c=cc_ell-math.floor(cl_ell*math.tan(ang))
 
-            PP1l=cl_ell+math.floor(cc_ell*math.tan(ang))#Petit axe
-            PP2l=cl_ell-math.floor(cc_ell*math.tan(ang))
+            PP1l=cl_ell-math.floor(cc_ell*math.tan(ang))#Petit axe
+            PP2l=cl_ell+math.floor(cc_ell*math.tan(ang))
 
         #Dans le cas où l'ellipse est orientée horizontalement
         if 45<= ang_ell <135:
@@ -280,7 +279,7 @@ class Traitement():
 
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
             GP1l=cl_ell-math.floor(cc_ell/math.tan(ang))#Grand axe
-            GP2l=cl_ell+floor(cc_ell/tan(ang))
+            GP2l=cl_ell+math.floor(cc_ell/math.tan(ang))
 
             PP1c=cc_ell-math.floor(cl_ell/math.tan(ang))#Petit axe
             PP2c=cc_ell+math.floor(cl_ell/math.tan(ang))
@@ -300,8 +299,8 @@ class Traitement():
         img=self.crop_img
         Lg, Lp= [],[]
 
-        #width=self.ellipse[1][1]
-        #height=self.ellipse[1][0]
+        width=self.ellipse[1][1]
+        height=self.ellipse[1][0]
 
         #on récupère les points des axes de la fonction précédente
         GP1, GP2, PP1, PP2=self.points_ellipse()
@@ -321,20 +320,19 @@ class Traitement():
         P = np.arange(len(Lp))
 
         #Calcul des sigmas sur les valeurs             
-        #sigma_g = np.std(Lg)
-        #sigma_p = np.std(Lp) 
+        sigma_g = np.std(Lg)
+        sigma_p = np.std(Lp) 
 
         #model du fit
         fitter = modeling.fitting.LevMarLSQFitter()
 
         #fonction gaussienne
-        model = modeling.models.Gaussian1D()
-        #modelG = modeling.models.Gaussian1D(amplitude=np.max(Lg), mean=width, stddev=sigma_g)   # depending on the data you need to give some initial values
-        #modelP = modeling.models.Gaussian1D(amplitude=np.max(Lp), mean=height, stddev=sigma_p)
+        modelG = modeling.models.Gaussian1D(amplitude=np.max(Lg), mean=width, stddev=sigma_g)   # depending on the data you need to give some initial values
+        modelP = modeling.models.Gaussian1D(amplitude=np.max(Lp), mean=height, stddev=sigma_p)
         
         #Fit de la courbe et des données
-        G_fitted_model = fitter(model, G, Lg)
-        P_fitted_model = fitter(model, P, Lp)
+        G_fitted_model = fitter(modelG, G, Lg)
+        P_fitted_model = fitter(modelP, P, Lp)
 
         #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
