@@ -43,9 +43,10 @@ from tkinter import IntVar
 from tkinter import DoubleVar
 from tkinter import Entry
 from threading import Thread
+import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
+from pathlib import Path
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date
-import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from matplotlib.figure import Figure
@@ -62,9 +63,10 @@ class Fenetre(Thread):
         
         Thread.__init__(self)
 
+        """Edition de nom de variable associé aux autres fichiers du programme"""
         self.vid = oneCameraCapture.cameraCapture()
         self.trmt = Img_Traitement.Traitement()
-        self.output_path = output_path  #Chemin de sortie de la photo
+        self.output_path = Path.cwd()  #Chemin de sortie de la photo
 
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
@@ -81,22 +83,36 @@ class Fenetre(Thread):
         self.window.grid_rowconfigure(2, weight=3)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
+        #Variables pour la taille des pixels des caméras
         self.size_pixel_height = DoubleVar()
         self.size_pixel_width = DoubleVar()
+
+        #Variables d'affichage des figures
         self.choix_fig_XY = IntVar()
         self.choix_fig_XY = 0
+
+        #Variables du barycentre de l'image
         self.cX = DoubleVar()
         self.cY = DoubleVar()
+
+        #Variables du fit ellipse
         self.ellipse_width = DoubleVar()
         self.ellipse_height = DoubleVar()
         self.ellipse_angle =DoubleVar()
+
+        #Valeurs d'initialisation des tailles de l'affichage
         self.Screen_x = 1500
         self.Screen_y = 1000
         self.Screen2_x = 750
         self.Screen2_y = 750
+
+        #Temps en ms entre chaque actualisation de l'interface
         self.delay=15
+
+        #Variable de l'écran de l'image traité
         self.frame2=[]
 
+        #Appel de toutes les fonctions permettant l'affichage de notre programme
         self.plot()
         self.display()
         self.Interface() #Lance la fonction Interface
@@ -112,22 +128,54 @@ class Fenetre(Thread):
         """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
         
         #commandes gauche
-        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray")
+            #Taille de la zone des boutons
+        self.cmdleft = tk.Frame(self.window,padx=5,pady=6,bg="gray")
         self.cmdleft.grid(row=1,column=0, sticky='NSEW')
+
+            #Bouton snapshot
+        self.FrameCapture=tk.Frame(self.cmdleft, borderwidth=2, relief='groove')
+        self.FrameCapture.grid(row=0, column=0, rowspan=3, columnspan=1, sticky="nsew")
+
+        label_snap=tk.Label(self.FrameCapture, text="Choix enregistrement :")
+        label_snap.grid(row=0, column=0, sticky="nsew")
+
+        self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
+
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Preview", command=self.choice0)
+        bouton_selection.grid(row=1, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Traité", command=self.choice1)
+        bouton_selection.grid(row=2, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot X,Y", command=self.choice2)
+        bouton_selection.grid(row=3, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot Ellipse", command=self.choice3)
+        bouton_selection.grid(row=4, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot 2D", command=self.choice4)
+        bouton_selection.grid(row=5, column=0)
+
         btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
-        btncap.grid(row=0,column=0,sticky="nsew")
+        btncap.grid(row=3,column=0,sticky="nsew")
+
+            #Bouton figures
         btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
-        btnprofiles.grid(row=1,column=0,sticky="nsew")
+        btnprofiles.grid(row=4,column=0,sticky="nsew")
+
+            #Bouton quitter
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=2,column=0,sticky="nsew")
-        
+        btnquit.grid(row=5,column=0,sticky="nsew")
+
         #commandes superieures
+            #Taille de la zone de commande
         self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="gray")
         self.cmdup.grid(row=0,column=1, sticky="NSEW")
+
+            #Bouton traitement vidéo
         btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool)
         btnvideo.grid(row=0,column=0,sticky="nsew")
+
+            #Bouton auto-exposition
         btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
         btnexp.grid(row=0,column=1,sticky="nsew")
+
         #entree hauteur pixel
         title_entry_size_height = tk.Label(self.cmdup,text="Hauteur pixel (um) = ",bg="gray")
         title_entry_size_height.grid(row=0,column=2,sticky="E")
@@ -139,24 +187,31 @@ class Fenetre(Thread):
         entry_size_width = Entry(self.cmdup, textvariable = self.size_pixel_width, width=4)
         entry_size_width.grid(row=0,column=5,sticky="E")
 
+
     def display(self):
         #cadre video
+            #Position
         self.display1 = tk.Canvas(self.window, width=self.Screen_x,height=self.Screen_y)  # Initialisation de l'écran 1
         self.display1.grid(row=1,column=1,sticky="NSW")
+            #Taille
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
 
         #cadre traitement
+            #Titre
         self.title_display2 = tk.Label(self.window,text="Fit ellipse",bg="gray")
         self.title_display2.grid(row=0,column=2,sticky="NSEW")
+            #Position
         self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y)  # Initialisation de l'écran 1
         self.display2.grid(row=1,column=2,sticky="NSE")
+            #Taille
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
 
         #zone affichage résultats
         self.results = tk.Frame(self.window,padx=5,pady=5,bg="gray")
         self.results.grid(row=2,column=2,sticky="NSE")
+
         #barycentres
         self.label01 = tk.Label(self.results,text="barycentre X = ")
         self.label01.grid(row=0,column=0,sticky="nsew")
@@ -188,16 +243,36 @@ class Fenetre(Thread):
         self.window.destroy() # Ferme la fenêtre
 
 
+         #Fonction définissant l'image à enregistrer   
+    def choice0(self):
+        self.coch0=1
+    
+    def choice1(self):
+        self.coch1=1
+ 
+    def choice2(self):
+        self.coch2=1
+    
+    def choice3(self):
+        self.coch3=1
+
+    def choice4(self):
+        self.coch4=1
+
+
     #####################
     #   Partie Camera   # 
     #####################
 
 
     def flux_cam(self):
+        """Lance la fonction d'affichage de la preview  dans un thread"""
         self.t1=Thread(target=self.update(), args=(self.window, self.display1, self.Screen_x, self.Screen_y)) #boucle la fonction d'acquisition de la caméra
         self.t1.start()
 
+
     def update(self):
+        """Affichage de la preview"""
         #Get a frame from cameraCapture
         self.frame0 = self.vid.getFrame() #This is an array
         self.frame0=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
@@ -216,6 +291,7 @@ class Fenetre(Thread):
         elif r < ratio:
             self.Screen_y = int(round(self.display1.winfo_width()/ratio))
 
+        #resize the picture
         frame = cv2.resize(self.frame, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_AREA)
 
         #OpenCV bindings for Python store an image in a NumPy array
@@ -224,15 +300,49 @@ class Fenetre(Thread):
         self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
         self.display1.create_image(self.Screen_x/2,self.Screen_x/(2*ratio),image=self.photo)
 
+        #recall the function after a delay
         self.window.after(self.delay, self.update)
+
 
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
         ts = datetime.datetime.now()
-        filename = "image_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
-        p = os.path.join(self.output_path, filename)  # construit le chemin de sortie
-        self.frame.save(p, "PNG")  # Sauvegarde l'image sous format png
-        print("[INFO] saved {}".format(filename))
+        try:
+            os.mkdir('Snapshot')
+        except OSError:
+            pass
+        path=self.output_path.joinpath('Snapshot')
+        print("Dossier d'enregistrement : ", path)
+        
+        if self.coch0==1:
+            filename = "preview_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
+            p = path.joinpath(filename)  # construit le chemin de sortie
+            image = Img.fromarray(self.frame)
+            image.save(p, "PNG")  # Sauvegarde l'image sous format png
+            print("[INFO] saved {}".format(filename))
+        if self.coch1==1:
+            filename_2 = "treatment_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+            p = path.joinpath(filename_2)
+            image2 = Img.fromarray(self.frame2)
+            image2.save(p, "PNG")
+            print("[INFO] saved {}".format(filename_2))
+        if self.coch2==1:
+            filename_xy = "plot_xy_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+            p = path.joinpath(filename_xy)
+            self.fig_XY.savefig(p, dpi=1200)
+            print("[INFO] saved {}".format(filename_xy))
+        if self.coch3==1:
+            filename_ellipse = "plot_ell_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+            p = path.joinpath(filename_ellipse)
+            #self.fig_XY.savefig(p, dpi=1200)
+            print("[INFO] saved {}".format(filename_ellipse))
+        if self.coch4==1:
+            filename_2D = "plot_2D_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+            p = path.joinpath(filename_2D)
+            #self.fig_XY.savefig(p, dpi=1200)
+            print("[INFO] saved {}".format(filename_ellipse))
+        self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
+        
 
     def video_tool(self):
         self.t2 = Thread(target=self.disp_traitement)

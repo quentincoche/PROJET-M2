@@ -11,6 +11,7 @@ import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import math
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import rcParams
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from scipy.optimize import curve_fit
 import astropy.io.fits as fits
@@ -20,6 +21,8 @@ import statistics
 from statistics import mean
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 
+
+rcParams.update({'figure.autolayout': True})
 
 class Traitement():
     
@@ -176,10 +179,10 @@ class Traitement():
         #On affiche les courbes résultantes
         fig = plt.figure(figsize=plt.figaspect(0.5))
         fig.suptitle("Gaussienne x,y")
-        ax = fig.add_subplot(2 ,2 ,1)
+        ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
         ax.plot(x, x_fitted_model(x))
-        ax2 = fig.add_subplot(2, 2, 2)
+        ax2 = fig.add_subplot(1, 2, 2)
         ax2.plot(y,Ly)
         ax2.plot(y, y_fitted_model(y))
         ax.set_title('X profil')
