@@ -43,6 +43,7 @@ from tkinter import IntVar
 from tkinter import DoubleVar
 from tkinter import Entry
 from threading import Thread
+import sys
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
 from pathlib import Path
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
@@ -55,6 +56,7 @@ from statistics import mean
 import oneCameraCapture as oneCameraCapture
 import opencv_module as OpenCam
 import Img_Traitement as Img_Traitement
+
 
 # La Classe Fenetre contient l'ensemble du programme #
 
@@ -269,6 +271,16 @@ class Fenetre(Thread):
         self.label05.grid(row=4,column=0,sticky="nsew")
         self.label5 = tk.Label(self.results,textvariable=self.ellipse_angle)
         self.label5.grid(row=4,column=1,sticky="nsew")
+        """
+        self.console = tk.Frame(self.window, padx=5, pady=5)
+        self.console.grid(row=3, column=0, sticky='nsew')
+        t=tk.Text(self.console)
+        t.pack()
+        t.insert(self.console, sys.stdout)
+        """"
+        
+
+
 
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
