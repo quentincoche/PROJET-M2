@@ -60,7 +60,7 @@ class Traitement():
         # calculate x,y coordinate of center
         cX = int(M["m10"] / M["m00"])
         cY = int(M["m01"] / M["m00"])
-        print('barycentre : ', cX, ',', cY)
+        #print('barycentre : ', cX, ',', cY)
             
         # find contours in the binary image
         contours, hierarchy = cv2.findContours(otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
@@ -91,12 +91,12 @@ class Traitement():
             #Fit une ellipse sur le(s) faisceau(x)
             self.ellipse = cv2.fitEllipse(c)
             thresh = cv2.ellipse(frame,self.ellipse,(0,255,0),1)
-            print('Ellipse : ', self.ellipse)
+            #print('Ellipse : ', self.ellipse)
  
             #Fit un rectangle sur la zone d'intérêt pour la zoomer par la suite
             self.x,self.y,self.w,self.h = cv2.boundingRect(c)
             #rectangle = cv2.rectangle(frame,(self.x,self.y),(self.x+self.w,self.y+self.h),(0,175,175),1)
-            print('Rectangle : Position = ', self.x,',',self.y,'; Size = ',self.w,',',self.h)
+            #print('Rectangle : Position = ', self.x,',',self.y,'; Size = ',self.w,',',self.h)
 
 
         #Dessine les formes sur l'image
