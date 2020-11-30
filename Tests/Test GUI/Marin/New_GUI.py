@@ -53,6 +53,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from statistics import mean
 import oneCameraCapture as oneCameraCapture
+import opencv_module as OpenCam
 import Img_Traitement as Img_Traitement
 
 # La Classe Fenetre contient l'ensemble du programme #
@@ -64,7 +65,14 @@ class Fenetre(Thread):
         Thread.__init__(self)
 
         """Edition de nom de variable associé aux autres fichiers du programme"""
-        self.vid = oneCameraCapture.cameraCapture()
+        try :
+            self.vid = oneCameraCapture.cameraCapture()
+        except :
+            try :
+                self.cam=OpenCam.openCamera()
+            except :
+                print("Need camera troubleshooting")
+                exit()
         self.trmt = Img_Traitement.Traitement()
         self.output_path = Path.cwd()  #Chemin de sortie de la photo
 
@@ -294,9 +302,14 @@ class Fenetre(Thread):
     def update(self):
         """Affichage de la preview"""
         #Get a frame from cameraCapture
-        self.frame0 = self.vid.getFrame() #This is an array
-        self.frame0=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
-        self.frame=cv2.flip(self.frame0,0)
+        try:
+            self.frame0 = self.vid.getFrame() #This is an array
+        except :
+            try :
+                self.frame0 = self.cam.capture()
+            except :
+                pass
+        self.frame=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         frame=self.frame
         if self.align == True :
             test=True
@@ -316,7 +329,13 @@ class Fenetre(Thread):
         r = float(self.Screen_x/self.Screen_y)
 
         #Get picture ratio from oneCameraCapture
-        ratio = self.vid.ratio
+        try:
+            ratio = self.vid.ratio
+        except:
+            try :
+                ratio = self.cam.ratio
+            except :
+                pass
         #keep ratio
         if r > ratio:
             self.Screen_x = int(round(self.display1.winfo_height()*ratio))

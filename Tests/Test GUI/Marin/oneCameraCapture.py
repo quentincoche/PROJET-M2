@@ -78,6 +78,7 @@ class cameraCapture(tk.Frame):
             if self.grabResult.GrabSucceeded():
                 image = self.converter.Convert(self.grabResult) # Access the openCV image data
                 self.img0 = image.GetArray()
+                self.img0 = cv2.flip(self.img0,0)
             else:
                 print("Error: ", self.grabResult.ErrorCode)
     
