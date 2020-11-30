@@ -10,7 +10,6 @@ import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import math
 from matplotlib.figure import Figure 
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from scipy.optimize import curve_fit
 import astropy.io.fits as fits
@@ -165,6 +164,7 @@ class Traitement():
         ax2.set_title ('Y profil')
         ax2.set_xlabel ("Hauteur de l'image en pixels")
         ax2.set_ylabel ("Intensité sur 8bits")
+        fig.tight_layout()
         print('End plotting')
 
         return fig
@@ -190,7 +190,8 @@ class Traitement():
 
         model_data = g(xi, yi)
 
-        fig2, ax3 = plt.subplots()
+        fig2, ax3 = Figure()
+        fig2, ax3 = Figure.subplots()
         eps = np.min(model_data[model_data > 0]) / 10.0
         # use logarithmic scale for sharp Gaussians
         cs = ax3.imshow(np.log(eps + model_data), label='Gaussian')
@@ -207,7 +208,6 @@ class Traitement():
     
     def points_ellipse(self):
         """
-        OOOOOKKKKK
         Permet de récupérer les points extremes de l'image selon le grand et
         petit axe de l'ellipse pour par la suite fiter la gaussienne sur ces lignes
         """
@@ -221,7 +221,7 @@ class Traitement():
         
         #On récupère l'angle de l'ellipse et on le met en radians
         ang_ell=self.ellipse[2]
-        ang=math.radians(ang_ell)
+        ang=np.radians(ang_ell)
 
         #On initialise les points de coordonnées
         GP1c, GP1l, GP2c, GP2l, PP1c, PP1l, PP2c, PP2l=0,0,0,0,0,0,0,0
@@ -232,15 +232,37 @@ class Traitement():
             GP1l=0 #Grand axe
             GP2l=img_l
 
-            PP1c=img_c #Petit axe
-            PP2c=0
+            PP1c=0 #Petit axe
+            PP2c=img_c
 
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
-            GP1c=cc_ell+math.floor(cl_ell*math.tan(ang))#Grand axe
-            GP2c=cc_ell-math.floor(cl_ell*math.tan(ang))
+            l1_ang=np.floor(cl_ell*np.tan(ang))
 
-            PP1l=cl_ell+math.floor(cc_ell*math.tan(ang))#Petit axe
-            PP2l=cl_ell-math.floor(cc_ell*math.tan(ang))
+            GP1c=cc_ell+l1_ang#Grand axe
+            if GP1c > img_c: #Condition sur les longueurs dû aux arrondis dans les angles de l'image
+                GP1c=img_c-1
+            if GP1c < 0:
+                GP1c=0
+
+            GP2c=cc_ell-l1_ang
+            if GP2c < 0:
+                GP2c=0
+            if GP2c > img_c:
+                GP2c=img_c-1
+
+            c1_ang=np.floor(cc_ell*np.tan(ang))
+
+            PP1l=cl_ell-c1_ang#Petit axe
+            if PP1l < 0:
+                PP1l=0
+            if PP1l > img_l:
+                PP1l= img_l-1
+
+            PP2l=cl_ell+c1_ang
+            if PP2l > img_l:
+                PP2l=img_l-1
+            if PP2l < 0:
+                PP2l=0
 
         #Dans le cas où l'ellipse est orientée horizontalement
         if 45<= ang_ell <135:
@@ -252,15 +274,37 @@ class Traitement():
             PP2l=img_l
 
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
-            GP1l=cl_ell-math.floor(cc_ell/math.tan(ang))#Grand axe
-            GP2l=cl_ell+math.floor(cc_ell/math.tan(ang))
+            c2_ang=np.floor(cc_ell/np.tan(ang))
 
-            PP1c=cc_ell-math.floor(cl_ell/math.tan(ang))#Petit axe
-            PP2c=cc_ell+math.floor(cl_ell/math.tan(ang))
+            GP1l=cl_ell-c2_ang#Grand axe
+            if GP1l < 0:
+                GP1l = 0
+            if GP1l > img_l:
+                GP1l = img_l-1
+
+            GP2l=cl_ell+c2_ang
+            if GP2l >img_l :
+                GP2l = img_l-1
+            if GP2l < 0 :
+                GP2l = 0
+
+            l2_ang=np.floor(cl_ell/np.tan(ang))
+
+            PP1c=cc_ell-l2_ang#Petit axe
+            if PP1c > img_c:
+                PP1c = img_c-1
+            if PP1c < 0:
+                PP1c = 0
+
+            PP2c=cc_ell+l2_ang
+            if PP2c < 0:
+                PP2c = 0
+            if PP2c > img_c:
+                PP2c = img_c-1
 
         #Création des tuples de points
-        GP1, GP2=[int(GP1l),int(GP1c)], [int(GP2l),int(GP2c)]
-        PP1, PP2=[int(PP1l),int(PP1c)], [int(PP2l),int(PP2c)]
+        GP1, GP2=[np.int32(GP1l),np.int32(GP1c)], [np.int32(GP2l),np.int32(GP2c)]
+        PP1, PP2=[np.int32(PP1l),np.int32(PP1c)], [np.int32(PP2l),np.int32(PP2c)]
 
         return GP1, GP2, PP1, PP2
 
@@ -271,50 +315,59 @@ class Traitement():
         #on pose les variables et on récupère les informations de l'image
         img=self.crop_img
         Lg, Lp= [],[]
-
-        #width=self.ellipse[1][1]
-        #height=self.ellipse[1][0]
+        i,y = 0,0
+        width=self.ellipse[1][1]
+        height=self.ellipse[1][0]
+        ang_ell=self.ellipse[2]
+        print( ang_ell)
 
         #on récupère les points des axes de la fonction précédente
         GP1, GP2, PP1, PP2=self.points_ellipse()
+
         #on récupère les valeurs des pixels selon la ligne qui relie les pixels trouvés précedemment
-        G_buffer = self.createLineIterator(GP1, GP2, img)
-        P_buffer = self.createLineIterator(PP1, PP2, img)
+        Gr, Gc=line(GP1[0], GP1[1], GP2[0], GP2[1])
+        Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1])
 
-        print("Grand axe : ", GP1, GP2)
-        print("Petit axe : ", PP1, PP2)
+        #Création des listes d'intensités de l'image en fonction de l'orientation de l'ellipse
+        if 45 <= ang_ell <135:
+            for y in range (len(Pr)-1) :
+                Lp=np.append(Lp, img[Pr[y], Pc[y]])
+            for i in range (len(Gr)-1) :
+                Lg=np.append(Lg, img[Gr[i], len(Gc)-2-i])
+                
+        else :
+            for y in range (len(Pr)-1) :
+                Lp=np.append(Lp, img[Pr[y], Pc[y]])
+            for i in range (len(Gr)-1) :
+                Lg=np.append(Lg, img[Gr[i], Gc[i]])
 
-        #On récupère uniquement l'intensité des pixels sur la ligne
-        Lg = np.array(G_buffer[:,2])
-        Lp = np.array(P_buffer[:,2])
-
+    
         #On créer la liste qui sert d'axe pour le fit
         G = np.arange(len(Lg))
         P = np.arange(len(Lp))
 
         #Calcul des sigmas sur les valeurs             
-        #sigma_g = np.std(Lg)
-        #sigma_p = np.std(Lp) 
+        sigma_g = np.std(Lg)
+        sigma_p = np.std(Lp) 
 
         #model du fit
         fitter = modeling.fitting.LevMarLSQFitter()
 
         #fonction gaussienne
-        model = modeling.models.Gaussian1D()
-        #modelG = modeling.models.Gaussian1D(amplitude=np.max(Lg), mean=width, stddev=sigma_g)   # depending on the data you need to give some initial values
-        #modelP = modeling.models.Gaussian1D(amplitude=np.max(Lp), mean=height, stddev=sigma_p)
+        modelG = modeling.models.Gaussian1D(amplitude=np.max(Lg), mean=width, stddev=sigma_g)   # depending on the data you need to give some initial values
+        modelP = modeling.models.Gaussian1D(amplitude=np.max(Lp), mean=height, stddev=sigma_p)
         
         #Fit de la courbe et des données
-        G_fitted_model = fitter(model, G, Lg)
-        P_fitted_model = fitter(model, P, Lp)
+        G_fitted_model = fitter(modelG, G, Lg)
+        P_fitted_model = fitter(modelP, P, Lp)
 
         #affichage des résultats
         fig = Figure()
         fig.suptitle("Gaussienne ellipse")
-        ax = fig.add_subplot(1 ,2 ,1)
+        ax = fig.add_subplot(2 ,2 ,1)
         ax.plot(G,Lg)
         ax.plot(G, G_fitted_model(G))
-        ax2 = fig.add_subplot(1, 2, 2)
+        ax2 = fig.add_subplot(2, 2, 2)
         ax2.plot(P,Lp)
         ax2.plot(P, P_fitted_model(P))
         ax.set_title('Grand axe profil')
@@ -323,83 +376,11 @@ class Traitement():
         ax2.set_title ('Petit axe profil')
         ax2.set_xlabel ('Petit axe en pixel')
         ax2.set_ylabel ('Intensité sur 8bits')
+        fig.tight_layout()
 
         temps = time.time()-t
         print("Temps plot Gauss ellipse : ", temps)
 
         return fig
 
-    def createLineIterator(self, P1, P2, img):
-        """
-        Produces and array that consists of the coordinates and intensities of each pixel in a line between two points
-
-        Parameters:
-            -P1: a numpy array that consists of the coordinate of the first point (x,y)
-            -P2: a numpy array that consists of the coordinate of the second point (x,y)
-            -img: the image being processed
-
-        Returns:
-            -it: a numpy array that consists of the coordinates and intensities of each pixel in the radii (shape: [numPixels, 3], row = [x,y,intensity])     
-        """
-        #define local variables for readability
-        imageH = img.shape[0]
-        imageW = img.shape[1]
-        P1X = P1[0]
-        P1Y = P1[1]
-        P2X = P2[0]
-        P2Y = P2[1]
-
-        #difference and absolute difference between points
-        #used to calculate slope and relative location between points
-        dX = P2X - P1X
-        dY = P2Y - P1Y
-        dXa = np.abs(dX)
-        dYa = np.abs(dY)
-
-        #predefine numpy array for output based on distance between points
-        itbuffer = np.empty(shape=(np.maximum(dYa,dXa),3),dtype=np.float32)
-        itbuffer.fill(np.nan)
-
-        #Obtain coordinates along the line using a form of Bresenham's algorithm
-        negY = P1Y > P2Y
-        negX = P1X > P2X
-        if P1X == P2X: #vertical line segment
-            itbuffer[:,0] = P1X
-            if negY:
-                itbuffer[:,1] = np.arange(P1Y - 1,P1Y - dYa - 1,-1)
-            else:
-                itbuffer[:,1] = np.arange(P1Y+1,P1Y+dYa+1)              
-        elif P1Y == P2Y: #horizontal line segment
-            itbuffer[:,1] = P1Y
-            if negX:
-                itbuffer[:,0] = np.arange(P1X-1,P1X-dXa-1,-1)
-            else:
-                itbuffer[:,0] = np.arange(P1X+1,P1X+dXa+1)
-        else: #diagonal line segment
-            steepSlope = dYa > dXa
-            if steepSlope:
-                #slope = dX.astype(np.float32)/dY.astype(np.float32)
-                slope = dX/dY
-                if negY:
-                    itbuffer[:,1] = np.arange(P1Y-1,P1Y-dYa-1,-1)
-                else:
-                    itbuffer[:,1] = np.arange(P1Y+1,P1Y+dYa+1)
-                itbuffer[:,0] = (slope*(itbuffer[:,1]-P1Y)).astype(np.int) + P1X
-            else:
-                #slope = dY.astype(np.float32)/dX.astype(np.float32)
-                slope = dY/dX
-                if negX:
-                    itbuffer[:,0] = np.arange(P1X-1,P1X-dXa-1,-1)
-                else:
-                    itbuffer[:,0] = np.arange(P1X+1,P1X+dXa+1)
-                itbuffer[:,1] = (slope*(itbuffer[:,0]-P1X)).astype(np.int) + P1Y
-
-        #Remove points outside of image
-        colX = itbuffer[:,0]
-        colY = itbuffer[:,1]
-        itbuffer = itbuffer[(colX >= 0) & (colY >=0) & (colX<imageW) & (colY<imageH)]
-
-        #Get intensities from img ndarray
-        itbuffer[:,2] = img[itbuffer[:,1].astype(np.uint),itbuffer[:,0].astype(np.uint)]
-
-        return itbuffer
+    

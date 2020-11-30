@@ -18,9 +18,8 @@ import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
-import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
 from statistics import mean
 import oneCameraCapture_q as oneCameraCapture
 import Img_Traitement_q as Img_Traitement
@@ -57,8 +56,8 @@ class Fenetre(Thread):
         """"definition des proportions pour les frames"""
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2,weight=2)
-        self.window.grid_rowconfigure(1, weight=5)
-        self.window.grid_rowconfigure(2, weight=3)
+        self.window.grid_rowconfigure(1, weight=4)
+        self.window.grid_rowconfigure(2, weight=4)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
         self.choix_fig_XY = IntVar()
@@ -75,8 +74,8 @@ class Fenetre(Thread):
         self.delay=15
         self.frame2=[]
 
-        self.plot()
         self.display()
+        self.plot()
         self.Interface() #Lance la fonction Interface
         self.flux_cam()
 
@@ -91,13 +90,20 @@ class Fenetre(Thread):
         
         #commandes gauche
         self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray")
-        self.cmdleft.grid(row=1,column=0, sticky='NSEW')
+        self.cmdleft.grid(row=1,column=0,rowspan=2, sticky='NSEW')
         btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
         btncap.grid(row=0,column=0,sticky="nsew")
         btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
         btnprofiles.grid(row=1,column=0,sticky="nsew")
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
         btnquit.grid(row=2,column=0,sticky="nsew")
+        selection_plot=tk.Label(self.cmdleft,text="Sellectionnez Fit",bg="gray")
+        selection_plot.grid(row=3,column=0,sticky="nsew")
+        liste_plots =["Fit XY","Fit axes ellipse","Fit Gaussien 2D"]
+        self.liste_combobox = ttk.Combobox(self.cmdleft,values=liste_plots)
+        self.liste_combobox.grid(row=4,column=0,sticky="nsew")
+        self.liste_combobox.current(0)
+        self.liste_combobox.bind("<<ComboboxSelected>>",self.choix_figure)
         
         #commandes superieures
         self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="gray")
@@ -109,7 +115,7 @@ class Fenetre(Thread):
 
     def display(self):
         #cadre video
-        self.display1 = tk.Canvas(self.window, width=self.Screen_x,height=self.Screen_y)  # Initialisation de l'écran 1
+        self.display1 = tk.Canvas(self.window, width=self.Screen_x/2,height=self.Screen_y/2)  # Initialisation de l'écran 1
         self.display1.grid(row=1,column=1,sticky="NSW")
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
@@ -117,10 +123,20 @@ class Fenetre(Thread):
         #cadre traitement
         self.title_display2 = tk.Label(self.window,text="Fit ellipse",bg="gray")
         self.title_display2.grid(row=0,column=2,sticky="NSEW")
-        self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y)  # Initialisation de l'écran 1
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2)  # Initialisation de l'écran 1
         self.display2.grid(row=1,column=2,sticky="NSEW")
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
+
+        #cadre plots fits
+        self.display_plots_title = tk.Label(self.window,text="affichage graphes de fit",bg="gray")
+        self.display_plots_title.grid(row=3,column=1, sticky="NSEW")
+
+
+
+
+
+
 
         #zone affichage résultats
         self.results = tk.Frame(self.window,padx=5,pady=5,bg="gray")
@@ -154,7 +170,7 @@ class Fenetre(Thread):
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
         print("[INFO] closing...")
-        self.fig_XY.clear()
+        #self.fig_XY.clear()
         self.window.quit()
         self.window.destroy() # Ferme la fenêtre
 
@@ -244,17 +260,36 @@ class Fenetre(Thread):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
         self.exposure=self.vid.auto_exposure()
 
+    def choix_figure(self,param):
+        selection = self.liste_combobox.get()
+        print(selection)
+        if selection =="Fit XY":
+            choix_fig=1
+        if selection =="Fit axes ellipse":
+            choix_fig=2
+        if selection =="Fit Gaussien 2D":
+            choix_fig=3
+        self.choix_fig_XY=choix_fig
+        self.plot()
+        return self.choix_fig_XY
+
     def plot(self):
         "choix_fig_XY = 0 quand le traitement d'image n'a pas encore été effectué, et = 1 après le traitement. le graphe apparait après pression du bouton profils"
         if self.choix_fig_XY == 0:
             self.fig_XY = Figure()
         else : 
             self.fig_XY.clf()
-            #self.fig_XY = self.trmt.trace_profil()
-            self.fig_XY = self.trmt.trace_ellipse()
+            if self.choix_fig_XY == 1 :
+                self.fig_XY = self.trmt.trace_profil()
+            if self.choix_fig_XY == 2 :
+                self.fig_XY = self.trmt.trace_ellipse()
+            if self.choix_fig_XY == 3 :
+                self.fig_XY = self.trmt.plot_2D
 
-        #cadre affichage profils XY
+        #cadre affichage profils
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.window)
+        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.window, pack_toolbar=False)
+        self.toolbar.update()    
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()
         self.cadre_disp_XY.grid(row=2,column=1)
         return self.fig_XY
