@@ -278,17 +278,6 @@ class Fenetre(Thread):
     def arret_align(self):
         self.align=False
 
-    def popup_align(self):
-        self.fInfos.Toplevel()
-        self.fInfos.title('Problem')
-        label=tk.Label(self.FInfos, text="Pour pouvoir aligner 2 faisceaux, il faut au préalable effectuer un traitement du premier faisceau.")
-        label.grid(row=0, column=0, sticky='nsew')
-        label2=tk.Label(self.Finfos, text="Pour cela cliquez sur le bouton traitement en haut de la fenêtre.")
-        label2.grid(row=1, column=0, sticky='nsew')
-        tk.Button(self.fInfos, text='Quitter', command=self.fInfos.destroy).pack(padx=10, pady=10)
-        self.fInfos.transient(self.window) 	  # Réduction popup impossible 
-        self.fInfos.grab_set()		  # Interaction avec fenetre jeu impossible
-        self.window.wait_window(self.fInfos)   # Arrêt script principal
 
 
     #####################
