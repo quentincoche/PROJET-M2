@@ -74,6 +74,7 @@ class Fenetre(Thread):
         self.delay=15
         self.frame2=[]
         self.align=False
+        
 
         self.display()
         self.plot()
@@ -366,7 +367,7 @@ class Fenetre(Thread):
         self.cadre_plots = tk.Frame(self.window,padx=5,pady=5,bg="gray")
         self.cadre_plots.grid(row=2,column=1)
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
-        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots, pack_toolbar=False)
+        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots)
         self.toolbar.grid(row=0,column=0)
         self.toolbar.update()    
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()

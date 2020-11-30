@@ -50,7 +50,7 @@ import datetime #Bibliothèque permettant de récupérer la date
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
 from statistics import mean
 import oneCameraCapture as oneCameraCapture
 import opencv_module as OpenCam
@@ -73,6 +73,7 @@ class Fenetre(Thread):
             except :
                 print("Need camera troubleshooting")
                 exit()
+
         self.trmt = Img_Traitement.Traitement()
         self.output_path = Path.cwd()  #Chemin de sortie de la photo
 
@@ -88,7 +89,9 @@ class Fenetre(Thread):
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2,weight=2)
         self.window.grid_rowconfigure(1, weight=5)
-        self.window.grid_rowconfigure(2, weight=3)
+        self.window.grid_rowconfigure(2, weight=0)
+        self.window.grid_rowconfigure(3, weight=0)
+        self.window.grid_rowconfigure(4, weight=3)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
         #Variables pour la taille des pixels des caméras
@@ -98,8 +101,6 @@ class Fenetre(Thread):
         #Variables d'affichage des figures
         self.choix_fig_XY = IntVar()
         self.choix_fig_XY = 0
-
-        self.align=False
 
         #Variables du barycentre de l'image
         self.cX = DoubleVar()
@@ -122,9 +123,12 @@ class Fenetre(Thread):
         #Variable de l'écran de l'image traité
         self.frame2=[]
 
+        #Variable pour l'aligenement des faisceaux
+        self.align=False
+
         #Appel de toutes les fonctions permettant l'affichage de notre programme
-        self.plot()
         self.display()
+        self.plot()
         self.Interface() #Lance la fonction Interface
         self.flux_cam()
 
@@ -162,27 +166,43 @@ class Fenetre(Thread):
         bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot 2D", command=self.choice4)
         bouton_selection.grid(row=5, column=0)
 
+            #Bouton capture
         btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
         btncap.grid(row=3,column=0,sticky="nsew")
 
-            #Bouton figures
+        labelSpace2=tk.Label(self.cmdleft, text='', bg='gray')
+        labelSpace2.grid(row=4,column=0)
+
+            #tracé du profil (par defaut XY)
         btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
-        btnprofiles.grid(row=4,column=0,sticky="nsew")
+        btnprofiles.grid(row=7,column=0,sticky="nsew")
+
+            #Liste selection du plot
+        selection_plot=tk.Label(self.cmdleft,text="Sellectionnez Fit",bg="gray")
+        selection_plot.grid(row=5,column=0,sticky="nsew")
+        liste_plots =["Fit XY","Fit axes ellipse","Fit Gaussien 2D"]
+        self.liste_combobox = ttk.Combobox(self.cmdleft,values=liste_plots)
+        self.liste_combobox.grid(row=6,column=0,sticky="nsew")
+        self.liste_combobox.current(0)
+        self.liste_combobox.bind("<<ComboboxSelected>>",self.choix_figure) 
+
+        labelSpace3=tk.Label(self.cmdleft, text='', bg='gray')
+        labelSpace3.grid(row=8,column=0)       
 
             #Bouton alignement de faisceaux
         btnalign = tk.Button(self.cmdleft, text='Alignement de faisceaux', command=self.alignement)
-        btnalign.grid(row=5, column=0, sticky="nsew")
+        btnalign.grid(row=9, column=0, sticky="nsew")
 
             #Bouton arrêt alignement
         btn_stopalign = tk.Button(self.cmdleft, text='Arrêt alignement', command=self.arret_align)
-        btn_stopalign.grid(row=6, column=0, sticky="nsew")
+        btn_stopalign.grid(row=10, column=0, sticky="nsew")
 
         labelSpace=tk.Label(self.cmdleft, text='', bg='gray')
-        labelSpace.grid(row=7,column=0)
+        labelSpace.grid(row=11,column=0)
 
             #Bouton quitter
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=8,column=0,sticky="nsew")
+        btnquit.grid(row=12,column=0,sticky="nsew")
 
         #commandes superieures
             #Taille de la zone de commande
@@ -197,22 +217,11 @@ class Fenetre(Thread):
         btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
         btnexp.grid(row=0,column=1,sticky="nsew")
 
-        #entree hauteur pixel
-        title_entry_size_height = tk.Label(self.cmdup,text="Hauteur pixel (um) = ",bg="gray")
-        title_entry_size_height.grid(row=0,column=2,sticky="E")
-        entry_size_height = Entry(self.cmdup, textvariable = self.size_pixel_height, width=4)
-        entry_size_height.grid(row=0,column=3,sticky="E")
-        #entree largeur pixel
-        title_entry_size_width = tk.Label(self.cmdup,text="Largeur pixel (um) = ",bg="gray")
-        title_entry_size_width.grid(row=0,column=4,sticky="E")
-        entry_size_width = Entry(self.cmdup, textvariable = self.size_pixel_width, width=4)
-        entry_size_width.grid(row=0,column=5,sticky="E")
-
 
     def display(self):
         #cadre video
             #Position
-        self.display1 = tk.Canvas(self.window, width=self.Screen_x,height=self.Screen_y)  # Initialisation de l'écran 1
+        self.display1 = tk.Canvas(self.window, width=self.Screen_x,height=self.Screen_y,bg="white")  # Initialisation de l'écran 1
         self.display1.grid(row=1,column=1,sticky="NSW")
             #Taille
         self.Screen_x = self.display1.winfo_width()
@@ -220,18 +229,22 @@ class Fenetre(Thread):
 
         #cadre traitement
             #Titre
-        self.title_display2 = tk.Label(self.window,text="Fit ellipse",bg="gray")
+        self.title_display2 = tk.Label(self.window,text="Fit ellipse",bg="white")
         self.title_display2.grid(row=0,column=2,sticky="NSEW")
             #Position
-        self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y)  # Initialisation de l'écran 1
-        self.display2.grid(row=1,column=2,sticky="NSE")
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y, bg="white")  # Initialisation de l'écran 1
+        self.display2.grid(row=1, rowspan=2,column=2,sticky="NSE")
             #Taille
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
 
+        #cadre plots fits
+        self.display_plots_title = tk.Label(self.window,text="affichage graphes de fit",bg="white")
+        self.display_plots_title.grid(row=3,column=1, sticky="NSEW")
+
         #zone affichage résultats
         self.results = tk.Frame(self.window,padx=5,pady=5,bg="gray")
-        self.results.grid(row=2,column=2,sticky="NSE")
+        self.results.grid(row=3,column=2,sticky="NSE")
 
         #barycentres
         self.label01 = tk.Label(self.results,text="barycentre X = ")
@@ -434,18 +447,41 @@ class Fenetre(Thread):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
         self.exposure=self.vid.auto_exposure()
 
+    def choix_figure(self,param):
+        selection = self.liste_combobox.get()
+        print(selection)
+        if selection =="Fit XY":
+            choix_fig=1
+        if selection =="Fit axes ellipse":
+            choix_fig=2
+        if selection =="Fit Gaussien 2D":
+            choix_fig=3
+        self.choix_fig_XY=choix_fig
+        self.plot()
+        return self.choix_fig_XY
+
     def plot(self):
         "choix_fig_XY = 0 quand le traitement d'image n'a pas encore été effectué, et = 1 après le traitement. le graphe apparait après pression du bouton profils"
         if self.choix_fig_XY == 0:
             self.fig_XY = Figure()
         else : 
             self.fig_XY.clf()
-            self.fig_XY = self.trmt.trace_profil()
+            if self.choix_fig_XY == 1 :
+                self.fig_XY = self.trmt.trace_profil()
+            if self.choix_fig_XY == 2 :
+                self.fig_XY = self.trmt.trace_ellipse()
+            if self.choix_fig_XY == 3 :
+                self.fig_XY = self.trmt.plot_2D()
 
-        #cadre affichage profils XY
-        self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.window)
+        #cadre affichage profils
+        self.cadre_plots = tk.Frame(self.window,padx=2,pady=2)
+        self.cadre_plots.grid(row=2, rowspan=2, column=1)
+        self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
+        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots)
+        self.toolbar.grid(row=0,column=0)
+        self.toolbar.update()    
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()
-        self.cadre_disp_XY.grid(row=2,column=1)
+        self.cadre_disp_XY.grid(row=1,column=0)
         return self.fig_XY
 
 
