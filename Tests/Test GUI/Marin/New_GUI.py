@@ -297,7 +297,7 @@ class Fenetre(Thread):
         self.frame0 = self.vid.getFrame() #This is an array
         self.frame0=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         self.frame=cv2.flip(self.frame0,0)
-
+        frame=self.frame
         if self.align == True :
             test=True
             try :
@@ -307,8 +307,8 @@ class Fenetre(Thread):
                 self.align = False
                 tk.messagebox.showerror("Alignement impossible", "Il faut traiter le premier faisceau pour permettre l'alignement. \n Pour cela cliquez sur le bouton traitement après ce message.")
             if test == True:
-                cv2.line(self.frame, (self.baryX, 0), (self.baryX, self.frame.shape[0]), (255, 0, 0), 3)#Dessine une croix sur le barycentre de l'image
-                cv2.line(self.frame, (0, self.baryY), (self.frame.shape[1], self.baryY), (255, 0, 0), 3)
+                cv2.line(frame, (self.baryX, 0), (self.baryX, frame.shape[0]), (255, 0, 0), 3)#Dessine une croix sur le barycentre de l'image
+                cv2.line(frame, (0, self.baryY), (frame.shape[1], self.baryY), (255, 0, 0), 3)
 
         #Get display size
         self.Screen_x = self.display1.winfo_width()
@@ -324,7 +324,7 @@ class Fenetre(Thread):
             self.Screen_y = int(round(self.display1.winfo_width()/ratio))
 
         #resize the picture
-        frame = cv2.resize(self.frame, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_AREA)
+        frame = cv2.resize(frame, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_AREA)
 
         #OpenCV bindings for Python store an image in a NumPy array
         #Tkinter stores and displays images using the PhotoImage class
