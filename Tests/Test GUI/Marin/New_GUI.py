@@ -91,6 +91,8 @@ class Fenetre(Thread):
         self.choix_fig_XY = IntVar()
         self.choix_fig_XY = 0
 
+        self.align=False
+
         #Variables du barycentre de l'image
         self.cX = DoubleVar()
         self.cY = DoubleVar()
@@ -129,7 +131,7 @@ class Fenetre(Thread):
         
         #commandes gauche
             #Taille de la zone des boutons
-        self.cmdleft = tk.Frame(self.window,padx=5,pady=6,bg="gray")
+        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray")
         self.cmdleft.grid(row=1,column=0, sticky='NSEW')
 
             #Bouton snapshot
@@ -159,9 +161,20 @@ class Fenetre(Thread):
         btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
         btnprofiles.grid(row=4,column=0,sticky="nsew")
 
+            #Bouton alignement de faisceaux
+        btnalign = tk.Button(self.cmdleft, text='Alignement de faisceaux', command=self.alignement)
+        btnalign.grid(row=5, column=0, sticky="nsew")
+
+            #Bouton arrêt alignement
+        btn_stopalign = tk.Button(self.cmdleft, text='Arrêt alignement', command=self.arret_align)
+        btn_stopalign.grid(row=6, column=0, sticky="nsew")
+
+        labelSpace=tk.Label(self.cmdleft, text='', bg='gray')
+        labelSpace.grid(row=7,column=0)
+
             #Bouton quitter
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=5,column=0,sticky="nsew")
+        btnquit.grid(row=8,column=0,sticky="nsew")
 
         #commandes superieures
             #Taille de la zone de commande
@@ -259,6 +272,24 @@ class Fenetre(Thread):
     def choice4(self):
         self.coch4=1
 
+    def alignement(self):
+        self.align=True
+    
+    def arret_align(self):
+        self.align=False
+
+    def popup_align(self):
+        self.fInfos.Toplevel()
+        self.fInfos.title('Problem')
+        label=tk.Label(self.FInfos, text="Pour pouvoir aligner 2 faisceaux, il faut au préalable effectuer un traitement du premier faisceau.")
+        label.grid(row=0, column=0, sticky='nsew')
+        label2=tk.Label(self.Finfos, text="Pour cela cliquez sur le bouton traitement en haut de la fenêtre.")
+        label2.grid(row=1, column=0, sticky='nsew')
+        tk.Button(self.fInfos, text='Quitter', command=self.fInfos.destroy).pack(padx=10, pady=10)
+        self.fInfos.transient(self.window) 	  # Réduction popup impossible 
+        self.fInfos.grab_set()		  # Interaction avec fenetre jeu impossible
+        self.window.wait_window(self.fInfos)   # Arrêt script principal
+
 
     #####################
     #   Partie Camera   # 
@@ -277,6 +308,18 @@ class Fenetre(Thread):
         self.frame0 = self.vid.getFrame() #This is an array
         self.frame0=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         self.frame=cv2.flip(self.frame0,0)
+
+        if self.align == True :
+            test=True
+            try :
+                self.baryX
+            except AttributeError:
+                test=False
+                self.align = False
+                tk.messagebox.showerror("Alignement impossible", "Il faut traiter le premier faisceau pour permettre l'alignement. \n Pour cela cliquez sur le bouton traitement après ce message.")
+            if test == True:
+                cv2.line(self.frame, (self.baryX, 0), (self.baryX, self.frame.shape[0]), (255, 0, 0), 3)#Dessine une croix sur le barycentre de l'image
+                cv2.line(self.frame, (0, self.baryY), (self.frame.shape[1], self.baryY), (255, 0, 0), 3)
 
         #Get display size
         self.Screen_x = self.display1.winfo_width()
