@@ -516,8 +516,8 @@ class Fenetre(Thread):
                 self.fig_XY = self.trmt.plot_2D()
 
         #cadre affichage profils
-        self.cadre_plots = tk.Frame(self.window,padx=2,pady=2)
-        self.cadre_plots.grid(row=2, rowspan=2, column=1)
+        self.cadre_plots = tk.Frame(self.window,padx=5,pady=5,bg="gray")
+        self.cadre_plots.grid(row=2,column=1,columnspan=2,sticky="NSW")
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
         self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots,pack_toolbar=False)
         self.toolbar.grid(row=1,column=0)
