@@ -9,7 +9,10 @@ import os
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import math
+import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from matplotlib.figure import Figure 
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import rcParams
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from scipy.optimize import curve_fit
 import astropy.io.fits as fits
@@ -176,12 +179,12 @@ class Traitement():
         img=self.crop_img # on récupère l'image
         fitter = modeling.fitting.LevMarLSQFitter()
 
-        #y0, x0 = np.unravel_index(np.argmax(img), img.shape)
-        #sigma = np.std(img)
-        #amp=np.max(img)
+        y0, x0 = np.unravel_index(np.argmax(img), img.shape)
+        sigma = np.std(img)
+        amp=np.max(img)
 
-        #w = modeling.models.Gaussian2D(amp, x0, y0, sigma, sigma)
-        w = modeling.models.Gaussian2D()
+        w = modeling.models.Gaussian2D(amp, x0, y0, sigma, sigma)
+        #w = modeling.models.Gaussian2D()
         #print(w)
 
         yi, xi = np.indices(img.shape)
@@ -190,8 +193,7 @@ class Traitement():
 
         model_data = g(xi, yi)
 
-        fig2, ax3 = Figure()
-        fig2, ax3 = Figure.subplots()
+        fig2, ax3 = plt.subplots()
         eps = np.min(model_data[model_data > 0]) / 10.0
         # use logarithmic scale for sharp Gaussians
         cs = ax3.imshow(np.log(eps + model_data), label='Gaussian')
