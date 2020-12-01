@@ -8,3 +8,5 @@ NodeMap.pfs
 *.pfs
 NodeMap.pfs
 NodeMap.pfs
+*.json
+.vscode/settings.json
