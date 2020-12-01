@@ -349,7 +349,7 @@ class Traitement():
         width=self.ellipse[1][1]
         height=self.ellipse[1][0]
         ang_ell=self.ellipse[2]
-        print( ang_ell)
+        #print( ang_ell)
 
         #on récupère les points des axes de la fonction précédente
         GP1, GP2, PP1, PP2=self.points_ellipse()
