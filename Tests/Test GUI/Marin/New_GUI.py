@@ -276,7 +276,7 @@ class Fenetre(Thread):
         t=tk.Text(self.console)
         t.pack()
         t.insert(self.console, sys.stdout)
-        """"
+        """
         
 
 

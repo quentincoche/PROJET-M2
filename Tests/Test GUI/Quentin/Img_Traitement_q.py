@@ -9,7 +9,10 @@ import os
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import math
-from matplotlib.figure import Figure 
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
+from mpl_toolkits.mplot3d import Axes3D
+#from matplotlib.figure import Figure 
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from scipy.optimize import curve_fit
 import astropy.io.fits as fits
@@ -19,6 +22,7 @@ import statistics
 from statistics import mean
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 
+rcParams.update({'figure.autolayout': True})
 
 class Traitement():
     
@@ -130,32 +134,46 @@ class Traitement():
 
     def trace_profil(self):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
-        print('Start plotting')
-        img=self.crop_img
+        t=time.time()
+        print('Start plot Gauss x,y')
+        img=self.crop_img # on récupère l'image
+        #on pose les variables et on récupère les informations de l'image
         Lx,Ly=[],[]
         img_y, img_x =img.shape
         w=math.ceil(self.W/2)
         h=math.ceil(self.H/2)
-        #print(img_x,img_y)
-        #print(w,h)
+ 
+        # on récupère la valeur des pixels selon les axes
         for iy in range(img_y):
             Ly=np.append(Ly,img[iy, w])
         for ix in range(img_x):
             Lx=np.append(Lx, img[h, ix])
+
+        #on fait une liste de ces valeurs
         x=np.arange(img_x)
         y=np.arange(img_y)
 
-        fitter = modeling.fitting.LevMarLSQFitter()
-        model = modeling.models.Gaussian1D()   # depending on the data you need to give some initial values
-        x_fitted_model = fitter(model, x, Lx)
-        y_fitted_model = fitter(model, y, Ly)
+        sigma_x = np.std(Lx)
+        sigma_y = np.std(Ly)
 
-        fig = Figure()
+        #on prépare la fonction de fit gaussien en précisant la méthode de fit
+        fitter = modeling.fitting.LevMarLSQFitter()
+
+        #courbe gaussien selon les axes x et y
+        modelx = modeling.models.Gaussian1D(amplitude=np.max(Lx), mean=w, stddev=sigma_x)   # depending on the data you need to give some initial values
+        modely = modeling.models.Gaussian1D(amplitude=np.max(Ly), mean=h, stddev=sigma_y)
+
+        #fit des courbes et des données
+        x_fitted_model = fitter(modelx, x, Lx)
+        y_fitted_model = fitter(modely, y, Ly)
+
+        #On affiche les courbes résultantes
+        fig = plt.figure(figsize=plt.figaspect(0.5))
         fig.suptitle("Gaussienne x,y")
-        ax = fig.add_subplot(2 ,2 ,1)
+        ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
         ax.plot(x, x_fitted_model(x))
-        ax2 = fig.add_subplot(2, 2, 2)
+        ax2 = fig.add_subplot(1, 2, 2)
         ax2.plot(y,Ly)
         ax2.plot(y, y_fitted_model(y))
         ax.set_title('X profil')
@@ -164,8 +182,9 @@ class Traitement():
         ax2.set_title ('Y profil')
         ax2.set_xlabel ("Hauteur de l'image en pixels")
         ax2.set_ylabel ("Intensité sur 8bits")
-        fig.tight_layout()
-        print('End plotting')
+
+        temps=time.time()-t
+        print("Temps plot Gauss x,y : ", temps)
 
         return fig
 
@@ -176,12 +195,11 @@ class Traitement():
         img=self.crop_img # on récupère l'image
         fitter = modeling.fitting.LevMarLSQFitter()
 
-        #y0, x0 = np.unravel_index(np.argmax(img), img.shape)
-        #sigma = np.std(img)
-        #amp=np.max(img)
+        y0, x0 = np.unravel_index(np.argmax(img), img.shape)
+        sigma = np.std(img)
+        amp=np.max(img)
 
-        #w = modeling.models.Gaussian2D(amp, x0, y0, sigma, sigma)
-        w = modeling.models.Gaussian2D()
+        w = modeling.models.Gaussian2D(amp, x0, y0, sigma, sigma)
         #print(w)
 
         yi, xi = np.indices(img.shape)
@@ -190,13 +208,12 @@ class Traitement():
 
         model_data = g(xi, yi)
 
-        fig2, ax3 = Figure()
-        fig2, ax3 = Figure.subplots()
+        fig2, ax3 = plt.subplots()
         eps = np.min(model_data[model_data > 0]) / 10.0
         # use logarithmic scale for sharp Gaussians
         cs = ax3.imshow(np.log(eps + model_data), label='Gaussian')
         cbar = fig2.colorbar(cs)
-        cbar.set_ylabel('Intensité sur 8bits')
+        cbar.set_label('Intensité sur 8bits')
         ax3.set_title('Gaussienne 2D')
         ax3.set_xlabel ("Largeur de l'image en pixels")
         ax3.set_ylabel ("Hauteur de l'image en pixels")
@@ -204,7 +221,7 @@ class Traitement():
         temps=time.time()-t
         print("Temps plot Gauss 2D : ", temps)
 
-        return fig2    
+        return fig2   
     
     def points_ellipse(self):
         """
@@ -362,12 +379,12 @@ class Traitement():
         P_fitted_model = fitter(modelP, P, Lp)
 
         #affichage des résultats
-        fig = Figure()
+        fig = plt.figure(figsize=plt.figaspect(0.5))
         fig.suptitle("Gaussienne ellipse")
-        ax = fig.add_subplot(2 ,2 ,1)
+        ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(G,Lg)
         ax.plot(G, G_fitted_model(G))
-        ax2 = fig.add_subplot(2, 2, 2)
+        ax2 = fig.add_subplot(1, 2, 2)
         ax2.plot(P,Lp)
         ax2.plot(P, P_fitted_model(P))
         ax.set_title('Grand axe profil')
@@ -376,7 +393,6 @@ class Traitement():
         ax2.set_title ('Petit axe profil')
         ax2.set_xlabel ('Petit axe en pixel')
         ax2.set_ylabel ('Intensité sur 8bits')
-        fig.tight_layout()
 
         temps = time.time()-t
         print("Temps plot Gauss ellipse : ", temps)

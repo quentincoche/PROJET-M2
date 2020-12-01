@@ -249,12 +249,8 @@ class Traitement():
         
         #On récupère l'angle de l'ellipse et on le met en radians
         ang_ell=self.ellipse[2]
-<<<<<<< Updated upstream
         ang=np.radians(ang_ell)
-=======
-        ang=math.radians(ang_ell)
-        ang2=math.radians(90-ang_ell)
->>>>>>> Stashed changes
+
 
         #On initialise les points de coordonnées
         GP1c, GP1l, GP2c, GP2l, PP1c, PP1l, PP2c, PP2l=0,0,0,0,0,0,0,0
@@ -269,7 +265,6 @@ class Traitement():
             PP2c=img_c
 
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
-<<<<<<< Updated upstream
             l1_ang=np.floor(cl_ell*np.tan(ang))
 
             GP1c=cc_ell+l1_ang#Grand axe
@@ -297,13 +292,6 @@ class Traitement():
                 PP2l=img_l-1
             if PP2l < 0:
                 PP2l=0
-=======
-            GP1c=cc_ell+math.floor(cl_ell*math.tan(ang))#Grand axe
-            GP2c=cc_ell-math.floor(cl_ell*math.tan(ang))
-
-            PP1l=cl_ell-math.floor(cc_ell*math.tan(ang2))#Petit axe
-            PP2l=cl_ell+math.floor(cc_ell*math.tan(ang2))
->>>>>>> Stashed changes
 
         #Dans le cas où l'ellipse est orientée horizontalement
         if 45<= ang_ell <90:
@@ -315,7 +303,6 @@ class Traitement():
             PP2l=img_l
 
             #Les points des colonnes sont dépendant de l'angle de l'ellipse
-<<<<<<< Updated upstream
             c2_ang=np.floor(cc_ell/np.tan(ang))
 
             GP1l=cl_ell-c2_ang#Grand axe
@@ -343,28 +330,6 @@ class Traitement():
                 PP2c = 0
             if PP2c > img_c:
                 PP2c = img_c-1
-=======
-            GP1l=cl_ell-math.floor(cc_ell*math.tan(ang2))#Grand axe
-            GP2l=cl_ell+math.floor(cc_ell*math.tan(ang2))
-
-            PP1c=cc_ell-math.floor(cl_ell/math.tan(ang))#Petit axe
-            PP2c=cc_ell+math.floor(cl_ell/math.tan(ang))
-
-        if 90<= ang_ell <135:
-            #Les points de colonnes sont aux extrémitées de l'image
-            GP1c=img_c#Grand axe
-            GP2c=0
-
-            PP1l=0#Petit axe
-            PP2l=img_l
-
-            #Les points des colonnes sont dépendant de l'angle de l'ellipse
-            GP1l=cl_ell-math.floor(cc_ell*math.tan(ang2))#Grand axe
-            GP2l=cl_ell+math.floor(cc_ell/math.tan(ang))
-
-            PP1c=cc_ell-math.floor(cl_ell/math.tan(ang))#Petit axe
-            PP2c=cc_ell+math.floor(cl_ell/math.tan(ang))
->>>>>>> Stashed changes
 
         #Création des tuples de points
         GP1, GP2=[np.int32(GP1l),np.int32(GP1c)], [np.int32(GP2l),np.int32(GP2c)]
