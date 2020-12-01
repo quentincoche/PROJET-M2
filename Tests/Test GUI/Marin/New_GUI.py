@@ -449,7 +449,7 @@ class Fenetre(Thread):
 
     def exp(self):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
-        self.exposure=self.vid.auto_exposure()
+        self.vid.auto_exposure()
 
     def choix_figure(self,param):
         selection = self.liste_combobox.get()
@@ -461,15 +461,26 @@ class Fenetre(Thread):
         if selection =="Fit Gaussien 2D":
             choix_fig=3
         self.choix_fig_XY=choix_fig
-        self.plot()
         return self.choix_fig_XY
 
     def plot(self):
         "choix_fig_XY = 0 quand le traitement d'image n'a pas encore été effectué, et = 1 après le traitement. le graphe apparait après pression du bouton profils"
+        try :
+            for widget in self.cadre_plots.winfo_children():
+                widget.destroy()
+        except :
+            pass
         if self.choix_fig_XY == 0:
             self.fig_XY = Figure()
         else : 
-            self.fig_XY.clf()
+            try :
+                self.photo2
+            except :
+                tk.messagebox.showerror("Graphiques impossibles", "Il faut traiter le faisceau pour permettre l'affichage des graphs. \n Pour cela cliquez sur le bouton traitement après ce message.")
+                self.fig_XY = Figure()
+                return self.fig_XY
+
+            self.fig_XY = Figure()
             if self.choix_fig_XY == 1 :
                 self.fig_XY = self.trmt.trace_profil()
             if self.choix_fig_XY == 2 :
