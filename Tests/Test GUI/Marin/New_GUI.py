@@ -90,9 +90,10 @@ class Fenetre(Thread):
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2,weight=2)
         self.window.grid_rowconfigure(1, weight=5)
-        self.window.grid_rowconfigure(2, weight=1)
-        self.window.grid_rowconfigure(3, weight=1)
-        self.window.grid_rowconfigure(4, weight=3)
+        self.window.grid_rowconfigure(2, weight=0)
+        self.window.grid_rowconfigure(3, weight=0)
+        self.window.grid_rowconfigure(4, weight=2)
+        self.window.grid_rowconfigure(5, weight=2)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
         #Variables pour la taille des pixels des caméras
@@ -245,11 +246,11 @@ class Fenetre(Thread):
 
         #cadre plots fits
         self.display_plots_title = tk.Label(self.window,text="affichage graphes de fit",bg="white")
-        self.display_plots_title.grid(row=3,column=1, sticky="NSEW")
+        self.display_plots_title.grid(row=4,column=1, sticky="NSEW")
 
         #zone affichage résultats
         self.results = tk.Frame(self.window,padx=5,pady=5,bg="gray")
-        self.results.grid(row=3,column=2,sticky="NSE")
+        self.results.grid(row=3,rowspan=2,column=2,sticky="NSE")
 
         #barycentres
         self.label01 = tk.Label(self.results,text="barycentre X = ")
@@ -517,13 +518,13 @@ class Fenetre(Thread):
 
         #cadre affichage profils
         self.cadre_plots = tk.Frame(self.window,padx=5,pady=5,bg="gray")
-        self.cadre_plots.grid(row=2,column=1,columnspan=2,sticky="NSW")
+        self.cadre_plots.grid(row=2,rowspan=2,column=1,columnspan=2,sticky="NSW")
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
         self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots,pack_toolbar=False)
-        self.toolbar.grid(row=1,column=0)
+        self.toolbar.grid(row=0,column=0)
         self.toolbar.update()    
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()
-        self.cadre_disp_XY.grid(row=0,column=0)
+        self.cadre_disp_XY.grid(row=1,column=0)
         return self.fig_XY
 
 
