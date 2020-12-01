@@ -49,7 +49,6 @@ from pathlib import Path
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
-import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
 from statistics import mean
@@ -489,7 +488,7 @@ class Fenetre(Thread):
         self.cadre_plots = tk.Frame(self.window,padx=2,pady=2)
         self.cadre_plots.grid(row=2, rowspan=2, column=1)
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
-        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots)
+        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots,pack_toolbar=False)
         self.toolbar.grid(row=0,column=0)
         self.toolbar.update()    
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()
