@@ -36,6 +36,7 @@ print("[INFO] starting...")
 from pypylon import pylon #Bibliothèque Basler d'interfaçage de la caméra
 from PIL import Image as Img #Bibliothèque de traitement d'image
 from PIL import ImageTk
+import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import tkinter as tk
 from tkinter import ttk
@@ -48,7 +49,6 @@ import os #Bibliothèque permettant de communiquer avec l'os et notamment le "pa
 from pathlib import Path
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date
-import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
 from statistics import mean
@@ -126,6 +126,7 @@ class Fenetre(Thread):
 
         #Variable pour l'aligenement des faisceaux
         self.align=False
+        self.choix_fig=0
 
         #Appel de toutes les fonctions permettant l'affichage de notre programme
         self.display()
@@ -145,7 +146,7 @@ class Fenetre(Thread):
         #commandes gauche
             #Taille de la zone des boutons
         self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray")
-        self.cmdleft.grid(row=1,column=0, sticky='NSEW')
+        self.cmdleft.grid(row=1, rowspan=2,column=0, sticky='NSEW')
 
             #Bouton snapshot
         self.FrameCapture=tk.Frame(self.cmdleft, borderwidth=2, relief='groove')
@@ -178,6 +179,9 @@ class Fenetre(Thread):
         btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
         btnprofiles.grid(row=7,column=0,sticky="nsew")
 
+        btn_stpprof = tk.Button(self.cmdleft, text="Stop Profils", command=self.stop_profil)
+        btn_stpprof.grid(row=8, column=0, sticky="nsew")
+
             #Liste selection du plot
         selection_plot=tk.Label(self.cmdleft,text="Sellectionnez Fit",bg="gray")
         selection_plot.grid(row=5,column=0,sticky="nsew")
@@ -188,22 +192,22 @@ class Fenetre(Thread):
         self.liste_combobox.bind("<<ComboboxSelected>>",self.choix_figure) 
 
         labelSpace3=tk.Label(self.cmdleft, text='', bg='gray')
-        labelSpace3.grid(row=8,column=0)       
+        labelSpace3.grid(row=9,column=0)       
 
             #Bouton alignement de faisceaux
         btnalign = tk.Button(self.cmdleft, text='Alignement de faisceaux', command=self.alignement)
-        btnalign.grid(row=9, column=0, sticky="nsew")
+        btnalign.grid(row=10, column=0, sticky="nsew")
 
             #Bouton arrêt alignement
         btn_stopalign = tk.Button(self.cmdleft, text='Arrêt alignement', command=self.arret_align)
-        btn_stopalign.grid(row=10, column=0, sticky="nsew")
+        btn_stopalign.grid(row=11, column=0, sticky="nsew")
 
         labelSpace=tk.Label(self.cmdleft, text='', bg='gray')
-        labelSpace.grid(row=11,column=0)
+        labelSpace.grid(row=12,column=0)
 
             #Bouton quitter
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=12,column=0,sticky="nsew")
+        btnquit.grid(row=13,column=0,sticky="nsew")
 
         #commandes superieures
             #Taille de la zone de commande
@@ -309,6 +313,10 @@ class Fenetre(Thread):
     
     def arret_align(self):
         self.align=False
+
+    def stop_profil(self):
+        self.cadre_plots.destroy()
+
 
 
 
@@ -462,15 +470,15 @@ class Fenetre(Thread):
         selection = self.liste_combobox.get()
         #print(selection)
         if selection =="Choix":
-            choix_fig=0
+            self.choix_fig=0
         if selection =="Fit XY":
-            choix_fig=1
+            self.choix_fig=1
         if selection =="Fit axes ellipse":
-            choix_fig=2
+            self.choix_fig=2
         if selection =="Fit Gaussien 2D":
-            choix_fig=3
-        self.choix_fig_XY=choix_fig
-        return self.choix_fig_XY
+            self.choix_fig=3
+
+        return
 
     def plot(self):
         "choix_fig_XY = 0 quand le traitement d'image n'a pas encore été effectué, et = 1 après le traitement. le graphe apparait après pression du bouton profils"
@@ -479,7 +487,7 @@ class Fenetre(Thread):
                 widget.destroy()
         except :
             pass
-        if self.choix_fig_XY == 0:
+        if self.choix_fig == 0:
             self.fig_XY = Figure()
         else : 
             try :
@@ -490,11 +498,11 @@ class Fenetre(Thread):
                 return self.fig_XY
 
             self.fig_XY = Figure()
-            if self.choix_fig_XY == 1 :
+            if self.choix_fig == 1 :
                 self.fig_XY = self.trmt.trace_profil()
-            if self.choix_fig_XY == 2 :
+            if self.choix_fig == 2 :
                 self.fig_XY = self.trmt.trace_ellipse()
-            if self.choix_fig_XY == 3 :
+            if self.choix_fig == 3 :
                 self.fig_XY = self.trmt.plot_2D()
 
         #cadre affichage profils
