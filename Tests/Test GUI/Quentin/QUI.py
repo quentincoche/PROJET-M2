@@ -14,6 +14,7 @@ from tkinter import IntVar
 from tkinter import DoubleVar
 from tkinter import Entry
 from threading import Thread
+from tkinter import BOTH, LEFT, FLAT, SUNKEN, RAISED, GROOVE, RIDGE
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
@@ -92,7 +93,7 @@ class Fenetre(Thread):
         """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
         
         #commandes gauche
-        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray")
+        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray",relief = RIDGE)
         self.cmdleft.grid(row=1,column=0,rowspan=2, sticky='NSEW')
 
         #Zone sélection de la partie a capturer
@@ -129,7 +130,7 @@ class Fenetre(Thread):
         #Liste selection du plot
         selection_plot=tk.Label(self.cmdleft,text="Selectionnez Fit",bg="gray")
         selection_plot.grid(row=4,column=0,sticky="nsew")
-        liste_plots =["Fit XY","Fit axes ellipse","Fit Gaussien 2D"]
+        liste_plots =["Choix","Fit XY","Fit axes ellipse","Fit Gaussien 2D"]
         self.liste_combobox = ttk.Combobox(self.cmdleft,values=liste_plots)
         self.liste_combobox.grid(row=5,column=0,sticky="nsew")
         self.liste_combobox.current(0)
@@ -154,7 +155,7 @@ class Fenetre(Thread):
            
         
         #commandes superieures
-        self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="gray")
+        self.cmdup = tk.Frame(self.window,borderwidth=4,relief="ridge",bg="gray")
         self.cmdup.grid(row=0,column=1, sticky="NSEW")
         btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool)
         btnvideo.grid(row=0,column=0,sticky="nsew")
@@ -164,28 +165,28 @@ class Fenetre(Thread):
 
     def display(self):
         #cadre video
-        self.display1 = tk.Canvas(self.window, width=self.Screen_x/2,height=self.Screen_y/2)  # Initialisation de l'écran 1
+        self.display1 = tk.Canvas(self.window, width=self.Screen_x/2,height=self.Screen_y/2,borderwidth=4,bg="gray",relief="ridge")  # Initialisation de l'écran 1
         self.display1.grid(row=1,column=1,sticky="NSW")
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
 
         #cadre traitement
-        self.title_display2 = tk.Label(self.window,text="Fit ellipse",bg="gray")
+        self.title_display2 = tk.Label(self.window,text="Fit ellipse",borderwidth=4,bg="gray",relief="ridge")
         self.title_display2.grid(row=0,column=2,sticky="NSEW")
-        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2)  # Initialisation de l'écran 1
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg="gray",relief="ridge")  # Initialisation de l'écran 1
         self.display2.grid(row=1,column=2,sticky="NSEW")
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
 
         #cadre plots fits
-        self.display_plots_title = tk.Label(self.window,text="affichage graphes de fit",bg="gray")
+        self.display_plots_title = tk.Label(self.window,text="affichage graphes de fit",borderwidth=4,bg="gray",relief="ridge")
         self.display_plots_title.grid(row=3,column=1, sticky="NSEW")
 
 
 
 
         #zone affichage résultats
-        self.results = tk.Frame(self.window,padx=5,pady=5,bg="gray")
+        self.results = tk.Frame(self.window,padx=5,pady=5,borderwidth=4,bg="gray",relief="ridge")
         self.results.grid(row=2,column=2,sticky="NSE")
         #barycentres
         self.label01 = tk.Label(self.results,text="barycentre X = ")
@@ -346,7 +347,8 @@ class Fenetre(Thread):
 
     def choix_figure(self,param):
         selection = self.liste_combobox.get()
-        print(selection)
+        if selection =="Choix":
+            choix_fig=0
         if selection =="Fit XY":
             choix_fig=1
         if selection =="Fit axes ellipse":
@@ -354,7 +356,6 @@ class Fenetre(Thread):
         if selection =="Fit Gaussien 2D":
             choix_fig=3
         self.choix_fig_XY=choix_fig
-        self.plot()
         return self.choix_fig_XY
 
     def plot(self):
@@ -367,16 +368,24 @@ class Fenetre(Thread):
         if self.choix_fig_XY == 0:
             self.fig_XY = Figure()
         else : 
-            if self.choix_fig_XY == 1 :
-                self.fig_XY = self.trmt.trace_profil()
-            if self.choix_fig_XY == 2 :
-                self.fig_XY = self.trmt.trace_ellipse()
-            if self.choix_fig_XY == 3 :
-                self.fig_XY = self.trmt.plot_2D()
+            try :
+                self.photo2
+            except :
+                tk.messagebox.showerror("Graphiques impossibles", "Il faut traiter le faisceau pour l'affichage des graphs. \n Pour cela cliquez sur le bouton traitement après ce message.")
+                self.fig_XY = Figure()
+                return self.fig_XY
+
+        self.fig_XY = Figure()
+        if self.choix_fig_XY == 1 :
+            self.fig_XY = self.trmt.trace_profil()
+        if self.choix_fig_XY == 2 :
+            self.fig_XY = self.trmt.trace_ellipse()
+        if self.choix_fig_XY == 3 :
+            self.fig_XY = self.trmt.plot_2D()
 
         #cadre affichage profils
-        self.cadre_plots = tk.Frame(self.window,padx=5,pady=5,bg="gray")
-        self.cadre_plots.grid(row=2,column=1,columnspan=2,sticky="NSW")
+        self.cadre_plots = tk.Frame(self.window,width=self.Screen_x/2,height=self.Screen_y/2,borderwidth=4,bg="gray",relief="ridge")
+        self.cadre_plots.grid(row=2,column=1,sticky="NSW")
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
         self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots)#,pack_toolbar=False)
         self.toolbar.grid(row=0,column=0)
