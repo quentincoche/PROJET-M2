@@ -9,10 +9,10 @@ import os
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import math
-import matplotlib.pyplot as plt
-from matplotlib import rcParams
+import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
+from matplotlib.figure import Figure 
 from mpl_toolkits.mplot3d import Axes3D
-#from matplotlib.figure import Figure 
+from matplotlib import rcParams
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from scipy.optimize import curve_fit
 import astropy.io.fits as fits

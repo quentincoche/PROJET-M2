@@ -359,10 +359,14 @@ class Fenetre(Thread):
 
     def plot(self):
         "choix_fig_XY = 0 quand le traitement d'image n'a pas encore été effectué, et = 1 après le traitement. le graphe apparait après pression du bouton profils"
+        try :
+            for widget in self.cadre_plots.winfo_children():
+                widget.destroy()
+        except :
+            pass
         if self.choix_fig_XY == 0:
             self.fig_XY = Figure()
         else : 
-            self.fig_XY.clf()
             if self.choix_fig_XY == 1 :
                 self.fig_XY = self.trmt.trace_profil()
             if self.choix_fig_XY == 2 :
@@ -372,7 +376,7 @@ class Fenetre(Thread):
 
         #cadre affichage profils
         self.cadre_plots = tk.Frame(self.window,padx=5,pady=5,bg="gray")
-        self.cadre_plots.grid(row=2,column=1)
+        self.cadre_plots.grid(row=2,column=1,columnspan=2,sticky="NSW")
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
         self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots)#,pack_toolbar=False)
         self.toolbar.grid(row=0,column=0)

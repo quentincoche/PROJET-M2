@@ -10,6 +10,7 @@ import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import math
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
+from matplotlib.figure import Figure  
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import rcParams
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
@@ -251,7 +252,6 @@ class Traitement():
         ang_ell=self.ellipse[2]
         ang=np.radians(ang_ell)
 
-
         #On initialise les points de coordonnées
         GP1c, GP1l, GP2c, GP2l, PP1c, PP1l, PP2c, PP2l=0,0,0,0,0,0,0,0
 
@@ -294,7 +294,7 @@ class Traitement():
                 PP2l=0
 
         #Dans le cas où l'ellipse est orientée horizontalement
-        if 45<= ang_ell <90:
+        if 45<= ang_ell <135:
             #Les points de colonnes sont aux extrémitées de l'image
             GP1c=img_c#Grand axe
             GP2c=0
