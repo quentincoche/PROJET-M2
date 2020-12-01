@@ -196,7 +196,7 @@ class Traitement():
         temps=time.time()-t
         print("Temps plot Gauss x,y : ", temps)
 
-        return fig
+        return fig, x_fitted_model, y_fitted_model
 
     
     def plot_2D(self):
@@ -232,7 +232,7 @@ class Traitement():
         temps=time.time()-t
         print("Temps plot Gauss 2D : ", temps)
 
-        return fig2
+        return fig2, g
         
     
     def points_ellipse(self):
@@ -410,4 +410,4 @@ class Traitement():
         temps = time.time()-t
         print("Temps plot Gauss ellipse : ", temps)
 
-        return fig
+        return fig, G_fitted_model, P_fitted_model

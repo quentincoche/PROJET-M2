@@ -112,6 +112,11 @@ class Fenetre(Thread):
         self.ellipse_width = DoubleVar()
         self.ellipse_height = DoubleVar()
         self.ellipse_angle =DoubleVar()
+        self.gauss_x=DoubleVar()
+        self.gauss_y=DoubleVar()
+        self.gauss_ellg=DoubleVar()
+        self.gauss_ellp=DoubleVar()
+        self.gauss_2D=DoubleVar()
 
         #Valeurs d'initialisation des tailles de l'affichage
         self.Screen_x = 1500
@@ -275,13 +280,30 @@ class Fenetre(Thread):
         self.label05.grid(row=4,column=0,sticky="nsew")
         self.label5 = tk.Label(self.results,textvariable=self.ellipse_angle)
         self.label5.grid(row=4,column=1,sticky="nsew")
-        """
-        self.console = tk.Frame(self.window, padx=5, pady=5)
-        self.console.grid(row=3, column=0, sticky='nsew')
-        t=tk.Text(self.console)
-        t.pack()
-        t.insert(self.console, sys.stdout)
-        """
+
+        #Paramètre gaussienne
+        self.labelg10=tk.Label(self.results,text="Gaussienne X : ")
+        self.labelg10.grid(row=5,column=0,sticky="nsew")
+        self.labelg11 = tk.Label(self.results,textvariable=self.gauss_x)
+        self.labelg11.grid(row=5,column=1,sticky="nsew")
+        self.labelg01=tk.Label(self.results,text="Gaussienne Y : ")
+        self.labelg01.grid(row=6,column=0,sticky="nsew")
+        self.labelg12 = tk.Label(self.results,textvariable=self.gauss_y)
+        self.labelg12.grid(row=6,column=1,sticky="nsew")
+        self.labelg20=tk.Label(self.results,text="Gaussienne ellipse G : ")
+        self.labelg20.grid(row=7,column=0,sticky="nsew")
+        self.labelg21 = tk.Label(self.results,textvariable=self.gauss_ellg)
+        self.labelg21.grid(row=7,column=1,sticky="nsew")
+        self.labelg02=tk.Label(self.results,text="Gaussienne ellipse P : ")
+        self.labelg02.grid(row=8,column=0,sticky="nsew")
+        self.labelg22 = tk.Label(self.results,textvariable=self.gauss_ellp)
+        self.labelg22.grid(row=8,column=1,sticky="nsew")
+        self.labelg3=tk.Label(self.results,text="Gaussienne 2D : ")
+        self.labelg3.grid(row=9,column=0,sticky="nsew")
+        self.labelg31 = tk.Label(self.results,textvariable=self.gauss_2D)
+        self.labelg31.grid(row=9,column=1,sticky="nsew")
+
+    
         
 
 
@@ -510,11 +532,26 @@ class Fenetre(Thread):
 
             self.fig_XY = Figure()
             if self.choix_fig == 1 :
-                self.fig_XY = self.trmt.trace_profil()
+                self.fig_XY, x, y = self.trmt.trace_profil()
+                self.gauss_x.set(x)
+                self.gauss_y.set(y)
+                self.gauss_ellg.set(0)
+                self.gauss_ellp.set(0)
+                self.gauss_2D.set(0)
             if self.choix_fig == 2 :
-                self.fig_XY = self.trmt.trace_ellipse()
+                self.fig_XY, g, p = self.trmt.trace_ellipse()
+                self.gauss_x.set(0)
+                self.gauss_y.set(0)
+                self.gauss_ellg.set(g)
+                self.gauss_ellp.set(p)
+                self.gauss_2D.set(0)
             if self.choix_fig == 3 :
-                self.fig_XY = self.trmt.plot_2D()
+                self.fig_XY, d = self.trmt.plot_2D()
+                self.gauss_x.set(0)
+                self.gauss_y.set(0)
+                self.gauss_ellg.set(0)
+                self.gauss_ellp.set(0)
+                self.gauss_2D.set(d)
 
         #cadre affichage profils
         self.cadre_plots = tk.Frame(self.window,padx=5,pady=5,bg="gray")
