@@ -145,7 +145,7 @@ class Fenetre(Thread):
         #commandes gauche
             #Taille de la zone des boutons
         self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray")
-        self.cmdleft.grid(row=1, rowspan=2,column=0, sticky='NSEW')
+        self.cmdleft.grid(row=1,column=0, sticky='NSEW')
 
             #Bouton snapshot
         self.FrameCapture=tk.Frame(self.cmdleft, borderwidth=2, relief='groove')
@@ -230,7 +230,7 @@ class Fenetre(Thread):
 
         #cadre traitement
             #Titre
-        self.title_display2 = tk.Label(self.window,text="Fit ellipse",bg="gray")
+        self.title_display2 = tk.Label(self.window,text="Fit ellipse",bg="white")
         self.title_display2.grid(row=0,column=2,sticky="NSEW")
             #Position
         self.display2 = tk.Canvas(self.window, width=self.Screen2_x, height=self.Screen2_y, bg="white")  # Initialisation de l'écran 1
@@ -269,7 +269,14 @@ class Fenetre(Thread):
         self.label05 = tk.Label(self.results,text="Angle ellipse = ")
         self.label05.grid(row=4,column=0,sticky="nsew")
         self.label5 = tk.Label(self.results,textvariable=self.ellipse_angle)
-        self.label5.grid(row=4,column=1,sticky="nsew")        
+        self.label5.grid(row=4,column=1,sticky="nsew")
+        """
+        self.console = tk.Frame(self.window, padx=5, pady=5)
+        self.console.grid(row=3, column=0, sticky='nsew')
+        t=tk.Text(self.console)
+        t.pack()
+        t.insert(self.console, sys.stdout)
+        """
         
 
 
@@ -494,7 +501,7 @@ class Fenetre(Thread):
         self.cadre_plots = tk.Frame(self.window,padx=2,pady=2)
         self.cadre_plots.grid(row=2, rowspan=2, column=1)
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
-        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots)
+        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots,pack_toolbar=False)
         self.toolbar.grid(row=0,column=0)
         self.toolbar.update()    
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()
