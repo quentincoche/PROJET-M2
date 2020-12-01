@@ -17,6 +17,7 @@ from threading import Thread
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
+from pathlib import Path
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
@@ -358,13 +359,13 @@ class Fenetre(Thread):
             if self.choix_fig_XY == 2 :
                 self.fig_XY = self.trmt.trace_ellipse()
             if self.choix_fig_XY == 3 :
-                self.fig_XY = self.trmt.plot_2D
+                self.fig_XY = self.trmt.plot_2D()
 
         #cadre affichage profils
         self.cadre_plots = tk.Frame(self.window,padx=5,pady=5,bg="gray")
         self.cadre_plots.grid(row=2,column=1)
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
-        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots,pack_toolbar=False)
+        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots)#,pack_toolbar=False)
         self.toolbar.grid(row=0,column=0)
         self.toolbar.update()    
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()

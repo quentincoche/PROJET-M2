@@ -198,7 +198,7 @@ class Traitement():
         # use logarithmic scale for sharp Gaussians
         cs = ax3.imshow(np.log(eps + model_data), label='Gaussian')
         cbar = fig2.colorbar(cs)
-        cbar.set_ylabel('Intensité sur 8bits')
+        cbar.set_label('Intensité sur 8bits')
         ax3.set_title('Gaussienne 2D')
         ax3.set_xlabel ("Largeur de l'image en pixels")
         ax3.set_ylabel ("Hauteur de l'image en pixels")

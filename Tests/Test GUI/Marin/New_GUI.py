@@ -42,7 +42,6 @@ from tkinter import ttk
 from tkinter import IntVar
 from tkinter import DoubleVar
 from tkinter import Entry
-from tkinter import Pack
 from threading import Thread
 import sys
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
