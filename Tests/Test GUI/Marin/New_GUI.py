@@ -181,7 +181,7 @@ class Fenetre(Thread):
             #Liste selection du plot
         selection_plot=tk.Label(self.cmdleft,text="Sellectionnez Fit",bg="gray")
         selection_plot.grid(row=5,column=0,sticky="nsew")
-        liste_plots =["Fit XY","Fit axes ellipse","Fit Gaussien 2D"]
+        liste_plots =["Choix","Fit XY","Fit axes ellipse","Fit Gaussien 2D"]
         self.liste_combobox = ttk.Combobox(self.cmdleft,values=liste_plots)
         self.liste_combobox.grid(row=6,column=0,sticky="nsew")
         self.liste_combobox.current(0)
@@ -453,7 +453,9 @@ class Fenetre(Thread):
 
     def choix_figure(self,param):
         selection = self.liste_combobox.get()
-        print(selection)
+        #print(selection)
+        if selection =="Choix":
+            choix_fig=0
         if selection =="Fit XY":
             choix_fig=1
         if selection =="Fit axes ellipse":
@@ -476,7 +478,7 @@ class Fenetre(Thread):
             try :
                 self.photo2
             except :
-                tk.messagebox.showerror("Graphiques impossibles", "Il faut traiter le faisceau pour permettre l'affichage des graphs. \n Pour cela cliquez sur le bouton traitement après ce message.")
+                tk.messagebox.showerror("Graphiques impossibles", "Il faut traiter le faisceau pour l'affichage des graphs. \n Pour cela cliquez sur le bouton traitement après ce message.")
                 self.fig_XY = Figure()
                 return self.fig_XY
 
