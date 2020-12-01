@@ -31,7 +31,11 @@ RemoveParameterLimitSelector	Gain
 PgiMode	Off
 ShutterMode	Rolling
 ExposureMode	Timed
+<<<<<<< Updated upstream
 ExposureTime	2800.0
+=======
+ExposureTime	2544.0
+>>>>>>> Stashed changes
 AcquisitionBurstFrameCount	1
 TriggerSelector	FrameBurstStart
 TriggerMode	Off
