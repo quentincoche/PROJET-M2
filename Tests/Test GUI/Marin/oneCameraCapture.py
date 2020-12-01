@@ -1,6 +1,6 @@
 import os
 
-os.environ["PYLON_CAMEMU"] = "3"
+#os.environ["PYLON_CAMEMU"] = "3"
 import pypylon
 from pypylon import genicam
 from pypylon import pylon

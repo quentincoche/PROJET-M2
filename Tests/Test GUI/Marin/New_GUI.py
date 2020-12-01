@@ -90,8 +90,8 @@ class Fenetre(Thread):
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2,weight=2)
         self.window.grid_rowconfigure(1, weight=5)
-        self.window.grid_rowconfigure(2, weight=0)
-        self.window.grid_rowconfigure(3, weight=0)
+        self.window.grid_rowconfigure(2, weight=1)
+        self.window.grid_rowconfigure(3, weight=1)
         self.window.grid_rowconfigure(4, weight=3)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
@@ -340,7 +340,8 @@ class Fenetre(Thread):
             try :
                 self.frame0 = self.cam.capture()
             except :
-                pass
+                print("Problem")
+                exit()
         self.frame=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         frame=self.frame
         if self.align == True :
@@ -464,7 +465,16 @@ class Fenetre(Thread):
 
     def exp(self):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
-        self.vid.auto_exposure()
+        try :
+            self.vid.auto_exposure()
+        except :
+            try :
+                self.cam.auto_exposure()
+            except :
+                print("Exposure Problem")
+                tk.messagebox.showerror("Problème d'exposition")
+                pass
+        return
 
     def choix_figure(self,param):
         selection = self.liste_combobox.get()
@@ -510,10 +520,10 @@ class Fenetre(Thread):
         self.cadre_plots.grid(row=2, rowspan=2, column=1)
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
         self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots,pack_toolbar=False)
-        self.toolbar.grid(row=0,column=0)
+        self.toolbar.grid(row=1,column=0)
         self.toolbar.update()    
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()
-        self.cadre_disp_XY.grid(row=1,column=0)
+        self.cadre_disp_XY.grid(row=0,column=0)
         return self.fig_XY
 
 
