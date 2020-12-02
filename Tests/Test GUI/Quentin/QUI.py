@@ -59,7 +59,7 @@ class Fenetre(Thread):
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2,weight=2)
         self.window.grid_rowconfigure(1, weight=3)
-        self.window.grid_rowconfigure(2, weight=2)
+        self.window.grid_rowconfigure(2, weight=3)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
         self.choix_fig_XY = IntVar()
@@ -77,12 +77,16 @@ class Fenetre(Thread):
         self.frame2=[]
         self.align=False
         
+        
 
         self.display()
         self.plot()
         self.Interface() #Lance la fonction Interface
         self.flux_cam()
 
+        #detection du nombre de pixels par pouce: utile pour l'affichage des plots
+        self.dpi = self.cadre_plots.winfo_fpixels('1i')
+        
 
     #########################
     #   Partie Interface    # 
@@ -170,7 +174,7 @@ class Fenetre(Thread):
 
     def display(self):
         #cadre video
-        self.display1 = tk.Canvas(self.window, width=self.Screen_x/2,height=self.Screen_y/2,borderwidth=4,bg="gray",relief="ridge")  # Initialisation de l'écran 1
+        self.display1 = tk.Canvas(self.window, borderwidth=4,bg="gray",relief="ridge")  # Initialisation de l'écran 1
         self.display1.grid(row=1,column=1,sticky="NSEW")
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
@@ -384,13 +388,15 @@ class Fenetre(Thread):
                 return self.fig_XY
 
         self.fig_XY = Figure()
-        self.fig_height = self.display1.winfo_height()
+        if self.choix_fig_XY > 0:
+            self.fig_width = self.cadre_plots.winfo_width() 
+            self.fig_height = self.cadre_plots.winfo_height()
         if self.choix_fig_XY == 1 :
-            self.fig_XY = self.trmt.trace_profil()
+            self.fig_XY = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height)
         if self.choix_fig_XY == 2 :
-            self.fig_XY = self.trmt.trace_ellipse()
+            self.fig_XY = self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height)
         if self.choix_fig_XY == 3 :
-            self.fig_XY = self.trmt.plot_2D()
+            self.fig_XY = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
 
         #cadre affichage profils
         self.cadre_plots = tk.Frame(self.window,borderwidth=4,bg="gray",relief="ridge")
@@ -400,7 +406,8 @@ class Fenetre(Thread):
         self.toolbar.grid(row=0,column=0)
         self.toolbar.update()    
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()
-        self.cadre_disp_XY.grid(row=1,column=0)
+        self.cadre_disp_XY.grid(row=1,column=0,sticky="NSEW")
+        
         return self.fig_XY
 
     
