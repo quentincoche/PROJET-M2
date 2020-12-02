@@ -35,53 +35,56 @@ Created on Mon Sep 28 09:22:21 2020
 print("[INFO] starting...")
 from pypylon import pylon #Bibliothèque Basler d'interfaçage de la caméra
 from PIL import Image as Img #Bibliothèque de traitement d'image
-from PIL import ImageTk
+from PIL import ImageTk #Transformation d'image pour l'affichage de tkinter
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
-import tkinter as tk
+import tkinter as tk #Bibliothèque d'affichage graphique
+from tkinter import filedialog
 from tkinter import StringVar, ttk
 from tkinter import IntVar
 from tkinter import DoubleVar
 from tkinter import Entry
 from tkinter import BOTH, LEFT, FLAT, SUNKEN, RAISED, GROOVE, RIDGE
-from threading import Thread
-import sys
+from threading import Thread #Bibliothèque de multithreading pour optimiser le fonctionnement
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
-from pathlib import Path
+from pathlib import Path #Bibliothèque de gestion du path
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date
-from matplotlib.figure import Figure
+from matplotlib.figure import Figure #Bibliothèque de figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
-from statistics import mean
+from statistics import mean #Bibliothèque statistique
+
 import oneCameraCapture as oneCameraCapture
 import opencv_module as OpenCam
 import Img_Traitement as Img_Traitement
 
 
-# La Classe Fenetre contient l'ensemble du programme #
 
+# La Classe Fenetre contient l'ensemble du programme #
 class Fenetre(Thread):
 
     def __init__(self, output_path = "./"): #Fonction d'initialisation du programme
         
-        Thread.__init__(self)
+        Thread.__init__(self) #Lance la classe dans un thread
 
         """Edition de nom de variable associé aux autres fichiers du programme"""
         try :
-            self.vid = oneCameraCapture.cameraCapture()
+            self.vid = oneCameraCapture.cameraCapture() #test si la caméra est basler
+            self.basler=True
         except :
             try :
-                self.cam=OpenCam.openCamera()
+                self.cam=OpenCam.openCamera() #Pour toutes les autres camera
+                self.Basler=False
             except :
-                print("Need camera troubleshooting")
+                print("Need camera troubleshooting") #Surement pas de caméra
                 exit()
 
-        self.trmt = Img_Traitement.Traitement()
+        self.trmt = Img_Traitement.Traitement() #Lance l'initalisation de la classe traitement
         self.output_path = Path.cwd()  #Chemin de sortie de la photo
 
         """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
-        self.window.state('zoomed')
+        self.window.state('zoomed') #Lance le GUI en plein écran
          
         self.window.title("Beam analyzer Python")
         self.window.config(background="#FFFFFF") #Couleur de la fenêtre
@@ -165,12 +168,8 @@ class Fenetre(Thread):
         bouton_selection.grid(row=1, column=0)
         bouton_selection = tk.Checkbutton(self.FrameCapture, text="Traité", command=self.choice1)
         bouton_selection.grid(row=2, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot X,Y", command=self.choice2)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot", command=self.choice2)
         bouton_selection.grid(row=3, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot Ellipse", command=self.choice3)
-        bouton_selection.grid(row=4, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot 2D", command=self.choice4)
-        bouton_selection.grid(row=5, column=0)
 
             #Bouton capture
         btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
@@ -235,9 +234,9 @@ class Fenetre(Thread):
         self.Screen_y = self.display1.winfo_height()
 
         #cadre traitement
-        self.title_display2 = tk.Label(self.window,text="Fit ellipse",borderwidth=4,bg="gray",relief="ridge")
+        self.title_display2 = tk.Label(self.window,text="Fit ellipse",borderwidth=4,bg="white",relief="ridge")
         self.title_display2.grid(row=0,column=2,sticky="NSEW")
-        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg="white",relief="ridge")  # Initialisation de l'écran 1
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg="gray",relief="ridge")  # Def de l'écran 2
         self.display2.grid(row=1,column=2,sticky="NSEW")
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
@@ -295,7 +294,7 @@ class Fenetre(Thread):
         self.window.destroy() # Ferme la fenêtre
 
 
-         #Fonction définissant l'image à enregistrer   
+    #Fonction définissant l'image à enregistrer   
     def choice0(self):
         self.coch0=1
     
@@ -304,21 +303,23 @@ class Fenetre(Thread):
  
     def choice2(self):
         self.coch2=1
-    
-    def choice3(self):
-        self.coch3=1
-
-    def choice4(self):
-        self.coch4=1
 
     def alignement(self):
+        """Fonction pour alignement de faisceaux"""
         self.align=True
     
     def arret_align(self):
+        """Fonction d'arrêt de l'alignement"""
         self.align=False
 
     def stop_profil(self):
-        self.cadre_plots.destroy()
+        """Fonction permettant d'enlever le plots"""
+        for widget in self.cadre_plots.winfo_children():
+                widget.destroy()
+                self.titre_gauss1.set("")
+                self.titre_gauss2.set("")
+                self.gauss_1.set(0)
+                self.gauss_2.set(0)
 
 
 
@@ -326,7 +327,6 @@ class Fenetre(Thread):
     #####################
     #   Partie Camera   # 
     #####################
-
 
     def flux_cam(self):
         """Lance la fonction d'affichage de la preview  dans un thread"""
@@ -339,27 +339,34 @@ class Fenetre(Thread):
         #Get a frame from cameraCapture
         ratio=1
 
-        try:
+        #Récupère le flux basler si elle communique
+        if self.basler==True:
             self.frame0 = self.vid.getFrame() #This is an array
-            cam_rat=True
-        except :
+
+        #Sinon récupère le flux opencv
+        else :
             try :
                 self.frame0 = self.cam.capture()
                 cam_rat=False
             except :
-                print("Problem")
+                print("Problem to get an image") #Impossible de récuperer le flux de la caméra
+                tk.messagebox.showerror("Problem to get an image") #Affichage d'un message d'erreur
                 exit()
-        self.frame=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
+
+        self.frame=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1) #Convertit l'image en 8bits pour en permettre l'affichage sur tous les écrans
         frame=self.frame
+
+        #Fonction d'alignement
         if self.align == True :
             test=True
             try :
                 self.baryX
-            except AttributeError:
+            except AttributeError: #Si le traitement d'image n'a pas été fait avant l'appui sur le bouton
                 test=False
                 self.align = False
                 tk.messagebox.showerror("Alignement impossible", "Il faut traiter le premier faisceau pour permettre l'alignement. \n Pour cela cliquez sur le bouton traitement après ce message.")
             if test == True:
+                #Dessine une croix sur l'écran pour permettre alignement
                 cv2.line(frame, (self.baryX, 0), (self.baryX, frame.shape[0]), (255, 0, 0), 3)#Dessine une croix sur le barycentre de l'image
                 cv2.line(frame, (0, self.baryY), (frame.shape[1], self.baryY), (255, 0, 0), 3)
 
@@ -367,13 +374,15 @@ class Fenetre(Thread):
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
 
+        #Récupère le ratio d'affichage de la frame
         r = float(self.Screen_x/self.Screen_y)
 
         #Get picture ratio from Camera
-        if cam_rat==True :
+        if self.basler==True :
             ratio = self.vid.ratio
-        elif cam_rat==False:
+        elif self.basler==False:
             ratio = self.cam.ratio
+
         #keep ratio
         if r > ratio:
             self.Screen_x = int(round(self.display1.winfo_height()*ratio))
@@ -398,40 +407,37 @@ class Fenetre(Thread):
         """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
         ts = datetime.datetime.now()
         try:
-            os.mkdir('Snapshot')
+            os.mkdir('Snapshot') #Créer un dossier snapshot pour les images
         except OSError:
             pass
-        path=self.output_path.joinpath('Snapshot')
-        print("Dossier d'enregistrement : ", path)
-        
+        path=self.output_path.joinpath('Snapshot') #défini le path pour les images
+        print(path)
+        """
+        print("Dossier d'enregistrement : ", path) #Spécifie à l'utilisateur le dossier d'enregistrement
+        tk.messagebox.showinfo("Le dossier d'enregistrement des images est : ", path)
+        """
         if self.coch0==1:
-            filename = "preview_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
-            p = path.joinpath(filename)  # construit le chemin de sortie
+            filename = "preview_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
             image = Img.fromarray(self.frame)
-            image.save(p, "PNG")  # Sauvegarde l'image sous format png
+            S=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+            image.save(S)
+            S.close()
             print("[INFO] saved {}".format(filename))
         if self.coch1==1:
-            filename_2 = "treatment_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-            p = path.joinpath(filename_2)
+            filename_2 = "treatment_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
             image2 = Img.fromarray(self.frame2)
-            image2.save(p, "PNG")
+            S2=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_2, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+            image2.save(S2)
             print("[INFO] saved {}".format(filename_2))
         if self.coch2==1:
-            filename_xy = "plot_xy_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-            p = path.joinpath(filename_xy)
-            self.fig_XY.savefig(p, dpi=1200)
+            filename_xy = "plot_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+            S3=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_xy, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+            self.fig_XY.savefig("plot", dpi=1200)
+            Im=Img.open("plot.png")
+            im = Im.convert("RGB")
+            im.save(S3)
             print("[INFO] saved {}".format(filename_xy))
-        if self.coch3==1:
-            filename_ellipse = "plot_ell_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-            p = path.joinpath(filename_ellipse)
-            #self.fig_XY.savefig(p, dpi=1200)
-            print("[INFO] saved {}".format(filename_ellipse))
-        if self.coch4==1:
-            filename_2D = "plot_2D_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-            p = path.joinpath(filename_2D)
-            #self.fig_XY.savefig(p, dpi=1200)
-            print("[INFO] saved {}".format(filename_2D))
-        self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
+        self.coch0, self.coch1, self.coch2 =0,0,0
         
 
     def video_tool(self):
@@ -535,9 +541,9 @@ class Fenetre(Thread):
             if self.choix_fig == 3 :
                 self.fig_XY, d = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
                 self.titre_gauss1.set("Gaussienne 2D :")
-                self.titre_gauss2.set("")
+                self.titre_gauss2.set()
                 self.gauss_1.set(d)
-                self.gauss_2.set(0)
+                self.gauss_2.set()
 
         #cadre affichage profils
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
