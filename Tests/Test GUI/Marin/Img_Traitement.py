@@ -351,7 +351,7 @@ class Traitement():
         return GP1, GP2, PP1, PP2
 
 
-    def trace_ellipse(self,dpi,width,height):
+    def trace_ellipse(self,dpi,cv_width,cv_height):
         """ Trace le fit gaussien selon les axes de l'ellipse"""
         t=time.time()
         print("Start plot Gauss ellipse axis")
@@ -405,8 +405,8 @@ class Traitement():
         P_fitted_model = fitter(modelP, P, Lp)
 
         #paramètres pour affichage correct
-        fig_width_i = width / dpi
-        fig_height_i = height / dpi
+        fig_width_i = cv_width / dpi
+        fig_height_i = cv_height / dpi
 
         #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
