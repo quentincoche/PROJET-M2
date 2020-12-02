@@ -369,9 +369,7 @@ class Fenetre(Thread):
             choix_fig=3
         self.choix_fig_XY=choix_fig
         self.plot()
-        # self.fig_width = self.cadre_plots.winfo_width()
-        # self.fig_height = self.cadre_plots.winfo_height()
-        return self.choix_fig_XY#,self.fig_width,self.fig_height
+        return self.choix_fig_XY
 
     def plot(self):
         "choix_fig_XY = 0 quand le traitement d'image n'a pas encore été effectué, et = 1 après le traitement. le graphe apparait après pression du bouton profils"
@@ -396,9 +394,9 @@ class Fenetre(Thread):
         if self.choix_fig_XY == 1 :
             self.fig_XY = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height)
         if self.choix_fig_XY == 2 :
-            self.fig_XY = self.trmt.trace_ellipse()
+            self.fig_XY = self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height)
         if self.choix_fig_XY == 3 :
-            self.fig_XY = self.trmt.plot_2D()
+            self.fig_XY = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
 
         #cadre affichage profils
         self.cadre_plots = tk.Frame(self.window,borderwidth=4,bg="gray",relief="ridge")
