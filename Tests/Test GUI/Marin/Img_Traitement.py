@@ -132,11 +132,13 @@ class Traitement():
             off_y=self.y-Y
             self.H=self.h+2*off_y
         if X+self.W>frame.shape[1]:
-            self.W=frame.shape[1]-(X+self.w)
-            X=X+self.w-self.W
+            off_x=X+self.W-frame.shape[1]
+            self.W=self.W-2*off_x
+            X=X+off_x
         if Y+self.H>frame.shape[0]:
-            self.H=frame.shape[0]-(Y+self.h)
-            Y=Y+self.h-self.H
+            off_y=Y+self.H-frame.shape[0]
+            self.H=self.H-2*off_y
+            Y=Y+off_y
 
         crop_img = frame[Y:Y+self.H,X:X+self.W]
         return crop_img
@@ -349,7 +351,7 @@ class Traitement():
         return GP1, GP2, PP1, PP2
 
 
-    def trace_ellipse(self,dpi,width,height):
+    def trace_ellipse(self,dpi,cv_width,cv_height):
         """ Trace le fit gaussien selon les axes de l'ellipse"""
         t=time.time()
         print("Start plot Gauss ellipse axis")
@@ -403,8 +405,8 @@ class Traitement():
         P_fitted_model = fitter(modelP, P, Lp)
 
         #paramètres pour affichage correct
-        fig_width_i = width / dpi
-        fig_height_i = height / dpi
+        fig_width_i = cv_width / dpi
+        fig_height_i = cv_height / dpi
 
         #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
