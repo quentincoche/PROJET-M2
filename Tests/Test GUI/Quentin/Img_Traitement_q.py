@@ -345,8 +345,8 @@ class Traitement():
         img=self.crop_img
         Lg, Lp= [],[]
         i,y = 0,0
-        width=self.ellipse[1][1]
-        height=self.ellipse[1][0]
+        cv_width=self.ellipse[1][1]
+        cv_height=self.ellipse[1][0]
         ang_ell=self.ellipse[2]
 
         #on récupère les points des axes de la fonction précédente
@@ -382,8 +382,8 @@ class Traitement():
         fitter = modeling.fitting.LevMarLSQFitter()
 
         #fonction gaussienne
-        modelG = modeling.models.Gaussian1D(amplitude=np.max(Lg), mean=width, stddev=sigma_g)   # depending on the data you need to give some initial values
-        modelP = modeling.models.Gaussian1D(amplitude=np.max(Lp), mean=height, stddev=sigma_p)
+        modelG = modeling.models.Gaussian1D(amplitude=np.max(Lg), mean=cv_width, stddev=sigma_g)   # depending on the data you need to give some initial values
+        modelP = modeling.models.Gaussian1D(amplitude=np.max(Lp), mean=cv_height, stddev=sigma_p)
         
         #Fit de la courbe et des données
         G_fitted_model = fitter(modelG, G, Lg)
