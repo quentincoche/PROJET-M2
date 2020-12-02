@@ -191,7 +191,7 @@ class Traitement():
         temps=time.time()-t
         print("Temps plot Gauss x,y : ", temps)
 
-        return fig
+        return fig, x_fitted_model, y_fitted_model
 
     def plot_2D(self,dpi,width,height):
 
@@ -222,7 +222,8 @@ class Traitement():
         fig2.set_size_inches(fig_width_i,fig_height_i)
         eps = np.min(model_data[model_data > 0]) / 10.0
         # use logarithmic scale for sharp Gaussians
-        cs = ax3.imshow(np.log(eps + model_data), label='Gaussian')
+        #cs = ax3.imshow(np.log(eps + model_data), label='Gaussian')
+        cs = ax3.imshow(eps + model_data, label='Gaussian')
         cbar = fig2.colorbar(cs)
         cbar.set_label('Intensité sur 8bits')
         ax3.set_title('Gaussienne 2D')
@@ -232,7 +233,7 @@ class Traitement():
         temps=time.time()-t
         print("Temps plot Gauss 2D : ", temps)
 
-        return fig2   
+        return fig2, g   
     
     def points_ellipse(self):
         """
@@ -347,7 +348,6 @@ class Traitement():
         width=self.ellipse[1][1]
         height=self.ellipse[1][0]
         ang_ell=self.ellipse[2]
-        print( ang_ell)
 
         #on récupère les points des axes de la fonction précédente
         GP1, GP2, PP1, PP2=self.points_ellipse()
@@ -413,6 +413,6 @@ class Traitement():
         temps = time.time()-t
         print("Temps plot Gauss ellipse : ", temps)
 
-        return fig
+        return fig, G_fitted_model, P_fitted_model
 
     
