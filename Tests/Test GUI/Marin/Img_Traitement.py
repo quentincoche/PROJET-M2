@@ -132,11 +132,13 @@ class Traitement():
             off_y=self.y-Y
             self.H=self.h+2*off_y
         if X+self.W>frame.shape[1]:
-            self.W=frame.shape[1]-(X+self.w)
-            X=X+self.w-self.W
+            off_x=X+self.W-frame.shape[1]
+            self.W=self.W-2*off_x
+            X=X+off_x
         if Y+self.H>frame.shape[0]:
-            self.H=frame.shape[0]-(Y+self.h)
-            Y=Y+self.h-self.H
+            off_y=Y+self.H-frame.shape[0]
+            self.H=self.H-2*off_y
+            Y=Y+off_y
 
         crop_img = frame[Y:Y+self.H,X:X+self.W]
         return crop_img
