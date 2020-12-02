@@ -529,7 +529,7 @@ class Fenetre(Thread):
                 self.gauss_2.set(p)
             if self.choix_fig == 3 :
                 self.fig_XY, d = self.trmt.plot_2D()
-                self.titre_gauss1.set("Gaussienne ellipse G :")
+                self.titre_gauss1.set("Gaussienne 2D :")
                 self.titre_gauss2.set("")
                 self.gauss_1.set(d)
                 self.gauss_2.set(0)
