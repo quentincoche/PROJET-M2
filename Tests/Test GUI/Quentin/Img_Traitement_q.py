@@ -168,7 +168,7 @@ class Traitement():
         y_fitted_model = fitter(modely, y, Ly)
 
         #On affiche les courbes résultantes
-        fig = plt.figure(figsize=plt.figaspect(0.5))
+        fig = Figure()
         fig.suptitle("Gaussienne x,y")
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
@@ -379,7 +379,7 @@ class Traitement():
         P_fitted_model = fitter(modelP, P, Lp)
 
         #affichage des résultats
-        fig = plt.figure(figsize=plt.figaspect(0.5))
+        fig = Figure()
         fig.suptitle("Gaussienne ellipse")
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(G,Lg)

@@ -58,8 +58,8 @@ class Fenetre(Thread):
         """"definition des proportions pour les frames"""
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2,weight=2)
-        self.window.grid_rowconfigure(1, weight=4)
-        self.window.grid_rowconfigure(2, weight=4)
+        self.window.grid_rowconfigure(1, weight=3)
+        self.window.grid_rowconfigure(2, weight=2)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
         self.choix_fig_XY = IntVar()
@@ -166,7 +166,7 @@ class Fenetre(Thread):
     def display(self):
         #cadre video
         self.display1 = tk.Canvas(self.window, width=self.Screen_x/2,height=self.Screen_y/2,borderwidth=4,bg="gray",relief="ridge")  # Initialisation de l'écran 1
-        self.display1.grid(row=1,column=1,sticky="NSW")
+        self.display1.grid(row=1,column=1,sticky="NSEW")
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
 
@@ -187,7 +187,7 @@ class Fenetre(Thread):
 
         #zone affichage résultats
         self.results = tk.Frame(self.window,padx=5,pady=5,borderwidth=4,bg="gray",relief="ridge")
-        self.results.grid(row=2,column=2,sticky="NSE")
+        self.results.grid(row=2,column=2,sticky="NSEW")
         #barycentres
         self.label01 = tk.Label(self.results,text="barycentre X = ")
         self.label01.grid(row=0,column=0,sticky="nsew")
@@ -356,6 +356,7 @@ class Fenetre(Thread):
         if selection =="Fit Gaussien 2D":
             choix_fig=3
         self.choix_fig_XY=choix_fig
+        self.plot()
         return self.choix_fig_XY
 
     def plot(self):
@@ -365,8 +366,7 @@ class Fenetre(Thread):
                 widget.destroy()
         except :
             pass
-        if self.choix_fig_XY == 0:
-            self.fig_XY = Figure()
+       
         else : 
             try :
                 self.photo2
@@ -376,6 +376,7 @@ class Fenetre(Thread):
                 return self.fig_XY
 
         self.fig_XY = Figure()
+        self.fig_height = self.display1.winfo_height()
         if self.choix_fig_XY == 1 :
             self.fig_XY = self.trmt.trace_profil()
         if self.choix_fig_XY == 2 :
@@ -384,8 +385,8 @@ class Fenetre(Thread):
             self.fig_XY = self.trmt.plot_2D()
 
         #cadre affichage profils
-        self.cadre_plots = tk.Frame(self.window,width=self.Screen_x/2,height=self.Screen_y/2,borderwidth=4,bg="gray",relief="ridge")
-        self.cadre_plots.grid(row=2,column=1,sticky="NSW")
+        self.cadre_plots = tk.Frame(self.window,borderwidth=4,bg="gray",relief="ridge")
+        self.cadre_plots.grid(row=2,columnspan=1,column=1,sticky="NSEW")
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
         self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots)#,pack_toolbar=False)
         self.toolbar.grid(row=0,column=0)
