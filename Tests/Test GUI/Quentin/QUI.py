@@ -123,35 +123,40 @@ class Fenetre(Thread):
         labelSpace1=tk.Label(self.cmdleft, text='', bg='gray')
         labelSpace1.grid(row=2,column=0)   
 
-        #tracé du profil (par defaut XY)
-        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
-        btnprofiles.grid(row=3,column=0,sticky="nsew")
+        
 
         #Liste selection du plot
         selection_plot=tk.Label(self.cmdleft,text="Selectionnez Fit",bg="gray")
-        selection_plot.grid(row=4,column=0,sticky="nsew")
+        selection_plot.grid(row=3,column=0,sticky="nsew")
         liste_plots =["Choix","Fit XY","Fit axes ellipse","Fit Gaussien 2D"]
         self.liste_combobox = ttk.Combobox(self.cmdleft,values=liste_plots)
-        self.liste_combobox.grid(row=5,column=0,sticky="nsew")
+        self.liste_combobox.grid(row=4,column=0,sticky="nsew")
         self.liste_combobox.current(0)
         self.liste_combobox.bind("<<ComboboxSelected>>",self.choix_figure)
 
+        #tracé du profil (par defaut XY)
+        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
+        btnprofiles.grid(row=5,column=0,sticky="nsew")
+
+        btn_stpprof = tk.Button(self.cmdleft, text="Stop Profils", command=self.stop_profil)
+        btn_stpprof.grid(row=6, column=0, sticky="nsew")
+
         labelSpace2=tk.Label(self.cmdleft, text='', bg='gray')
-        labelSpace2.grid(row=6,column=0)   
+        labelSpace2.grid(row=7,column=0) 
 
         #Bouton alignement de faisceaux
         btnalign = tk.Button(self.cmdleft, text='Alignement de faisceaux', command=self.alignement)
-        btnalign.grid(row=7, column=0, sticky="nsew")
+        btnalign.grid(row=8, column=0, sticky="nsew")
         #Bouton arrêt alignement
         btn_stopalign = tk.Button(self.cmdleft, text='Arrêt alignement', command=self.arret_align)
-        btn_stopalign.grid(row=8, column=0, sticky="nsew")
+        btn_stopalign.grid(row=9, column=0, sticky="nsew")
 
         labelSpace3=tk.Label(self.cmdleft, text='', bg='gray')
-        labelSpace3.grid(row=9,column=0)   
+        labelSpace3.grid(row=10,column=0)   
 
         #Boutton pour quitter l'appli
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=10,column=0,sticky="nsew")
+        btnquit.grid(row=11,column=0,sticky="nsew")
            
         
         #commandes superieures
@@ -242,6 +247,9 @@ class Fenetre(Thread):
     
     def arret_align(self):
         self.align=False
+
+    def stop_profil(self):
+        self.cadre_plots.destroy()
 
 
     #####################
