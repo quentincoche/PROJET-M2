@@ -132,7 +132,7 @@ class Traitement():
         crop_img = frame[Y:Y+self.H,X:X+self.W]
         return crop_img
 
-    def trace_profil(self):
+    def trace_profil(self,dpi,width,height):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
         t=time.time()
         print('Start plot Gauss x,y')
@@ -167,8 +167,13 @@ class Traitement():
         x_fitted_model = fitter(modelx, x, Lx)
         y_fitted_model = fitter(modely, y, Ly)
 
+        #paramètres pour affichage correct
+        fig_width_i = width / dpi
+        fig_height_i = height / dpi
+
         #On affiche les courbes résultantes
         fig = Figure()
+        fig.set_size_inches(fig_width_i,fig_height_i)
         fig.suptitle("Gaussienne x,y")
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
