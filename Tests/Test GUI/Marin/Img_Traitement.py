@@ -142,7 +142,7 @@ class Traitement():
         return crop_img
 
 
-    def trace_profil(self):
+    def trace_profil(self,dpi,width,height):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
         t=time.time()
         print('Start plot Gauss x,y')
@@ -177,8 +177,13 @@ class Traitement():
         x_fitted_model = fitter(modelx, x, Lx)
         y_fitted_model = fitter(modely, y, Ly)
 
+        #paramètres pour affichage correct
+        fig_width_i = width / dpi
+        fig_height_i = height / dpi
+
         #On affiche les courbes résultantes
-        fig = plt.figure(figsize=plt.figaspect(0.5))
+        fig = Figure()
+        fig.set_size_inches(fig_width_i,fig_height_i)
         fig.suptitle("Gaussienne x,y")
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x,Lx)
@@ -199,7 +204,7 @@ class Traitement():
         return fig, x_fitted_model, y_fitted_model
 
     
-    def plot_2D(self):
+    def plot_2D(self,dpi,width,height):
 
         t=time.time()
         print("start plot Gauss 2D")
@@ -220,10 +225,14 @@ class Traitement():
 
         model_data = g(xi, yi)
 
+        #paramètres pour affichage correct
+        fig_width_i = width / dpi
+        fig_height_i = height / dpi
+
         fig2, ax3 = plt.subplots()
+        fig2.set_size_inches(fig_width_i,fig_height_i)
         eps = np.min(model_data[model_data > 0]) / 10.0
         # use logarithmic scale for sharp Gaussians
-        #cs = ax3.imshow(np.log(eps + model_data), label='Gaussian')
         cs = ax3.imshow(eps + model_data, label='Gaussian')
         cbar = fig2.colorbar(cs)
         cbar.set_label('Intensité sur 8 bits')
@@ -340,7 +349,7 @@ class Traitement():
         return GP1, GP2, PP1, PP2
 
 
-    def trace_ellipse(self):
+    def trace_ellipse(self,dpi,width,height):
         """ Trace le fit gaussien selon les axes de l'ellipse"""
         t=time.time()
         print("Start plot Gauss ellipse axis")
@@ -392,6 +401,10 @@ class Traitement():
         #Fit de la courbe et des données
         G_fitted_model = fitter(modelG, G, Lg)
         P_fitted_model = fitter(modelP, P, Lp)
+
+        #paramètres pour affichage correct
+        fig_width_i = width / dpi
+        fig_height_i = height / dpi
 
         #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
