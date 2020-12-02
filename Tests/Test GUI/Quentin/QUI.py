@@ -44,7 +44,7 @@ class Fenetre(Thread):
         self.trmt = Img_Traitement.Traitement()
         self.output_path = output_path  #Chemin de sortie de la photo
 
-        """"Edition de l'interface"""
+        """"Creation de la fenetre principale : window"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
         self.window.state('zoomed')
          
@@ -63,6 +63,7 @@ class Fenetre(Thread):
         #choix de la figure à plotter (0 = figure vide, par défaut)
         self.choix_fig_XY = IntVar()
         self.choix_fig_XY = 0
+        self.choix_fig=0
 
         #variables du barycentre et de l'ellipse opencv
         self.cX = DoubleVar()
@@ -89,14 +90,12 @@ class Fenetre(Thread):
         #delai d'actualisation de l'interface
         self.delay=15
 
-
         self.frame2=[]
         self.align=False
         
         
         #Demarrage des instances dans le bon ordre
         self.display() #lance les espaces d'affichage
-        self.plot() #initialise l'affichage des plots
         self.Interface() #Lance la fonction Interface
         self.flux_cam() #debut de la capture video
 
@@ -204,6 +203,8 @@ class Fenetre(Thread):
         #cadre plots fits
         self.display_plots_title = tk.Label(self.window,text="affichage graphes de fit",borderwidth=4,bg="gray",relief="ridge")
         self.display_plots_title.grid(row=3,column=1, sticky="NSEW")
+        self.cadre_plots = tk.Frame(self.window,borderwidth=4,bg="white",relief="ridge")
+        self.cadre_plots.grid(row=2,column=1,columnspan=1,sticky="NSEW")
 
 
 
@@ -394,7 +395,6 @@ class Fenetre(Thread):
         if selection =="Fit Gaussien 2D":
             choix_fig=3
         self.choix_fig_XY=choix_fig
-        self.plot()
         return self.choix_fig_XY
 
     def plot(self):
@@ -404,7 +404,8 @@ class Fenetre(Thread):
                 widget.destroy()
         except :
             pass
-       
+        if self.choix_fig == 0:
+            self.fig_XY = Figure()
         else : 
             try :
                 self.photo2
@@ -437,8 +438,6 @@ class Fenetre(Thread):
             self.gauss_2.set(0)
 
         #cadre affichage profils
-        self.cadre_plots = tk.Frame(self.window,borderwidth=4,bg="gray",relief="ridge")
-        self.cadre_plots.grid(row=2,columnspan=1,column=1,sticky="NSEW")
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
         self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots)#,pack_toolbar=False)
         self.toolbar.grid(row=0,column=0)
