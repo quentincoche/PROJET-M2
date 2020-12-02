@@ -204,6 +204,7 @@ class Traitement():
         t=time.time()
         print("start plot Gauss 2D")
         img=self.crop_img # on récupère l'image
+        
         fitter = modeling.fitting.LevMarLSQFitter()
 
         y0, x0 = np.unravel_index(np.argmax(img), img.shape)
@@ -222,9 +223,10 @@ class Traitement():
         fig2, ax3 = plt.subplots()
         eps = np.min(model_data[model_data > 0]) / 10.0
         # use logarithmic scale for sharp Gaussians
-        cs = ax3.imshow(np.log(eps + model_data), label='Gaussian')
+        #cs = ax3.imshow(np.log(eps + model_data), label='Gaussian')
+        cs = ax3.imshow(eps + model_data, label='Gaussian')
         cbar = fig2.colorbar(cs)
-        cbar.set_label('Intensité relative')
+        cbar.set_label('Intensité sur 8 bits')
         ax3.set_title('Gaussienne 2D')
         ax3.set_xlabel ("Largeur de l'image en pixels")
         ax3.set_ylabel ("Hauteur de l'image en pixels")
