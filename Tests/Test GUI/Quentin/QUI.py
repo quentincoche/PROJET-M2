@@ -9,12 +9,9 @@ from PIL import Image as Img #Bibliothèque de traitement d'image
 from PIL import ImageTk
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import tkinter as tk
-from tkinter import ttk
-from tkinter import IntVar
-from tkinter import DoubleVar
-from tkinter import Entry
-from threading import Thread
+from tkinter import (ttk,IntVar,DoubleVar,StringVar,Entry)
 from tkinter import BOTH, LEFT, FLAT, SUNKEN, RAISED, GROOVE, RIDGE
+from threading import Thread
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
@@ -62,27 +59,46 @@ class Fenetre(Thread):
         self.window.grid_rowconfigure(2, weight=3)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
+
+        #choix de la figure à plotter (0 = figure vide, par défaut)
         self.choix_fig_XY = IntVar()
         self.choix_fig_XY = 0
+
+        #variables du barycentre et de l'ellipse opencv
         self.cX = DoubleVar()
         self.cY = DoubleVar()
         self.ellipse_width = DoubleVar()
         self.ellipse_height = DoubleVar()
         self.ellipse_angle =DoubleVar()
+
+        #Variables du fit ellipse
+        self.ellipse_width = DoubleVar()
+        self.ellipse_height = DoubleVar()
+        self.ellipse_angle =DoubleVar()
+        self.titre_gauss1=StringVar()
+        self.titre_gauss2=StringVar()
+        self.gauss_1=DoubleVar()
+        self.gauss_2=DoubleVar()
+
+        #init variables taille d'ecran
         self.Screen_x = 1500
         self.Screen_y = 1000
         self.Screen2_x = 750
         self.Screen2_y = 750
+
+        #delai d'actualisation de l'interface
         self.delay=15
+
+
         self.frame2=[]
         self.align=False
         
         
-
-        self.display()
-        self.plot()
+        #Demarrage des instances dans le bon ordre
+        self.display() #lance les espaces d'affichage
+        self.plot() #initialise l'affichage des plots
         self.Interface() #Lance la fonction Interface
-        self.flux_cam()
+        self.flux_cam() #debut de la capture video
 
         #detection du nombre de pixels par pouce: utile pour l'affichage des plots
         self.dpi = self.cadre_plots.winfo_fpixels('1i')
@@ -97,8 +113,8 @@ class Fenetre(Thread):
         """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
         
         #commandes gauche
-        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray",relief = RIDGE)
-        self.cmdleft.grid(row=1,column=0,rowspan=2, sticky='NSEW')
+        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray",relief = RIDGE) #definition de la frame
+        self.cmdleft.grid(row=1,column=0,rowspan=2, sticky='NSEW') #place la Frame
 
         #Zone sélection de la partie a capturer
         self.FrameCapture=tk.Frame(self.cmdleft, borderwidth=2, relief='groove')
@@ -127,8 +143,6 @@ class Fenetre(Thread):
         labelSpace1=tk.Label(self.cmdleft, text='', bg='gray')
         labelSpace1.grid(row=2,column=0)   
 
-        
-
         #Liste selection du plot
         selection_plot=tk.Label(self.cmdleft,text="Selectionnez Fit",bg="gray")
         selection_plot.grid(row=3,column=0,sticky="nsew")
@@ -141,7 +155,6 @@ class Fenetre(Thread):
         #tracé du profil (par defaut XY)
         btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
         btnprofiles.grid(row=5,column=0,sticky="nsew")
-
         btn_stpprof = tk.Button(self.cmdleft, text="Stop Profils", command=self.stop_profil)
         btn_stpprof.grid(row=6, column=0, sticky="nsew")
 
@@ -164,8 +177,9 @@ class Fenetre(Thread):
            
         
         #commandes superieures
-        self.cmdup = tk.Frame(self.window,borderwidth=4,relief="ridge",bg="gray")
-        self.cmdup.grid(row=0,column=1, sticky="NSEW")
+        self.cmdup = tk.Frame(self.window,borderwidth=4,relief="ridge",bg="gray") #définition de la frame
+        self.cmdup.grid(row=0,column=1, sticky="NSEW") #place la frame
+
         btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool)
         btnvideo.grid(row=0,column=0,sticky="nsew")
         btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
@@ -174,7 +188,7 @@ class Fenetre(Thread):
 
     def display(self):
         #cadre video
-        self.display1 = tk.Canvas(self.window, borderwidth=4,bg="gray",relief="ridge")  # Initialisation de l'écran 1
+        self.display1 = tk.Canvas(self.window, borderwidth=4,bg="gray",relief="ridge")  # Définition de l'écran 1
         self.display1.grid(row=1,column=1,sticky="NSEW")
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
@@ -182,7 +196,7 @@ class Fenetre(Thread):
         #cadre traitement
         self.title_display2 = tk.Label(self.window,text="Fit ellipse",borderwidth=4,bg="gray",relief="ridge")
         self.title_display2.grid(row=0,column=2,sticky="NSEW")
-        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg="gray",relief="ridge")  # Initialisation de l'écran 1
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg="gray",relief="ridge")  # Def de l'écran 2
         self.display2.grid(row=1,column=2,sticky="NSEW")
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
@@ -193,10 +207,10 @@ class Fenetre(Thread):
 
 
 
+        ##zone affichage résultats##
+        self.results = tk.Frame(self.window,padx=5,pady=5,bg="gray") #définit la frame
+        self.results.grid(row=2,rowspan=2,column=2,sticky="NSEW") #place la frame
 
-        #zone affichage résultats
-        self.results = tk.Frame(self.window,padx=5,pady=5,borderwidth=4,bg="gray",relief="ridge")
-        self.results.grid(row=2,column=2,sticky="NSEW")
         #barycentres
         self.label01 = tk.Label(self.results,text="barycentre X = ")
         self.label01.grid(row=0,column=0,sticky="nsew")
@@ -220,6 +234,18 @@ class Fenetre(Thread):
         self.label05.grid(row=4,column=0,sticky="nsew")
         self.label5 = tk.Label(self.results,textvariable=self.ellipse_angle)
         self.label5.grid(row=4,column=1,sticky="nsew")
+
+        #Paramètre gaussienne
+        self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1)
+        self.labelg10.grid(row=5,column=0,sticky="nsew")
+        self.labelg11 = tk.Label(self.results,textvariable=self.gauss_1)
+        self.labelg11.grid(row=5,column=1,sticky="nsew")
+        self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2)
+        self.labelg01.grid(row=6,column=0,sticky="nsew")
+        self.labelg12 = tk.Label(self.results,textvariable=self.gauss_2)
+        self.labelg12.grid(row=6,column=1,sticky="nsew")
+
+
 
 
 
@@ -392,11 +418,23 @@ class Fenetre(Thread):
             self.fig_width = self.cadre_plots.winfo_width() 
             self.fig_height = self.cadre_plots.winfo_height()
         if self.choix_fig_XY == 1 :
-            self.fig_XY = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height)
+            self.fig_XY, x, y = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height)
+            self.titre_gauss1.set("Gaussienne X :")
+            self.titre_gauss2.set("Gaussienne Y :")
+            self.gauss_1.set(x)
+            self.gauss_2.set(y)
         if self.choix_fig_XY == 2 :
-            self.fig_XY = self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height)
+            self.fig_XY, g, p = self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height)
+            self.titre_gauss1.set("Gaussienne ellipse G :")
+            self.titre_gauss2.set("Gaussienne ellipse P :")
+            self.gauss_1.set(g)
+            self.gauss_2.set(p)
         if self.choix_fig_XY == 3 :
-            self.fig_XY = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
+            self.fig_XY, d = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
+            self.titre_gauss1.set("Gaussienne 2D :")
+            self.titre_gauss2.set("")
+            self.gauss_1.set(d)
+            self.gauss_2.set(0)
 
         #cadre affichage profils
         self.cadre_plots = tk.Frame(self.window,borderwidth=4,bg="gray",relief="ridge")
