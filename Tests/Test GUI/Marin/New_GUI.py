@@ -541,9 +541,9 @@ class Fenetre(Thread):
             if self.choix_fig == 3 :
                 self.fig_XY, d = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
                 self.titre_gauss1.set("Gaussienne 2D :")
-                self.titre_gauss2.set()
+                self.titre_gauss2.set("")
                 self.gauss_1.set(d)
-                self.gauss_2.set()
+                self.gauss_2.set("")
 
         #cadre affichage profils
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)

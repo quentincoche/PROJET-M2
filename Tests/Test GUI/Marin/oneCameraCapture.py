@@ -105,7 +105,7 @@ class cameraCapture(tk.Frame):
         #print(max)
 
         while exp_ok == False: #Définit l'augmentation ou la diminution des valeurs d'exposition en fonction du max d'intensité de l'image
-            if max<=self.pixel_max - 25:
+            if max<=self.pixel_max*0.9:
                 if self.temp_exp>=10000000.0:
                     exp_ok=True
                     print('Exp time too big')

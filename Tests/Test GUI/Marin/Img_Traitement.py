@@ -215,10 +215,11 @@ class Traitement():
         fitter = modeling.fitting.LevMarLSQFitter()
 
         y0, x0 = np.unravel_index(np.argmax(img), img.shape)
-        sigma = np.std(img)
+        #sigma = np.std(img)
+        
         amp=np.max(img)
 
-        w = modeling.models.Gaussian2D(amp, x0, y0, sigma, sigma)
+        w = modeling.models.Gaussian2D(amp, x0, y0, self.ellipse[1][1]/4, self.ellipse[1][0]/4,math.pi/180*self.ellipse[2]-0.5*math.pi)
         #print(w)
 
         yi, xi = np.indices(img.shape)
@@ -226,6 +227,7 @@ class Traitement():
         g = fitter(w, xi, yi, img)
 
         model_data = g(xi, yi)
+        
 
         #paramètres pour affichage correct
         fig_width_i = width / dpi
