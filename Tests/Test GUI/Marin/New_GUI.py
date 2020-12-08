@@ -49,6 +49,7 @@ from pathlib import Path #Bibliothèque de gestion du path
 import datetime #Bibliothèque permettant de récupérer la date
 from matplotlib.figure import Figure #Bibliothèque de figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
+from astropy.io import ascii
 
 import oneCameraCapture as oneCameraCapture
 import opencv_module as OpenCam
@@ -102,13 +103,13 @@ class Fenetre(Thread):
         self.choix_fig_XY = 0
 
         #Variables du barycentre de l'image
-        self.cX = DoubleVar()
-        self.cY = DoubleVar()
+        self.cX = IntVar()
+        self.cY = IntVar()
 
         #Variables du fit ellipse
-        self.ellipse_width = DoubleVar()
-        self.ellipse_height = DoubleVar()
-        self.ellipse_angle =DoubleVar()
+        self.ellipse_width = IntVar()
+        self.ellipse_height = IntVar()
+        self.ellipse_angle =IntVar()
         self.titre_gauss1=StringVar()
         self.titre_gauss2=StringVar()
         self.gauss_1=DoubleVar()
@@ -166,9 +167,14 @@ class Fenetre(Thread):
         bouton_selection.grid(row=2, column=0)
         bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot", command=self.choice2)
         bouton_selection.grid(row=3, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Coordonnées", command=self.choice3)
+        bouton_selection.grid(row=4, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Données Plot", command=self.choice4)
+        bouton_selection.grid(row=5, column=0)
+
 
             #Bouton capture
-        btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
+        btncap = tk.Button(self.cmdleft,text="Enregistrer",command=self.capture)
         btncap.grid(row=1,column=0,sticky="nsew")
 
         labelSpace2=tk.Label(self.cmdleft, text='', bg='gray')
@@ -300,6 +306,12 @@ class Fenetre(Thread):
     def choice2(self):
         self.coch2=1
 
+    def choice3(self):
+        self.coch3=1
+ 
+    def choice4(self):
+        self.coch4=1
+
     def alignement(self):
         """Fonction pour alignement de faisceaux"""
         self.align=True
@@ -407,32 +419,66 @@ class Fenetre(Thread):
         except OSError:
             pass
         path=self.output_path.joinpath('Snapshot') #défini le path pour les images
-        print(path)
-        """
-        print("Dossier d'enregistrement : ", path) #Spécifie à l'utilisateur le dossier d'enregistrement
-        tk.messagebox.showinfo("Le dossier d'enregistrement des images est : ", path)
-        """
-        if self.coch0==1:
-            filename = "preview_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
-            image = Img.fromarray(self.frame)
-            S=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
-            image.save(S)
-            S.close()
-            print("[INFO] saved {}".format(filename))
-        if self.coch1==1:
-            filename_2 = "treatment_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-            image2 = Img.fromarray(self.frame2)
-            S2=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_2, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
-            image2.save(S2)
-            print("[INFO] saved {}".format(filename_2))
-        if self.coch2==1:
-            filename_xy = "plot_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-            S3=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_xy, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
-            self.fig_XY.savefig("plot", dpi=1200)
-            Im=Img.open("plot.png")
-            im = Im.convert("RGB")
-            im.save(S3)
-            print("[INFO] saved {}".format(filename_xy))
+        #print(path)
+        while True :
+            if self.coch0==1:
+                filename = "preview_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
+                image = Img.fromarray(self.frame)
+                S=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                image.save(S)
+                S.close()
+                print("[INFO] saved {}".format(filename))
+            if self.coch1==1:
+                try :
+                    self.photo2 
+                    filename_2 = "treatment_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    image2 = Img.fromarray(self.frame2)
+                    S2=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_2, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                    image2.save(S2)
+                    S2.close()
+                    print("[INFO] saved {}".format(filename_2))
+                except:
+                    tk.messagebox.showerror("Save Problem", "Problème de traitement")
+                    break
+            if self.coch2==1:
+                if self.choix_fig != 0 :
+                    filename_xy = "plot_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    S3=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_xy, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                    self.fig_XY.savefig("plot", dpi=1200)
+                    Im=Img.open("plot.png")
+                    im = Im.convert("RGB")
+                    im.save(S3)
+                    S3.close()
+                    print("[INFO] saved {}".format(filename_xy))
+                else:
+                    tk.messagebox.showerror("Save Problem", "Problème de Plots")
+                    break
+            if self.coch3==1:
+                try :
+                    self.photo2
+                    coord = "coordonnées_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    S4=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=coord, filetypes = (("Text files","*.txt"),("all files","*.*")))
+                    tup=("Barycentre X = ", str(self.cX.get()), "\n", "Barycentre Y = ", str(self.cY.get()), "\n\n", "Grand axe ellipse = ", str(self.ellipse_width.get()), "\n", "Petit axe ellipse = ", str(self.ellipse_height.get()), "\n", "Angle ellipse = ", str(self.ellipse_angle.get()))
+                    file=''.join(tup)
+                    S4.write(file)
+                    S4.close()
+                    print("[INFO] saved {}".format(coord))
+                except:
+                    tk.messagebox.showerror("Save Problem", "Problème de traitement")
+                    break
+            if self.coch4==1:
+                if self.choix_fig != 0 :
+                    plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
+                    tup2=("Gauss 1 = ", ascii.write(self.gauss_1.get()), "\n", "Gauss 2 = ", ascii.write(self.gauss_2.get()))
+                    file2=''.join(tup2)
+                    S5.write(file2)
+                    S5.close()
+                    print("[INFO] saved {}".format(plot))
+                else:
+                    tk.messagebox.showerror("Save Problem", "Problème de Plots")
+                    break
+            
         self.coch0, self.coch1, self.coch2 =0,0,0
         
 

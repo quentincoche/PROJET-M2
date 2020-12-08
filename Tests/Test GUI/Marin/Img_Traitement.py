@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from matplotlib.figure import Figure  
 from matplotlib import rcParams
 from astropy import modeling
+from astropy.io import ascii
 from skimage.draw import line
 from PIL import Image, ImageStat
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
@@ -79,7 +80,6 @@ class Traitement():
             #rectangle = cv2.rectangle(frame,(self.x,self.y),(self.x+self.w,self.y+self.h),(0,175,175),1)
             #print('Rectangle : Position = ', self.x,',',self.y,'; Size = ',self.w,',',self.h)
 
-
         av_fond=self.fond(frame) #sort la moyenne du fond
 
         self.img=self.img-av_fond #retranche le fond de l'image
@@ -136,7 +136,7 @@ class Traitement():
 
 
     def crop(self,frame):
-        """ Fonction qui crop le centre d'intérêt à 2 fois sa taille"""
+        """ Fonction qui crop le centre d'intérêt à 2 fois la taille associé au rectangle fitté"""
         #on défini les tailles de crop, les conditions qui suivent sont là pour éviter les problèmes de bord
         self.X=self.x-math.ceil(self.w/2)
         self.Y=self.y-math.ceil(self.h/2)
@@ -203,22 +203,32 @@ class Traitement():
         fig_width_i = width / dpi
         fig_height_i = height / dpi
 
+        Ie_X = np.max(Lx)/math.exp(2)
+        Ie_Y = np.max(Ly)/math.exp(2)
+
+        line_X=np.linspace(Ie_X, Ie_X, len(Lx))
+        line_Y=np.linspace(Ie_Y, Ie_Y, len(Ly))
+
         #On affiche les courbes résultantes
         fig = Figure()
         fig.set_size_inches(fig_width_i,fig_height_i)
         fig.suptitle("Gaussienne x,y")
         ax = fig.add_subplot(1 ,2 ,1)
-        ax.plot(x,Lx)
-        ax.plot(x, x_fitted_model(x))
+        ax.plot(x,Lx, label="Données bruts")
+        ax.plot(x, x_fitted_model(x), label="Modèle fitté")
+        ax.plot(x, line_X, label="I/e^2")
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(y,Ly)
-        ax2.plot(y, y_fitted_model(y))
+        ax2.plot(y,Ly, label="Données bruts")
+        ax2.plot(y, y_fitted_model(y), label="Modèle fitté")
+        ax2.plot(y, line_Y, label="I/e^2")
         ax.set_title('X profil')
         ax.set_xlabel ("Largeur de l'image en pixels")
         ax.set_ylabel ("Intensité sur 8bits")
+        ax.legend(loc='upper right')
         ax2.set_title ('Y profil')
         ax2.set_xlabel ("Hauteur de l'image en pixels")
         ax2.set_ylabel ("Intensité sur 8bits")
+        ax2.legend(loc='upper right')
 
         temps=time.time()-t
         print("Temps plot Gauss x,y : ", temps)
@@ -257,16 +267,16 @@ class Traitement():
         fig2.set_size_inches(fig_width_i,fig_height_i)
         eps = np.min(model_data[model_data > 0]) / 10.0
         # use logarithmic scale for sharp Gaussians
-        cs = ax3.imshow(eps + model_data, label='Gaussian')
+        cs = ax3.imshow(eps + model_data, label="Modèle Gaussien 2D")
         cbar = fig2.colorbar(cs)
         cbar.set_label('Intensité sur 8 bits')
         ax3.set_title('Gaussienne 2D')
         ax3.set_xlabel ("Largeur de l'image en pixels")
         ax3.set_ylabel ("Hauteur de l'image en pixels")
-
+        
         temps=time.time()-t
         print("Temps plot Gauss 2D : ", temps)
-        print(g)
+        #print(g)
 
         return fig2, g
         
@@ -431,21 +441,33 @@ class Traitement():
         fig_width_i = cv_width / dpi
         fig_height_i = cv_height / dpi
 
+        Ie_G = np.max(Lg)/math.exp(2)
+        Ie_P = np.max(Lp)/math.exp(2)
+
+        line_G=np.linspace(Ie_G, Ie_G, len(Lg))
+        line_P=np.linspace(Ie_P, Ie_P, len(Lp))
+
+
         #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
+        fig.set_size_inches(fig_width_i,fig_height_i)
         fig.suptitle("Gaussienne ellipse")
         ax = fig.add_subplot(1 ,2 ,1)
-        ax.plot(G,Lg)
-        ax.plot(G, G_fitted_model(G))
+        ax.plot(G,Lg, label="Données bruts")
+        ax.plot(G, G_fitted_model(G), label="Modèle fitté")
+        ax.plot(G, line_G, label="I/e^2")
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(P,Lp)
-        ax2.plot(P, P_fitted_model(P))
+        ax2.plot(P,Lp, label="Données bruts")
+        ax2.plot(P, P_fitted_model(P), label="Modèle fitté")
+        ax2.plot(P, line_P, label="I/e^2")
         ax.set_title('Grand axe profil')
         ax.set_xlabel ('Grand axe en pixel')
         ax.set_ylabel ('Intensité sur 8bits')
+        ax.legend(loc='upper right')
         ax2.set_title ('Petit axe profil')
         ax2.set_xlabel ('Petit axe en pixel')
         ax2.set_ylabel ('Intensité sur 8bits')
+        ax2.legend(loc='upper right')
 
         temps = time.time()-t
         print("Temps plot Gauss ellipse : ", temps)
