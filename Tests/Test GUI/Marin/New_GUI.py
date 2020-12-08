@@ -33,7 +33,6 @@ Created on Mon Sep 28 09:22:21 2020
 
 
 print("[INFO] starting...")
-from pypylon import pylon #Bibliothèque Basler d'interfaçage de la caméra
 from PIL import Image as Img #Bibliothèque de traitement d'image
 from PIL import ImageTk #Transformation d'image pour l'affichage de tkinter
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
@@ -43,16 +42,13 @@ from tkinter import filedialog
 from tkinter import StringVar, ttk
 from tkinter import IntVar
 from tkinter import DoubleVar
-from tkinter import Entry
 from tkinter import BOTH, LEFT, FLAT, SUNKEN, RAISED, GROOVE, RIDGE
 from threading import Thread #Bibliothèque de multithreading pour optimiser le fonctionnement
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
 from pathlib import Path #Bibliothèque de gestion du path
-import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 import datetime #Bibliothèque permettant de récupérer la date
 from matplotlib.figure import Figure #Bibliothèque de figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
-from statistics import mean #Bibliothèque statistique
 
 import oneCameraCapture as oneCameraCapture
 import opencv_module as OpenCam
@@ -63,7 +59,7 @@ import Img_Traitement as Img_Traitement
 # La Classe Fenetre contient l'ensemble du programme #
 class Fenetre(Thread):
 
-    def __init__(self, output_path = "./"): #Fonction d'initialisation du programme
+    def __init__(self): #Fonction d'initialisation du programme
         
         Thread.__init__(self) #Lance la classe dans un thread
 
@@ -74,7 +70,7 @@ class Fenetre(Thread):
         except :
             try :
                 self.cam=OpenCam.openCamera() #Pour toutes les autres camera
-                self.Basler=False
+                self.basler=False
             except :
                 print("Need camera troubleshooting") #Surement pas de caméra
                 exit()
@@ -227,16 +223,16 @@ class Fenetre(Thread):
 
 
     def display(self):
-        #cadre video
+
         self.display1 = tk.Canvas(self.window, borderwidth=4,bg="white",relief="ridge")  # Initialisation de l'écran 1
-        self.display1.grid(row=1,column=1,sticky="NSEW")
+        self.display1.grid(row=1,column=1,sticky="NSEW")        #cadre video
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
 
         #cadre traitement
-        self.title_display2 = tk.Label(self.window,text="Fit ellipse",borderwidth=4,bg="white",relief="ridge")
+        self.title_display2 = tk.Label(self.window,text="Fit ellipse",borderwidth=4,bg="gray",relief="ridge")
         self.title_display2.grid(row=0,column=2,sticky="NSEW")
-        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg="gray",relief="ridge")  # Def de l'écran 2
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg="white",relief="ridge")  # Def de l'écran 2
         self.display2.grid(row=1,column=2,sticky="NSEW")
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()

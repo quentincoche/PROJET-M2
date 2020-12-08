@@ -4,22 +4,16 @@ Created on Wen Oct 14 10:27:21 2020
 
 @author: Optique
 """
-
-import os    
+   
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import math
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from matplotlib.figure import Figure  
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import rcParams
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
-from scipy.optimize import curve_fit
-import astropy.io.fits as fits
 from astropy import modeling
 from skimage.draw import line
-import statistics
-from statistics import mean
+from PIL import Image, ImageStat
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 
 
@@ -30,9 +24,9 @@ class Traitement():
     def traitement(self, img):
         t=time.time()
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
-        img_trait, img_bin=self.binarisation(gray)
-        self.img=img_trait
-        img100, ellipse, cX, cY=self.calcul_traitement(img_trait, img_bin)
+        img_bin=self.binarisation(gray)
+        self.img=img
+        img100, ellipse, cX, cY=self.calcul_traitement(self.img, img_bin)
         choix_fig = 1
         temps=time.time()-t
         print("Temps de traitement de l'image : ", temps)
@@ -45,24 +39,14 @@ class Traitement():
 
         otsu = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
         ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
+        #otsu= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 2) 
         img_opn = cv2.morphologyEx(otsu, cv2.MORPH_OPEN, kernel)
         #frame= cv2.fastNlMeansDenoising( img , None , 10 , 7 , 21)
-
-        return img, img_opn
+        return img_opn
 
 
     def calcul_traitement(self,frame, otsu):
-        """ Amélioration de l'image par binarisation d'Otsu """
-
-        #Remet l'image en RGB pour y dessiner toutes les formes par la suite et en couleur
-        frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
-
-        M=cv2.moments(otsu)
-        # calculate x,y coordinate of center
-        cX = int(M["m10"] / M["m00"])
-        cY = int(M["m01"] / M["m00"])
-        #print('barycentre : ', cX, ',', cY)
-            
+        """ Amélioration de l'image par binarisation d'Otsu """    
         # find contours in the binary image
         contours, hierarchy = cv2.findContours(otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
@@ -73,7 +57,7 @@ class Traitement():
                 break
             
             area = cv2.contourArea(c)
-            if area <= 1000:  # skip ellipses smaller then 
+            if area <= 100:  # skip ellipses smaller then 
                 continue
 
             # calculate moments for each contour
@@ -86,12 +70,8 @@ class Traitement():
             else:
                 self.cX, self.cY = 0, 0
 
-            #Dessine un cercle sur tous les blobs de l'image (formes blanches)
-            cv2.circle(frame, (self.cX, self.cY), 2, (0, 0, 255), -1)
-
             #Fit une ellipse sur le(s) faisceau(x)
             self.ellipse = cv2.fitEllipse(c)
-            thresh = cv2.ellipse(frame,self.ellipse,(0,255,0),1)
             #print('Ellipse : ', self.ellipse)
  
             #Fit un rectangle sur la zone d'intérêt pour la zoomer par la suite
@@ -100,47 +80,87 @@ class Traitement():
             #print('Rectangle : Position = ', self.x,',',self.y,'; Size = ',self.w,',',self.h)
 
 
+        av_fond=self.fond(frame) #sort la moyenne du fond
+
+        self.img=self.img-av_fond #retranche le fond de l'image
+        frame=np.array(frame-av_fond).astype(np.uint8) #Retranche le fond de l'image et le mets en 8bits entier pour le transformer en couleur
+
+        #Remet l'image en RGB pour y dessiner toutes les formes par la suite et en couleur
+        frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
+
+        #Dessine un cercle sur tous les blobs de l'image (formes blanches)
+        cv2.circle(frame, (self.cX, self.cY), 2, (0, 0, 255), -1)
+
+        #Dessiner l'ellipse
+        thresh = cv2.ellipse(frame,self.ellipse,(0,255,0),1)
+
         #Dessine les formes sur l'image
         cv2.line(frame, (self.cX, 0), (self.cX, frame.shape[0]), (255, 0, 0), 1)#Dessine une croix sur le barycentre de l'image
         cv2.line(frame, (0, self.cY), (frame.shape[1], self.cY), (255, 0, 0), 1)
 
-
+        #coupe l'image sur le ROI
         crop_img = self.crop(frame)
-        self.crop_img = self.crop(self.img)
-        
-        #img=cv2.resize(self.frame, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
-        #otsu=cv2.resize(self.otsu, dsize=(1200, 800), interpolation=cv2.INTER_CUBIC)
-        #cv2.imshow('Otsu', otsu)
+        self.crop_img = self.crop(self.img) 
 
-        return crop_img, self.ellipse, cX, cY
+        return crop_img, self.ellipse, self.cX, self.cY
+
+
+    def fond (self, frame):
+        """Fonction qui récupère une partie du fond puis le "patch" sur le faisceau pour moyenner le fond de l'image"""
+        #lance un crop pour récuperer la taille du crop
+        test=self.crop(frame)
+
+        #Récupère une fraction du fond pour une première estimation
+        if self.X < frame.shape[1]/4:
+            x=self.X+self.W+100
+        else:
+            x=self.X-200
+        if self.Y < frame.shape[0]/4:
+            y=self.Y+self.H+100
+        else:
+            y=self.Y-200
+
+        crop = frame[y:y+100,x:x+100] #sélection de la partie du fond hors du faisceau
+        crop_img = Image.fromarray(crop) #Transforme le crop en image
+        crop_fond = ImageStat.Stat(crop_img) #Récupère les stats de l'image
+        crop_av=int(np.round(crop_fond.mean)) #Récupère la moyenne de l'intensité
+
+        patch = Image.new("L", (self.W,self.H), crop_av) #Créer un patch de taille du faisceau et d'intensité de la moyenne précédente
+        mask = Image.fromarray(frame) #Transforme l'"image" original en image
+        mask.paste(patch, box=(self.X,self.Y)) #Copie le patch sur l'image
+        fond = ImageStat.Stat(mask) #les stats de l'image
+        av_fond=fond.mean #Sort le fond moyen de l'image plus du patch
+        print(av_fond)
+
+        return av_fond
 
 
     def crop(self,frame):
         """ Fonction qui crop le centre d'intérêt à 2 fois sa taille"""
         #on défini les tailles de crop, les conditions qui suivent sont là pour éviter les problèmes de bord
-        X=self.x-math.ceil(self.w/2)
-        Y=self.y-math.ceil(self.h/2)
+        self.X=self.x-math.ceil(self.w/2)
+        self.Y=self.y-math.ceil(self.h/2)
         self.W=2*self.w
         self.H=2*self.h
         
-        if X<0:
-            X=0
-            off_x=self.x-X
+        if self.X<0:
+            self.X=0
+            off_x=self.x-self.X
             self.W=self.w+2*off_x
-        if Y<0:
-            Y=0
-            off_y=self.y-Y
+        if self.Y<0:
+            self.Y=0
+            off_y=self.y-self.Y
             self.H=self.h+2*off_y
-        if X+self.W>frame.shape[1]:
-            off_x=X+self.W-frame.shape[1]
+        if self.X+self.W>frame.shape[1]:
+            off_x=self.X+self.W-frame.shape[1]
             self.W=self.W-2*off_x
-            X=X+off_x
-        if Y+self.H>frame.shape[0]:
-            off_y=Y+self.H-frame.shape[0]
+            self.X=self.X+off_x
+        if self.Y+self.H>frame.shape[0]:
+            off_y=self.Y+self.H-frame.shape[0]
             self.H=self.H-2*off_y
-            Y=Y+off_y
+            self.Y=self.Y+off_y
 
-        crop_img = frame[Y:Y+self.H,X:X+self.W]
+        crop_img = frame[self.Y:self.Y+self.H,self.X:self.X+self.W]
         return crop_img
 
 
@@ -246,6 +266,7 @@ class Traitement():
 
         temps=time.time()-t
         print("Temps plot Gauss 2D : ", temps)
+        print(g)
 
         return fig2, g
         
