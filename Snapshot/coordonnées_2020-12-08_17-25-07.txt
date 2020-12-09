@@ -1,0 +1,6 @@
+Barycentre X = 1830
+Barycentre Y = 1606
+
+Grand axe ellipse = 1283
+Petit axe ellipse = 907
+Angle ellipse = 6

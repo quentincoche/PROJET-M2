@@ -1,11 +1,5 @@
-import sys
-import os
-import time
 import numpy as np
 import cv2
-from PIL import Image as Img #Bibliothèque de traitement d'image
-from PIL import ImageTk
-import tkinter as tk
 
 
 class openCamera():
@@ -49,7 +43,7 @@ class openCamera():
         #print(max)
 
         while exp_ok == False: #Définit l'augmentation ou la diminution des valeurs d'exposition en fonction du max d'intensité de l'image
-            if max<=self.pixel_max - 25:
+            if max<=self.pixel_max*0.9:
                 if self.temp_exp>=0:
                     exp_ok=True
                     print('Exp time too big')
