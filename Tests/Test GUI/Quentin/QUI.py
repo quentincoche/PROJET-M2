@@ -238,14 +238,10 @@ class Fenetre(Thread):
         
 
         #Paramètre gaussienne
-        self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1)
-        self.labelg10.grid(row=5,column=0,sticky="nsew")
-        self.labelg11 = tk.Label(self.results,textvariable=self.gauss_1)
-        self.labelg11.grid(row=5,column=1,sticky="nsew")
-        self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2)
-        self.labelg01.grid(row=6,column=0,sticky="nsew")
-        self.labelg12 = tk.Label(self.results,textvariable=self.gauss_2)
-        self.labelg12.grid(row=6,column=1,sticky="nsew")
+        self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1).grid(row=5,column=0,sticky="nsew")
+        self.labelg11 = tk.Label(self.results,textvariable=self.gauss_1).grid(row=5,column=1,sticky="nsew")
+        self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2).grid(row=6,column=0,sticky="nsew")
+        self.labelg12 = tk.Label(self.results,textvariable=self.gauss_2).grid(row=6,column=1,sticky="nsew")
 
 
 
