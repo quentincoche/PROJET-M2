@@ -20,11 +20,11 @@ import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 rcParams.update({'figure.autolayout': True})
 
 class Traitement():
-    
-    def traitement(self, img):
+
+    def traitement(self, img, choix):
         t=time.time()
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
-        img_bin=self.binarisation(gray)
+        img_bin=self.binarisation(gray, choix)
         self.img=img
         img100, ellipse, cX, cY=self.calcul_traitement(self.img, img_bin)
         choix_fig = 1
@@ -33,20 +33,20 @@ class Traitement():
         return img100, ellipse, cX, cY, choix_fig
 
 
-    def binarisation(self,img):
+    def binarisation(self,img, choix):
         """ Filtrage de l'image et binarisation de celle-ci"""
-        kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(10,10))
-
+        kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
         otsu = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
-        #ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
-        otsu= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 3) 
-        
+        if choix==1:
+            ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
+        else :
+            otsu= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 3) 
         img_cls = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
         img_opn = cv2.morphologyEx(img_cls, cv2.MORPH_OPEN, kernel)
         #frame= cv2.fastNlMeansDenoising( img , None , 10 , 7 , 21)
         #plt.imshow(img_opn)
         #plt.show()
-        return img_cls
+        return img_opn
 
 
     def calcul_traitement(self,frame, otsu):

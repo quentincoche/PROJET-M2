@@ -109,6 +109,8 @@ class Fenetre(Thread):
         self.ellipse_width = IntVar()
         self.ellipse_height = IntVar()
         self.ellipse_angle =IntVar()
+
+        #Variables du fit gauss
         self.titre_gauss1=StringVar()
         self.titre_gauss2=StringVar()
         self.gauss_amp1=StringVar()
@@ -586,7 +588,7 @@ class Fenetre(Thread):
                 self.gauss_mean1.set('Mean: {} +\- {}'.format(x[1]* self.pixel_size, np.sqrt(x[3][1])* self.pixel_size))
                 self.gauss_stddev1.set('Standard Deviation: {} +\- {}'.format(x[2]* self.pixel_size, np.sqrt(x[3][2])* self.pixel_size))
                 self.gauss_amp2.set('Amplitude: {} +\- {}'.format(y[0]* self.pixel_size, np.sqrt(y[3][0])* self.pixel_size))
-                self.gauss_mean2.set('Mean: {} +\- {}'.format(y[1* self.pixel_size], np.sqrt(y[3][1])* self.pixel_size))
+                self.gauss_mean2.set('Mean: {} +\- {}'.format(y[1]* self.pixel_size, np.sqrt(y[3][1])* self.pixel_size))
                 self.gauss_stddev2.set('Standard Deviation: {} +\- {}'.format(y[2]* self.pixel_size, np.sqrt(y[3][2])* self.pixel_size))
             if self.choix_fig == 2 :
                 self.fig_XY, g, p= self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height)
