@@ -42,14 +42,13 @@ from tkinter import filedialog
 from tkinter import StringVar, ttk
 from tkinter import IntVar
 from tkinter import DoubleVar
-from tkinter import BOTH, LEFT, FLAT, SUNKEN, RAISED, GROOVE, RIDGE
+from tkinter import RIDGE
 from threading import Thread #Bibliothèque de multithreading pour optimiser le fonctionnement
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
 from pathlib import Path #Bibliothèque de gestion du path
 import datetime #Bibliothèque permettant de récupérer la date
 from matplotlib.figure import Figure #Bibliothèque de figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
-from astropy.io import ascii
 
 import oneCameraCapture as oneCameraCapture
 import opencv_module as OpenCam
@@ -112,8 +111,12 @@ class Fenetre(Thread):
         self.ellipse_angle =IntVar()
         self.titre_gauss1=StringVar()
         self.titre_gauss2=StringVar()
-        self.gauss_1=DoubleVar()
-        self.gauss_2=DoubleVar()
+        self.gauss_amp1=StringVar()
+        self.gauss_mean1=StringVar()
+        self.gauss_stddev1=StringVar()
+        self.gauss_amp2=StringVar()
+        self.gauss_mean2=StringVar()
+        self.gauss_stddev2=StringVar()
 
         #Valeurs d'initialisation des tailles de l'affichage
         self.Screen_x = 1500
@@ -123,6 +126,7 @@ class Fenetre(Thread):
 
         #Temps en ms entre chaque actualisation de l'interface
         self.delay=15
+        self.pixel_size = 1
 
         #Variable de l'écran de l'image traité
         self.frame2=[]
@@ -278,10 +282,20 @@ class Fenetre(Thread):
         
 
         #Paramètre gaussienne
-        self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1).grid(row=5,column=0,sticky="nsew")
-        self.labelg11 = tk.Label(self.results,textvariable=self.gauss_1).grid(row=5,column=1,sticky="nsew")
-        self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2).grid(row=6,column=0,sticky="nsew")
-        self.labelg12 = tk.Label(self.results,textvariable=self.gauss_2).grid(row=6,column=1,sticky="nsew")
+        self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1,font=(None,self.fsize)).grid(row=5,column=0,sticky="nsew")
+        self.labelg11 = tk.Label(self.results,textvariable=self.gauss_amp1,font=(None,self.fsize)).grid(row=5,column=1,sticky="nsew")
+        self.labelg111 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=5,column=2,sticky="nsew")
+        self.labelg12 = tk.Label(self.results,textvariable=self.gauss_mean1,font=(None,self.fsize)).grid(row=6,column=1,sticky="nsew")
+        self.labelg121 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=6,column=2,sticky="nsew")
+        self.labelg13 = tk.Label(self.results,textvariable=self.gauss_stddev1,font=(None,self.fsize)).grid(row=7,column=1,sticky="nsew")
+        self.labelg131 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=7,column=2,sticky="nsew")
+        self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2,font=(None,self.fsize)).grid(row=8,column=0,sticky="nsew")
+        self.labelg02 = tk.Label(self.results,textvariable=self.gauss_amp2,font=(None,self.fsize)).grid(row=8,column=1,sticky="nsew")
+        self.labelg021 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=8,column=2,sticky="nsew")
+        self.labelg03 = tk.Label(self.results,textvariable=self.gauss_mean2,font=(None,self.fsize)).grid(row=9,column=1,sticky="nsew")
+        self.labelg031 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=9,column=2,sticky="nsew")
+        self.labelg04 = tk.Label(self.results,textvariable=self.gauss_stddev2,font=(None,self.fsize)).grid(row=10,column=1,sticky="nsew")
+        self.labelg041 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=10,column=2,sticky="nsew")
 
 
 
@@ -475,7 +489,7 @@ class Fenetre(Thread):
                     tk.messagebox.showerror("Save Problem", "Problème de Plots")
                     break
             
-        self.coch0, self.coch1, self.coch2 =0,0,0
+        self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
         
 
     def video_tool(self):
@@ -505,10 +519,10 @@ class Fenetre(Thread):
         self.display2.create_image(self.Screen2_x/2,self.Screen2_x/(2*ratio),image=self.photo2)
 
         #pour affichage des parametres
-        self.cX.set(self.baryX)
-        self.cY.set(self.baryY)
-        self.ellipse_width.set(int(self.ellipse[1][1])) #3 lignes pour extraction des données du tuple ellipse
-        self.ellipse_height.set(int(self.ellipse[1][0]))
+        self.cX.set(self.baryX * self.pixel_size)
+        self.cY.set(self.baryY * self.pixel_size) 
+        self.ellipse_width.set(int(self.ellipse[1][1]) * self.pixel_size) #3 lignes pour extraction des données du tuple ellipse
+        self.ellipse_height.set(int(self.ellipse[1][0]) * self.pixel_size)
         self.ellipse_angle.set(int(self.ellipse[2]))
 
         #self.window.after(self.delay, self.affich_traitement)
@@ -526,7 +540,7 @@ class Fenetre(Thread):
                 pass
         return
 
-    def choix_figure(self,param):
+    def choix_figure(self, parameter):
         selection = self.liste_combobox.get()
         #print(selection)
         if selection =="Choix":
@@ -562,26 +576,39 @@ class Fenetre(Thread):
             self.fig_height = self.cadre_plots.winfo_height()
             #detection du nombre de pixels par pouce: utile pour l'affichage des plots
             self.dpi = self.cadre_plots.winfo_fpixels('1i')
+            self.pixel_size = 1 #self.vid.pixel_size
 
                 
             if self.choix_fig == 1 :
                 self.fig_XY, x, y = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height)
                 self.titre_gauss1.set("Gaussienne X :")
                 self.titre_gauss2.set("Gaussienne Y :")
-                self.gauss_1.set(x)
-                self.gauss_2.set(y)
+                self.gauss_amp1.set('Amplitude: {} +\- {}'.format(x[0]* self.pixel_size, np.sqrt(x[3][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean: {} +\- {}'.format(x[1]* self.pixel_size, np.sqrt(x[3][1])* self.pixel_size))
+                self.gauss_stddev1.set('Standard Deviation: {} +\- {}'.format(x[2]* self.pixel_size, np.sqrt(x[3][2])* self.pixel_size))
+                self.gauss_amp2.set('Amplitude: {} +\- {}'.format(y[0]* self.pixel_size, np.sqrt(y[3][0])* self.pixel_size))
+                self.gauss_mean2.set('Mean: {} +\- {}'.format(y[1* self.pixel_size], np.sqrt(y[3][1])* self.pixel_size))
+                self.gauss_stddev2.set('Standard Deviation: {} +\- {}'.format(y[2]* self.pixel_size, np.sqrt(y[3][2])* self.pixel_size))
             if self.choix_fig == 2 :
                 self.fig_XY, g, p= self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height)
                 self.titre_gauss1.set("Gaussienne ellipse G :")
                 self.titre_gauss2.set("Gaussienne ellipse P :")
-                self.gauss_1.set(g)
-                self.gauss_2.set(p)
+                self.gauss_amp1.set('Amplitude: {} +\- {}'.format(g[0]* self.pixel_size, np.sqrt(g[3][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean: {} +\- {}'.format(g[1]* self.pixel_size, np.sqrt(g[3][1])* self.pixel_size))
+                self.gauss_stddev1.set('Standard Deviation: {} +\- {}'.format(g[2]* self.pixel_size, np.sqrt(g[3][2])* self.pixel_size))
+                self.gauss_amp2.set('Amplitude: {} +\- {}'.format(p[0]* self.pixel_size, np.sqrt(p[3][0])* self.pixel_size))
+                self.gauss_mean2.set('Mean: {} +\- {}'.format(p[1]* self.pixel_size, np.sqrt(p[3][1])* self.pixel_size))
+                self.gauss_stddev2.set('Standard Deviation: {} +\- {}'.format(p[2]* self.pixel_size, np.sqrt(p[3][2])* self.pixel_size))
             if self.choix_fig == 3 :
                 self.fig_XY, d = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
                 self.titre_gauss1.set("Gaussienne 2D :")
                 self.titre_gauss2.set("")
-                self.gauss_1.set(d)
-                self.gauss_2.set("")
+                self.gauss_amp1.set('Amplitude: {} +\- {}'.format(d[0]* self.pixel_size, np.sqrt(d[6][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean x: {} +\- {}'.format(d[1]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
+                self.gauss_stddev1.set('Mean y: {} +\- {}'.format(d[2]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
+                self.gauss_amp2.set('Standard Deviation x: {} +\- {}'.format(d[3]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
+                self.gauss_mean2.set('Standard Deviation y: {} +\- {}'.format(d[4]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
+                self.gauss_stddev2.set('Theta: {}'.format(d[5])* self.pixel_size)
 
         #cadre affichage profils
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)

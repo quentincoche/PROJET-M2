@@ -58,7 +58,7 @@ class Traitement():
                 break
             
             area = cv2.contourArea(c)
-            if area <= 100:  # skip ellipses smaller then 
+            if area <= 1000:  # skip ellipses smaller then 
                 continue
 
             # calculate moments for each contour
@@ -189,16 +189,23 @@ class Traitement():
         sigma_y = np.std(Ly)
 
         #on prépare la fonction de fit gaussien en précisant la méthode de fit
-        fitter = modeling.fitting.LevMarLSQFitter()
+        fitterx = modeling.fitting.LevMarLSQFitter()
+        fittery = modeling.fitting.LevMarLSQFitter()
 
         #courbe gaussien selon les axes x et y
         modelx = modeling.models.Gaussian1D(amplitude=np.max(Lx), mean=w, stddev=sigma_x)   # depending on the data you need to give some initial values
         modely = modeling.models.Gaussian1D(amplitude=np.max(Ly), mean=h, stddev=sigma_y)
 
         #fit des courbes et des données
-        x_fitted_model = fitter(modelx, x, Lx)
-        y_fitted_model = fitter(modely, y, Ly)
+        x_fitted_model = fitterx(modelx, x, Lx)
+        y_fitted_model = fittery(modely, y, Ly)
 
+        cov_diag_x = np.diag(fitterx.fit_info['param_cov'])
+        cov_diag_y = np.diag(fittery.fit_info['param_cov'])
+
+        data_x=(x_fitted_model.amplitude.value, x_fitted_model.mean.value, x_fitted_model.stddev.value, cov_diag_x)
+        data_y=(y_fitted_model.amplitude.value, y_fitted_model.mean.value, y_fitted_model.stddev.value, cov_diag_y)
+        
         #paramètres pour affichage correct
         fig_width_i = width / dpi
         fig_height_i = height / dpi
@@ -233,7 +240,7 @@ class Traitement():
         temps=time.time()-t
         print("Temps plot Gauss x,y : ", temps)
 
-        return fig, x_fitted_model, y_fitted_model
+        return fig, data_x, data_y
 
     
     def plot_2D(self,dpi,width,height):
@@ -258,6 +265,8 @@ class Traitement():
 
         model_data = g(xi, yi)
         
+        cov_diag = np.diag(fitter.fit_info['param_cov'])
+        data_2D=(g.amplitude.value, g.x_mean.value, g.y_mean.value, g.x_stddev.value, g.y_stddev.value, g.theta.value, cov_diag)
 
         #paramètres pour affichage correct
         fig_width_i = width / dpi
@@ -278,7 +287,7 @@ class Traitement():
         print("Temps plot Gauss 2D : ", temps)
         #print(g)
 
-        return fig2, g
+        return fig2, data_2D
         
     
     def points_ellipse(self):
@@ -427,15 +436,23 @@ class Traitement():
         sigma_p = np.std(Lp) 
 
         #model du fit
-        fitter = modeling.fitting.LevMarLSQFitter()
+        fitterG = modeling.fitting.LevMarLSQFitter()
+        fitterP = modeling.fitting.LevMarLSQFitter()
+
 
         #fonction gaussienne
         modelG = modeling.models.Gaussian1D(amplitude=np.max(Lg), mean=width, stddev=sigma_g)   # depending on the data you need to give some initial values
         modelP = modeling.models.Gaussian1D(amplitude=np.max(Lp), mean=height, stddev=sigma_p)
         
         #Fit de la courbe et des données
-        G_fitted_model = fitter(modelG, G, Lg)
-        P_fitted_model = fitter(modelP, P, Lp)
+        G_fitted_model = fitterG(modelG, G, Lg)
+        P_fitted_model = fitterP(modelP, P, Lp)
+
+        cov_diag_g = np.diag(fitterG.fit_info['param_cov'])
+        cov_diag_p = np.diag(fitterP.fit_info['param_cov'])
+
+        data_g=(G_fitted_model.amplitude.value, G_fitted_model.mean.value, G_fitted_model.stddev.value, cov_diag_g)
+        data_p=(P_fitted_model.amplitude.value, P_fitted_model.mean.value, P_fitted_model.stddev.value, cov_diag_p)
 
         #paramètres pour affichage correct
         fig_width_i = cv_width / dpi
@@ -472,4 +489,4 @@ class Traitement():
         temps = time.time()-t
         print("Temps plot Gauss ellipse : ", temps)
 
-        return fig, G_fitted_model, P_fitted_model
+        return fig, data_g, data_p
