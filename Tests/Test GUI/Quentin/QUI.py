@@ -156,7 +156,7 @@ class Fenetre(Thread):
     def Interface(self):
         """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
         
-        #commandes gauche
+        #COMMANDES GAUCHE
             #Taille de la zone des boutons
         self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray",relief = RIDGE)
         self.cmdleft.grid(row=1, rowspan=2,column=0, sticky='NSEW')
@@ -223,7 +223,7 @@ class Fenetre(Thread):
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
         btnquit.grid(row=11,column=0,sticky="nsew")
 
-        #commandes superieures
+        #COMMANDES SUPERIEURES
             #Taille de la zone de commande
         self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="gray")
         self.cmdup.grid(row=0,column=1, sticky="NSEW")
@@ -235,6 +235,18 @@ class Fenetre(Thread):
             #Bouton auto-exposition
         btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
         btnexp.grid(row=0,column=1,sticky="nsew")
+
+        labelSpace5=tk.Label(self.cmdup, text='  ', bg='gray')
+        labelSpace5.grid(row=0,column=2)
+
+            #Choix du filtre
+        selection_filtre=tk.Label(self.cmdup,text="Selectionnez Filtre",bg="gray")
+        selection_filtre.grid(row=0,column=3,sticky="nse")
+        liste_filtres =["Otsu","Adaptatif"]
+        self.liste_combobox2 = ttk.Combobox(self.cmdup,values=liste_filtres)
+        self.liste_combobox2.grid(row=0,column=4,sticky="nse")
+        self.liste_combobox2.current(0)
+        self.liste_combobox2.bind("<<ComboboxSelected>>",self.choix_filtre)
 
 
     def display(self):
@@ -425,7 +437,6 @@ class Fenetre(Thread):
         self.window.after(self.delay, self.update)
 
        
-
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
         ts = datetime.datetime.now()
@@ -502,7 +513,7 @@ class Fenetre(Thread):
         self.t2.start()
 
     def disp_traitement(self):
-        self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame)
+        self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame,self.choix_filtre)
         self.affich_traitement()
     
     def affich_traitement(self):
@@ -557,6 +568,14 @@ class Fenetre(Thread):
         if selection =="Fit Gaussien 2D":
             self.choix_fig=3
 
+        return
+
+    def choix_filtre(self,parameter):
+        selection = self.liste_combobox2.get()
+        if selection =="Otsu":
+            self.choix_filtre=1
+        if selection =="Adaptatif":
+            self.choix_filtre=0
         return
 
     def plot(self):

@@ -21,7 +21,7 @@ rcParams.update({'figure.autolayout': True})
 
 class Traitement():
 
-    def traitement(self, img, choix):
+    def traitement(self, img, choix=0):
         t=time.time()
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         img_bin=self.binarisation(gray, choix)
