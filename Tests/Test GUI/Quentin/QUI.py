@@ -101,6 +101,8 @@ class Fenetre(Thread):
 
         #detection du nombre de pixels par pouce: utile pour l'affichage des plots
         self.dpi = self.cadre_plots.winfo_fpixels('1i')
+        self.pixel_size = self.vid.pixel_size
+        
         
 
     #########################
@@ -209,32 +211,31 @@ class Fenetre(Thread):
 
 
         ##zone affichage résultats##
+
+        self.fsize = 12 #Taille de la police pour l'affichage
+        
         self.results = tk.Frame(self.window,padx=5,pady=5,bg="gray") #définit la frame
         self.results.grid(row=2,rowspan=2,column=2,sticky="NSEW") #place la frame
 
         #barycentres
-        self.label01 = tk.Label(self.results,text="barycentre X = ")
-        self.label01.grid(row=0,column=0,sticky="nsew")
-        self.label1 = tk.Label(self.results,textvariable=self.cX)
-        self.label1.grid(row=0,column=1,sticky="nsew")
-        self.label02 = tk.Label(self.results,text="barycentre Y = ")
-        self.label02.grid(row=1,column=0,sticky="nsew")
-        self.label2 = tk.Label(self.results,textvariable=self.cY)
-        self.label2.grid(row=1,column=1,sticky="nsew")
+        self.label01 = tk.Label(self.results,text="barycentre X = ",font=(None,self.fsize)).grid(row=0,column=0,sticky="nsew")
+        self.label001 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=0,column=2,sticky="nsew")
+        self.label1 = tk.Label(self.results,textvariable=self.cX,font=(None,self.fsize)).grid(row=0,column=1,sticky="nsew")
+        self.label02 = tk.Label(self.results,text="barycentre Y = ",font=(None,self.fsize)).grid(row=1,column=0,sticky="nsew")
+        self.label002 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=1,column=2,sticky="nsew")
+        self.label2 = tk.Label(self.results,textvariable=self.cY,font=(None,self.fsize)).grid(row=1,column=1,sticky="nsew")
         
         #parametres ellipse
-        self.label03 = tk.Label(self.results,text="Grand axe ellipse = ")
-        self.label03.grid(row=2,column=0,sticky="nsew")
-        self.label3 = tk.Label(self.results,textvariable=self.ellipse_width)
-        self.label3.grid(row=2,column=1,sticky="nsew")
-        self.label04 = tk.Label(self.results,text="Petit axe ellipse = ")
-        self.label04.grid(row=3,column=0,sticky="nsew")
-        self.label4 = tk.Label(self.results,textvariable=self.ellipse_height)
-        self.label4.grid(row=3,column=1,sticky="nsew")
-        self.label05 = tk.Label(self.results,text="Angle ellipse = ")
-        self.label05.grid(row=4,column=0,sticky="nsew")
-        self.label5 = tk.Label(self.results,textvariable=self.ellipse_angle)
-        self.label5.grid(row=4,column=1,sticky="nsew")
+        self.label03 = tk.Label(self.results,text="Grand axe ellipse = ",font=(None,self.fsize)).grid(row=2,column=0,sticky="nsew")
+        self.label003 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=2,column=2,sticky="nsew")
+        self.label3 = tk.Label(self.results,textvariable=self.ellipse_width,font=(None,self.fsize)).grid(row=2,column=1,sticky="nsew")
+        self.label04 = tk.Label(self.results,text="Petit axe ellipse = ",font=(None,self.fsize)).grid(row=3,column=0,sticky="nsew")
+        self.label004 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=3,column=2,sticky="nsew")
+        self.label4 = tk.Label(self.results,textvariable=self.ellipse_height,font=(None,self.fsize)).grid(row=3,column=1,sticky="nsew")
+        self.label05 = tk.Label(self.results,text="Angle ellipse = ",font=(None,self.fsize)).grid(row=4,column=0,sticky="nsew")
+        self.label005 = tk.Label(self.results,text="°",font=(None,self.fsize)).grid(row=4,column=2,sticky="nsew")
+        self.label5 = tk.Label(self.results,textvariable=self.ellipse_angle,font=(None,self.fsize)).grid(row=4,column=1,sticky="nsew")
+        
 
         #Paramètre gaussienne
         self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1)
@@ -280,7 +281,12 @@ class Fenetre(Thread):
         self.align=False
 
     def stop_profil(self):
-        self.cadre_plots.destroy()
+        for widget in self.cadre_plots.winfo_children():
+                widget.destroy()
+                self.titre_gauss1.set("")
+                self.titre_gauss2.set("")
+                self.gauss_1.set(0)
+                self.gauss_2.set(0)
 
 
     #####################
@@ -374,15 +380,29 @@ class Fenetre(Thread):
         self.display2.create_image(self.Screen2_x/2,self.Screen2_x/(2*ratio),image=self.photo2)
 
         #pour affichage des parametres
-        self.cX.set(self.baryX)
-        self.cY.set(self.baryY)
-        self.ellipse_width.set(int(self.ellipse[1][1])) #3 lignes pour extraction des données du tuple ellipse
-        self.ellipse_height.set(int(self.ellipse[1][0]))
+        self.cX.set(self.baryX * self.pixel_size)
+        self.cY.set(self.baryY * self.pixel_size) 
+        self.ellipse_width.set(int(self.ellipse[1][1]) * self.pixel_size) #3 lignes pour extraction des données du tuple ellipse
+        self.ellipse_height.set(int(self.ellipse[1][0]) * self.pixel_size)
         self.ellipse_angle.set(int(self.ellipse[2]))
+
+        #Conversion en microns
+        # self.cX = self.cX * self.pixel_size
+        # self.cY = self.cY * self.pixel_size
+        # self.ellipse_width = self.ellipse_width * self.pixel_size
+        # self.ellipse_height = self.ellipse_height * self.pixel_size
+        # self.ellipse_angle = self.ellipse_angle * self.pixel_size
 
     def exp(self):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
         self.exposure=self.vid.auto_exposure()
+
+    def px2m(self,param):
+        #Convertit les données en pixels vers microns
+        param_um = param * self.pixel_size
+        return param
+
+
 
     def choix_figure(self,param):
         selection = self.liste_combobox.get()
