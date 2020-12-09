@@ -9,7 +9,7 @@ from PIL import Image as Img #Bibliothèque de traitement d'image
 from PIL import ImageTk
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import tkinter as tk
-from tkinter import (ttk,IntVar,DoubleVar,StringVar,Entry)
+from tkinter import (ttk,IntVar,DoubleVar,StringVar,Entry,filedialog)
 from tkinter import BOTH, LEFT, FLAT, SUNKEN, RAISED, GROOVE, RIDGE
 from threading import Thread
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
@@ -20,6 +20,7 @@ import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
 from statistics import mean
+from astropy.io import ascii
 import oneCameraCapture_q as oneCameraCapture
 import Img_Traitement_q as Img_Traitement
 
@@ -126,27 +127,19 @@ class Fenetre(Thread):
 
         self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
 
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Preview", command=self.choice0)
-        bouton_selection.grid(row=1, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Traité", command=self.choice1)
-        bouton_selection.grid(row=2, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot X,Y", command=self.choice2)
-        bouton_selection.grid(row=3, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot Ellipse", command=self.choice3)
-        bouton_selection.grid(row=4, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot 2D", command=self.choice4)
-        bouton_selection.grid(row=5, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Preview", command=self.choice0).grid(row=1, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Traité", command=self.choice1).grid(row=2, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot X,Y", command=self.choice2).grid(row=3, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot Ellipse", command=self.choice3).grid(row=4, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot 2D", command=self.choice4).grid(row=5, column=0)
 
         #Boutton capture
-        btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture)
-        btncap.grid(row=1,column=0,sticky="nsew")
+        btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture).grid(row=1,column=0,sticky="nsew")
 
-        labelSpace1=tk.Label(self.cmdleft, text='', bg='gray')
-        labelSpace1.grid(row=2,column=0)   
+        labelSpace1=tk.Label(self.cmdleft, text='', bg='gray').grid(row=2,column=0)   
 
         #Liste selection du plot
-        selection_plot=tk.Label(self.cmdleft,text="Selectionnez Fit",bg="gray")
-        selection_plot.grid(row=3,column=0,sticky="nsew")
+        selection_plot=tk.Label(self.cmdleft,text="Selectionnez Fit",bg="gray").grid(row=3,column=0,sticky="nsew")
         liste_plots =["Choix","Fit XY","Fit axes ellipse","Fit Gaussien 2D"]
         self.liste_combobox = ttk.Combobox(self.cmdleft,values=liste_plots)
         self.liste_combobox.grid(row=4,column=0,sticky="nsew")
@@ -154,37 +147,28 @@ class Fenetre(Thread):
         self.liste_combobox.bind("<<ComboboxSelected>>",self.choix_figure)
 
         #tracé du profil (par defaut XY)
-        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
-        btnprofiles.grid(row=5,column=0,sticky="nsew")
-        btn_stpprof = tk.Button(self.cmdleft, text="Stop Profils", command=self.stop_profil)
-        btn_stpprof.grid(row=6, column=0, sticky="nsew")
+        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot).grid(row=5,column=0,sticky="nsew")
+        btn_stpprof = tk.Button(self.cmdleft, text="Stop Profils", command=self.stop_profil).grid(row=6, column=0, sticky="nsew")
 
-        labelSpace2=tk.Label(self.cmdleft, text='', bg='gray')
-        labelSpace2.grid(row=7,column=0) 
+        labelSpace2=tk.Label(self.cmdleft, text='', bg='gray').grid(row=7,column=0) 
 
         #Bouton alignement de faisceaux
-        btnalign = tk.Button(self.cmdleft, text='Alignement de faisceaux', command=self.alignement)
-        btnalign.grid(row=8, column=0, sticky="nsew")
+        btnalign = tk.Button(self.cmdleft, text='Alignement de faisceaux', command=self.alignement).grid(row=8, column=0, sticky="nsew")
         #Bouton arrêt alignement
-        btn_stopalign = tk.Button(self.cmdleft, text='Arrêt alignement', command=self.arret_align)
-        btn_stopalign.grid(row=9, column=0, sticky="nsew")
+        btn_stopalign = tk.Button(self.cmdleft, text='Arrêt alignement', command=self.arret_align).grid(row=9, column=0, sticky="nsew")
 
-        labelSpace3=tk.Label(self.cmdleft, text='', bg='gray')
-        labelSpace3.grid(row=10,column=0)   
+        labelSpace3=tk.Label(self.cmdleft, text='', bg='gray').grid(row=10,column=0)   
 
         #Boutton pour quitter l'appli
-        btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=11,column=0,sticky="nsew")
+        btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor).grid(row=11,column=0,sticky="nsew")
            
         
         #commandes superieures
         self.cmdup = tk.Frame(self.window,borderwidth=4,relief="ridge",bg="gray") #définition de la frame
         self.cmdup.grid(row=0,column=1, sticky="NSEW") #place la frame
 
-        btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool)
-        btnvideo.grid(row=0,column=0,sticky="nsew")
-        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
-        btnexp.grid(row=0,column=1,sticky="nsew")
+        btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool).grid(row=0,column=0,sticky="nsew")
+        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp).grid(row=0,column=1,sticky="nsew")
         
 
     def display(self):
@@ -382,13 +366,6 @@ class Fenetre(Thread):
         self.ellipse_height.set(int(self.ellipse[1][0]) * self.pixel_size)
         self.ellipse_angle.set(int(self.ellipse[2]))
 
-        #Conversion en microns
-        # self.cX = self.cX * self.pixel_size
-        # self.cY = self.cY * self.pixel_size
-        # self.ellipse_width = self.ellipse_width * self.pixel_size
-        # self.ellipse_height = self.ellipse_height * self.pixel_size
-        # self.ellipse_angle = self.ellipse_angle * self.pixel_size
-
     def exp(self):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
         self.exposure=self.vid.auto_exposure()
@@ -397,8 +374,6 @@ class Fenetre(Thread):
         #Convertit les données en pixels vers microns
         param_um = param * self.pixel_size
         return param
-
-
 
     def choix_figure(self,param):
         selection = self.liste_combobox.get()
