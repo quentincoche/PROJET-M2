@@ -4,26 +4,6 @@ Created on Mon Sep 28 09:22:21 2020
 
 @author: Optique
 """
-from pypylon import pylon #Bibliothèque Basler d'interfaçage de la caméra
-from PIL import Image as Img #Bibliothèque de traitement d'image
-from PIL import ImageTk
-import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
-import tkinter as tk
-from tkinter import (ttk,IntVar,DoubleVar,StringVar,Entry,filedialog)
-from tkinter import BOTH, LEFT, FLAT, SUNKEN, RAISED, GROOVE, RIDGE
-from threading import Thread
-import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
-import datetime #Bibliothèque permettant de récupérer la date
-import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
-from pathlib import Path
-import numpy as np #Bibliothèque de traitement des vecteurs et matrice
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
-from statistics import mean
-from astropy.io import ascii
-import oneCameraCapture_q as oneCameraCapture
-import Img_Traitement_q as Img_Traitement
-
 
 #####################################################################
 #                                                                   #
@@ -32,22 +12,75 @@ import Img_Traitement_q as Img_Traitement
 #####################################################################
 
 
+"""Fonctionnalités"""
+#Ce programme est actuellement composé de 3 fichiers et il permet de récupérer
+#le flux vidéo d'une caméra Basler et permet de l'utiliser dans le cadre d'une
+#analyse de faisceau laser.
+# Il permet :
+#   * Afficher la preview vidéo
+#   * Auto-expose l'image au démarrage et sur appuie du bouton
+#   * Préviens des problèmes sur un temps d'exposition trop long ou trop court
+#   * Permet d'effectuer le traitement de l'image
+#       * Filtrage
+#       * Détection de forme
+#       * Définition automatique de ROI
+#       * Crop sur ROI
+#       * Fit de l'ellipse du faisceau
+#       * Fit gaussien du faisceau en x et y
+#       * Fit 2D Gaussien
+#   * Affichage du traitement d'image
+#   * Affichage des courbes
+
+
+print("[INFO] starting...")
+from PIL import Image as Img #Bibliothèque de traitement d'image
+from PIL import ImageTk #Transformation d'image pour l'affichage de tkinter
+import numpy as np #Bibliothèque de traitement des vecteurs et matrice
+import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
+import tkinter as tk #Bibliothèque d'affichage graphique
+from tkinter import filedialog
+from tkinter import StringVar, ttk
+from tkinter import IntVar
+from tkinter import DoubleVar
+from tkinter import RIDGE
+from threading import Thread #Bibliothèque de multithreading pour optimiser le fonctionnement
+import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
+from pathlib import Path #Bibliothèque de gestion du path
+import datetime #Bibliothèque permettant de récupérer la date
+from matplotlib.figure import Figure #Bibliothèque de figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
+
+import oneCameraCapture_q as oneCameraCapture
+import opencv_module_q as OpenCam
+import Img_Traitement_q as Img_Traitement
+
+
+
 # La Classe Fenetre contient l'ensemble du programme #
-
-
 class Fenetre(Thread):
 
-    def __init__(self, output_path = "./"): #Fonction d'initialisation du programme
+    def __init__(self): #Fonction d'initialisation du programme
+        
+        Thread.__init__(self) #Lance la classe dans un thread
 
-        Thread.__init__(self)
+        """Edition de nom de variable associé aux autres fichiers du programme"""
+        try :
+            self.vid = oneCameraCapture.cameraCapture() #test si la caméra est basler
+            self.basler=True
+        except :
+            try :
+                self.cam=OpenCam.openCamera() #Pour toutes les autres camera
+                self.basler=False
+            except :
+                print("Need camera troubleshooting") #Surement pas de caméra
+                exit()
 
-        self.vid = oneCameraCapture.cameraCapture()
-        self.trmt = Img_Traitement.Traitement()
-        self.output_path = output_path  #Chemin de sortie de la photo
+        self.trmt = Img_Traitement.Traitement() #Lance l'initalisation de la classe traitement
+        self.output_path = Path.cwd()  #Chemin de sortie de la photo
 
-        """"Creation de la fenetre principale : window"""
+        """"Edition de l'interface"""
         self.window = tk.Tk()  #Réalisation de la fenêtre principale
-        self.window.state('zoomed')
+        self.window.state('zoomed') #Lance le GUI en plein écran
          
         self.window.title("Beam analyzer Python")
         self.window.config(background="#FFFFFF") #Couleur de la fenêtre
@@ -60,51 +93,60 @@ class Fenetre(Thread):
         self.window.grid_rowconfigure(2, weight=3)
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
+        #Variables pour la taille des pixels des caméras
+        self.size_pixel_height = DoubleVar()
+        self.size_pixel_width = DoubleVar()
 
-        #choix de la figure à plotter (0 = figure vide, par défaut)
+        #Variables d'affichage des figures
         self.choix_fig_XY = IntVar()
         self.choix_fig_XY = 0
-        self.choix_fig=0
 
-        #variables du barycentre et de l'ellipse opencv
-        self.cX = DoubleVar()
-        self.cY = DoubleVar()
-        self.ellipse_width = DoubleVar()
-        self.ellipse_height = DoubleVar()
-        self.ellipse_angle =DoubleVar()
+        #Variables du barycentre de l'image
+        self.cX = IntVar()
+        self.cY = IntVar()
 
         #Variables du fit ellipse
-        self.ellipse_width = DoubleVar()
-        self.ellipse_height = DoubleVar()
-        self.ellipse_angle =DoubleVar()
+        self.ellipse_width = IntVar()
+        self.ellipse_height = IntVar()
+        self.ellipse_angle =IntVar()
+
+        #Variables du fit gauss
         self.titre_gauss1=StringVar()
         self.titre_gauss2=StringVar()
-        self.gauss_1=DoubleVar()
-        self.gauss_2=DoubleVar()
+        self.gauss_amp1=StringVar()
+        self.gauss_mean1=StringVar()
+        self.gauss_stddev1=StringVar()
+        self.gauss_amp2=StringVar()
+        self.gauss_mean2=StringVar()
+        self.gauss_stddev2=StringVar()
 
-        #init variables taille d'ecran
+        #Valeurs d'initialisation des tailles de l'affichage
         self.Screen_x = 1500
         self.Screen_y = 1000
         self.Screen2_x = 750
         self.Screen2_y = 750
 
-        #delai d'actualisation de l'interface
+        #Temps en ms entre chaque actualisation de l'interface
         self.delay=15
 
+        #Variable de l'écran de l'image traité
         self.frame2=[]
+
+        #Variable pour l'aligenement des faisceaux
         self.align=False
-        
-        
-        #Demarrage des instances dans le bon ordre
-        self.display() #lance les espaces d'affichage
+        self.choix_fig=0
+
+        #Appel de toutes les fonctions permettant l'affichage de notre programme
+        self.display()
+        #self.plot()
         self.Interface() #Lance la fonction Interface
-        self.flux_cam() #debut de la capture video
+        self.flux_cam()
 
         #detection du nombre de pixels par pouce: utile pour l'affichage des plots
         self.dpi = self.cadre_plots.winfo_fpixels('1i')
         self.pixel_size = self.vid.pixel_size
         
-        
+
 
     #########################
     #   Partie Interface    # 
@@ -114,11 +156,12 @@ class Fenetre(Thread):
     def Interface(self):
         """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
         
-        #commandes gauche
-        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray",relief = RIDGE) #definition de la frame
-        self.cmdleft.grid(row=1,column=0,rowspan=2, sticky='NSEW') #place la Frame
+        #COMMANDES GAUCHE
+            #Taille de la zone des boutons
+        self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray",relief = RIDGE)
+        self.cmdleft.grid(row=1, rowspan=2,column=0, sticky='NSEW')
 
-        #Zone sélection de la partie a capturer
+            #Bouton snapshot
         self.FrameCapture=tk.Frame(self.cmdleft, borderwidth=2, relief='groove')
         self.FrameCapture.grid(row=0, column=0, sticky="nsew")
 
@@ -127,61 +170,96 @@ class Fenetre(Thread):
 
         self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
 
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Preview", command=self.choice0).grid(row=1, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Traité", command=self.choice1).grid(row=2, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot X,Y", command=self.choice2).grid(row=3, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot Ellipse", command=self.choice3).grid(row=4, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot 2D", command=self.choice4).grid(row=5, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Preview", command=self.choice0)
+        bouton_selection.grid(row=1, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Traité", command=self.choice1)
+        bouton_selection.grid(row=2, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot", command=self.choice2)
+        bouton_selection.grid(row=3, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Coordonnées", command=self.choice3)
+        bouton_selection.grid(row=4, column=0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Données Plot", command=self.choice4)
+        bouton_selection.grid(row=5, column=0)
 
-        #Boutton capture
-        btncap = tk.Button(self.cmdleft,text="Capture",command=self.capture).grid(row=1,column=0,sticky="nsew")
 
-        labelSpace1=tk.Label(self.cmdleft, text='', bg='gray').grid(row=2,column=0)   
+            #Bouton capture
+        btncap = tk.Button(self.cmdleft,text="Enregistrer",command=self.capture)
+        btncap.grid(row=1,column=0,sticky="nsew")
 
-        #Liste selection du plot
-        selection_plot=tk.Label(self.cmdleft,text="Selectionnez Fit",bg="gray").grid(row=3,column=0,sticky="nsew")
+        labelSpace2=tk.Label(self.cmdleft, text='', bg='gray')
+        labelSpace2.grid(row=2,column=0)
+
+            #Liste selection du plot
+        selection_plot=tk.Label(self.cmdleft,text="Sellectionnez Fit",bg="gray")
+        selection_plot.grid(row=3,column=0,sticky="nsew")
         liste_plots =["Choix","Fit XY","Fit axes ellipse","Fit Gaussien 2D"]
         self.liste_combobox = ttk.Combobox(self.cmdleft,values=liste_plots)
         self.liste_combobox.grid(row=4,column=0,sticky="nsew")
         self.liste_combobox.current(0)
-        self.liste_combobox.bind("<<ComboboxSelected>>",self.choix_figure)
+        self.liste_combobox.bind("<<ComboboxSelected>>",self.choix_figure) 
 
-        #tracé du profil (par defaut XY)
-        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot).grid(row=5,column=0,sticky="nsew")
-        btn_stpprof = tk.Button(self.cmdleft, text="Stop Profils", command=self.stop_profil).grid(row=6, column=0, sticky="nsew")
+            #tracé du profil (par defaut XY)
+        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
+        btnprofiles.grid(row=5,column=0,sticky="nsew")
 
-        labelSpace2=tk.Label(self.cmdleft, text='', bg='gray').grid(row=7,column=0) 
+        btn_stpprof = tk.Button(self.cmdleft, text="Stop Profils", command=self.stop_profil)
+        btn_stpprof.grid(row=6, column=0, sticky="nsew")
 
-        #Bouton alignement de faisceaux
-        btnalign = tk.Button(self.cmdleft, text='Alignement de faisceaux', command=self.alignement).grid(row=8, column=0, sticky="nsew")
-        #Bouton arrêt alignement
-        btn_stopalign = tk.Button(self.cmdleft, text='Arrêt alignement', command=self.arret_align).grid(row=9, column=0, sticky="nsew")
+        labelSpace3=tk.Label(self.cmdleft, text='', bg='gray')
+        labelSpace3.grid(row=7,column=0)       
 
-        labelSpace3=tk.Label(self.cmdleft, text='', bg='gray').grid(row=10,column=0)   
+            #Bouton alignement de faisceaux
+        btnalign = tk.Button(self.cmdleft, text='Alignement de faisceaux', command=self.alignement)
+        btnalign.grid(row=8, column=0, sticky="nsew")
 
-        #Boutton pour quitter l'appli
-        btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor).grid(row=11,column=0,sticky="nsew")
-           
-        
-        #commandes superieures
-        self.cmdup = tk.Frame(self.window,borderwidth=4,relief="ridge",bg="gray") #définition de la frame
-        self.cmdup.grid(row=0,column=1, sticky="NSEW") #place la frame
+            #Bouton arrêt alignement
+        btn_stopalign = tk.Button(self.cmdleft, text='Arrêt alignement', command=self.arret_align)
+        btn_stopalign.grid(row=9, column=0, sticky="nsew")
 
-        btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool).grid(row=0,column=0,sticky="nsew")
-        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp).grid(row=0,column=1,sticky="nsew")
-        
+        labelSpace=tk.Label(self.cmdleft, text='', bg='gray')
+        labelSpace.grid(row=10,column=0)
+
+            #Bouton quitter
+        btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
+        btnquit.grid(row=11,column=0,sticky="nsew")
+
+        #COMMANDES SUPERIEURES
+            #Taille de la zone de commande
+        self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="gray")
+        self.cmdup.grid(row=0,column=1, sticky="NSEW")
+
+            #Bouton traitement vidéo
+        btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool)
+        btnvideo.grid(row=0,column=0,sticky="nsew")
+
+            #Bouton auto-exposition
+        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
+        btnexp.grid(row=0,column=1,sticky="nsew")
+
+        labelSpace5=tk.Label(self.cmdup, text='  ', bg='gray')
+        labelSpace5.grid(row=0,column=2)
+
+            #Choix du filtre
+        selection_filtre=tk.Label(self.cmdup,text="Selectionnez Filtre",bg="gray")
+        selection_filtre.grid(row=0,column=3,sticky="nse")
+        liste_filtres =["Otsu","Adaptatif"]
+        self.liste_combobox2 = ttk.Combobox(self.cmdup,values=liste_filtres)
+        self.liste_combobox2.grid(row=0,column=4,sticky="nse")
+        self.liste_combobox2.current(0)
+        self.liste_combobox2.bind("<<ComboboxSelected>>",self.choix_filtre)
+
 
     def display(self):
-        #cadre video
-        self.display1 = tk.Canvas(self.window, borderwidth=4,bg="gray",relief="ridge")  # Définition de l'écran 1
-        self.display1.grid(row=1,column=1,sticky="NSEW")
+
+        self.display1 = tk.Canvas(self.window, borderwidth=4,bg="white",relief="ridge")  # Initialisation de l'écran 1
+        self.display1.grid(row=1,column=1,sticky="NSEW")        #cadre video
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
 
         #cadre traitement
         self.title_display2 = tk.Label(self.window,text="Fit ellipse",borderwidth=4,bg="gray",relief="ridge")
         self.title_display2.grid(row=0,column=2,sticky="NSEW")
-        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg="gray",relief="ridge")  # Def de l'écran 2
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg="white",relief="ridge")  # Def de l'écran 2
         self.display2.grid(row=1,column=2,sticky="NSEW")
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
@@ -191,7 +269,6 @@ class Fenetre(Thread):
         self.display_plots_title.grid(row=3,column=1, sticky="NSEW")
         self.cadre_plots = tk.Frame(self.window,borderwidth=4,bg="white",relief="ridge")
         self.cadre_plots.grid(row=2,column=1,columnspan=1,sticky="NSEW")
-
 
 
         ##zone affichage résultats##
@@ -222,23 +299,31 @@ class Fenetre(Thread):
         
 
         #Paramètre gaussienne
-        self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1).grid(row=5,column=0,sticky="nsew")
-        self.labelg11 = tk.Label(self.results,textvariable=self.gauss_1).grid(row=5,column=1,sticky="nsew")
-        self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2).grid(row=6,column=0,sticky="nsew")
-        self.labelg12 = tk.Label(self.results,textvariable=self.gauss_2).grid(row=6,column=1,sticky="nsew")
-
-
+        self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1,font=(None,self.fsize)).grid(row=5,column=0,sticky="nsew")
+        self.labelg11 = tk.Label(self.results,textvariable=self.gauss_amp1,font=(None,self.fsize)).grid(row=5,column=1,sticky="nsew")
+        self.labelg111 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=5,column=2,sticky="nsew")
+        self.labelg12 = tk.Label(self.results,textvariable=self.gauss_mean1,font=(None,self.fsize)).grid(row=6,column=1,sticky="nsew")
+        self.labelg121 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=6,column=2,sticky="nsew")
+        self.labelg13 = tk.Label(self.results,textvariable=self.gauss_stddev1,font=(None,self.fsize)).grid(row=7,column=1,sticky="nsew")
+        self.labelg131 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=7,column=2,sticky="nsew")
+        self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2,font=(None,self.fsize)).grid(row=8,column=0,sticky="nsew")
+        self.labelg02 = tk.Label(self.results,textvariable=self.gauss_amp2,font=(None,self.fsize)).grid(row=8,column=1,sticky="nsew")
+        self.labelg021 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=8,column=2,sticky="nsew")
+        self.labelg03 = tk.Label(self.results,textvariable=self.gauss_mean2,font=(None,self.fsize)).grid(row=9,column=1,sticky="nsew")
+        self.labelg031 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=9,column=2,sticky="nsew")
+        self.labelg04 = tk.Label(self.results,textvariable=self.gauss_stddev2,font=(None,self.fsize)).grid(row=10,column=1,sticky="nsew")
+        self.labelg041 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=10,column=2,sticky="nsew")
 
 
 
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
         print("[INFO] closing...")
-        #self.fig_XY.clear()
         self.window.quit()
         self.window.destroy() # Ferme la fenêtre
 
-         #Fonction définissant l'image à enregistrer   
+
+    #Fonction définissant l'image à enregistrer   
     def choice0(self):
         self.coch0=1
     
@@ -247,20 +332,23 @@ class Fenetre(Thread):
  
     def choice2(self):
         self.coch2=1
-    
+
     def choice3(self):
         self.coch3=1
-
+ 
     def choice4(self):
         self.coch4=1
 
     def alignement(self):
+        """Fonction pour alignement de faisceaux"""
         self.align=True
     
     def arret_align(self):
+        """Fonction d'arrêt de l'alignement"""
         self.align=False
 
     def stop_profil(self):
+        """Fonction permettant d'enlever le plots"""
         for widget in self.cadre_plots.winfo_children():
                 widget.destroy()
                 self.titre_gauss1.set("")
@@ -269,42 +357,67 @@ class Fenetre(Thread):
                 self.gauss_2.set(0)
 
 
+
+
     #####################
     #   Partie Camera   # 
     #####################
 
-
     def flux_cam(self):
+        """Lance la fonction d'affichage de la preview  dans un thread"""
         self.t1=Thread(target=self.update(), args=(self.window, self.display1, self.Screen_x, self.Screen_y)) #boucle la fonction d'acquisition de la caméra
         self.t1.start()
 
+    
     def update(self):
-
         """Affichage de la preview"""
         #Get a frame from cameraCapture
-        self.frame0 = self.vid.getFrame() #This is an array
-        self.frame0=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
-        self.frame=cv2.flip(self.frame0,0)
+        ratio=1
 
+        #Récupère le flux basler si elle communique
+        if self.basler==True:
+            self.frame0 = self.vid.getFrame() #This is an array
+
+        #Sinon récupère le flux opencv
+        else :
+            try :
+                self.frame0 = self.cam.capture()
+                cam_rat=False
+            except :
+                print("Problem to get an image") #Impossible de récuperer le flux de la caméra
+                tk.messagebox.showerror("Problem to get an image") #Affichage d'un message d'erreur
+                exit()
+
+        self.frame=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1) #Convertit l'image en 8bits pour en permettre l'affichage sur tous les écrans
+        frame=self.frame
+
+        #Fonction d'alignement
         if self.align == True :
             test=True
             try :
                 self.baryX
-            except AttributeError:
+            except AttributeError: #Si le traitement d'image n'a pas été fait avant l'appui sur le bouton
                 test=False
                 self.align = False
                 tk.messagebox.showerror("Alignement impossible", "Il faut traiter le premier faisceau pour permettre l'alignement. \n Pour cela cliquez sur le bouton traitement après ce message.")
             if test == True:
-                cv2.line(self.frame, (self.baryX, 0), (self.baryX, self.frame.shape[0]), (255, 0, 0), 3)#Dessine une croix sur le barycentre de l'image
-                cv2.line(self.frame, (0, self.baryY), (self.frame.shape[1], self.baryY), (255, 0, 0), 3)
+                #Dessine une croix sur l'écran pour permettre alignement
+                cv2.line(frame, (self.baryX, 0), (self.baryX, frame.shape[0]), (255, 0, 0), 3)#Dessine une croix sur le barycentre de l'image
+                cv2.line(frame, (0, self.baryY), (frame.shape[1], self.baryY), (255, 0, 0), 3)
 
         #Get display size
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
+
+        #Récupère le ratio d'affichage de la frame
         r = float(self.Screen_x/self.Screen_y)
 
-        #Get picture ratio from oneCameraCapture
-        ratio = self.vid.ratio
+        #Get picture ratio from Camera
+        if self.basler==True :
+            ratio = self.vid.ratio
+        elif self.basler==False:
+            ratio = self.cam.ratio
+
         #keep ratio
         if r > ratio:
             self.Screen_x = int(round(self.display1.winfo_height()*ratio))
@@ -312,7 +425,7 @@ class Fenetre(Thread):
             self.Screen_y = int(round(self.display1.winfo_width()/ratio))
 
         #resize the picture
-        frame = cv2.resize(self.frame, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_AREA)
+        frame = cv2.resize(frame, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_AREA)
 
         #OpenCV bindings for Python store an image in a NumPy array
         #Tkinter stores and displays images using the PhotoImage class
@@ -323,23 +436,85 @@ class Fenetre(Thread):
         #recall the function after a delay
         self.window.after(self.delay, self.update)
 
+       
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
         ts = datetime.datetime.now()
-        filename = "image_{}.png".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
-        p = os.path.join(self.output_path, filename)  # construit le chemin de sortie
-        self.frame.save(p, "PNG")  # Sauvegarde l'image sous format png
-        print("[INFO] saved {}".format(filename))
+        try:
+            os.mkdir('Snapshot') #Créer un dossier snapshot pour les images
+        except OSError:
+            pass
+        path=self.output_path.joinpath('Snapshot') #défini le path pour les images
+        #print(path)
+        while True :
+            if self.coch0==1:
+                filename = "preview_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
+                image = Img.fromarray(self.frame)
+                S=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                image.save(S)
+                S.close()
+                print("[INFO] saved {}".format(filename))
+            if self.coch1==1:
+                try :
+                    self.photo2 
+                    filename_2 = "treatment_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    image2 = Img.fromarray(self.frame2)
+                    S2=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_2, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                    image2.save(S2)
+                    S2.close()
+                    print("[INFO] saved {}".format(filename_2))
+                except:
+                    tk.messagebox.showerror("Save Problem", "Problème de traitement")
+                    break
+            if self.coch2==1:
+                if self.choix_fig != 0 :
+                    filename_xy = "plot_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    S3=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_xy, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                    self.fig_XY.savefig("plot", dpi=1200)
+                    Im=Img.open("plot.png")
+                    im = Im.convert("RGB")
+                    im.save(S3)
+                    S3.close()
+                    print("[INFO] saved {}".format(filename_xy))
+                else:
+                    tk.messagebox.showerror("Save Problem", "Problème de Plots")
+                    break
+            if self.coch3==1:
+                try :
+                    self.photo2
+                    coord = "coordonnées_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    S4=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=coord, filetypes = (("Text files","*.txt"),("all files","*.*")))
+                    tup=("Barycentre X = ", str(self.cX.get()), "\n", "Barycentre Y = ", str(self.cY.get()), "\n\n", "Grand axe ellipse = ", str(self.ellipse_width.get()), "\n", "Petit axe ellipse = ", str(self.ellipse_height.get()), "\n", "Angle ellipse = ", str(self.ellipse_angle.get()))
+                    file=''.join(tup)
+                    S4.write(file)
+                    S4.close()
+                    print("[INFO] saved {}".format(coord))
+                except:
+                    tk.messagebox.showerror("Save Problem", "Problème de traitement")
+                    break
+            if self.coch4==1:
+                if self.choix_fig != 0 :
+                    plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
+                    tup2=("Gauss 1 = ", ascii.write(self.gauss_1.get()), "\n", "Gauss 2 = ", ascii.write(self.gauss_2.get()))
+                    file2=''.join(tup2)
+                    S5.write(file2)
+                    S5.close()
+                    print("[INFO] saved {}".format(plot))
+                else:
+                    tk.messagebox.showerror("Save Problem", "Problème de Plots")
+                    break
+            
+        self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
+        
 
     def video_tool(self):
         self.t2 = Thread(target=self.disp_traitement)
         self.t2.start()
 
     def disp_traitement(self):
-        self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame)
+        self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame,self.choix_filtre)
         self.affich_traitement()
-        GP1, GP2, PP1, PP2 = self.trmt.points_ellipse()
-        print("GP1=",GP1,"GP2=", GP2, "PP1=",PP1, "PP2=",PP2)
     
     def affich_traitement(self):
         #Get display size
@@ -366,27 +541,42 @@ class Fenetre(Thread):
         self.ellipse_height.set(int(self.ellipse[1][0]) * self.pixel_size)
         self.ellipse_angle.set(int(self.ellipse[2]))
 
+        #self.window.after(self.delay, self.affich_traitement)
+
     def exp(self):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
-        self.exposure=self.vid.auto_exposure()
+        try :
+            self.vid.auto_exposure()
+        except :
+            try :
+                self.cam.auto_exposure()
+            except :
+                print("Exposure Problem")
+                tk.messagebox.showerror("Problème d'exposition")
+                pass
+        return
 
-    def px2m(self,param):
-        #Convertit les données en pixels vers microns
-        param_um = param * self.pixel_size
-        return param
-
-    def choix_figure(self,param):
+    def choix_figure(self, parameter):
         selection = self.liste_combobox.get()
+        #print(selection)
         if selection =="Choix":
-            choix_fig=0
+            self.choix_fig=0
         if selection =="Fit XY":
-            choix_fig=1
+            self.choix_fig=1
         if selection =="Fit axes ellipse":
-            choix_fig=2
+            self.choix_fig=2
         if selection =="Fit Gaussien 2D":
-            choix_fig=3
-        self.choix_fig_XY=choix_fig
-        return self.choix_fig_XY
+            self.choix_fig=3
+
+        return
+
+    def choix_filtre(self,parameter):
+        selection = self.liste_combobox2.get()
+        if selection =="Otsu":
+            self.choix_filtre=1
+        if selection =="Adaptatif":
+            self.choix_filtre=0
+        return
 
     def plot(self):
         "choix_fig_XY = 0 quand le traitement d'image n'a pas encore été effectué, et = 1 après le traitement. le graphe apparait après pression du bouton profils"
@@ -405,42 +595,50 @@ class Fenetre(Thread):
                 self.fig_XY = Figure()
                 return self.fig_XY
 
-        self.fig_XY = Figure()
-        if self.choix_fig_XY > 0:
+            self.fig_XY = Figure()
             self.fig_width = self.cadre_plots.winfo_width() 
             self.fig_height = self.cadre_plots.winfo_height()
-        if self.choix_fig_XY == 1 :
-            self.fig_XY, x, y = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height)
-            self.titre_gauss1.set("Gaussienne X :")
-            self.titre_gauss2.set("Gaussienne Y :")
-            self.gauss_1.set(x)
-            self.gauss_2.set(y)
-        if self.choix_fig_XY == 2 :
-            self.fig_XY, g, p = self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height)
-            self.titre_gauss1.set("Gaussienne ellipse G :")
-            self.titre_gauss2.set("Gaussienne ellipse P :")
-            self.gauss_1.set(g)
-            self.gauss_2.set(p)
-        if self.choix_fig_XY == 3 :
-            self.fig_XY, d = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
-            self.titre_gauss1.set("Gaussienne 2D :")
-            self.titre_gauss2.set("")
-            self.gauss_1.set(d)
-            self.gauss_2.set(0)
+                
+            if self.choix_fig == 1 :
+                self.fig_XY, x, y = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height)
+                self.titre_gauss1.set("Gaussienne X :")
+                self.titre_gauss2.set("Gaussienne Y :")
+                self.gauss_amp1.set('Amplitude: {} +\- {}'.format(x[0]* self.pixel_size, np.sqrt(x[3][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean: {} +\- {}'.format(x[1]* self.pixel_size, np.sqrt(x[3][1])* self.pixel_size))
+                self.gauss_stddev1.set('Standard Deviation: {} +\- {}'.format(x[2]* self.pixel_size, np.sqrt(x[3][2])* self.pixel_size))
+                self.gauss_amp2.set('Amplitude: {} +\- {}'.format(y[0]* self.pixel_size, np.sqrt(y[3][0])* self.pixel_size))
+                self.gauss_mean2.set('Mean: {} +\- {}'.format(y[1]* self.pixel_size, np.sqrt(y[3][1])* self.pixel_size))
+                self.gauss_stddev2.set('Standard Deviation: {} +\- {}'.format(y[2]* self.pixel_size, np.sqrt(y[3][2])* self.pixel_size))
+            if self.choix_fig == 2 :
+                self.fig_XY, g, p= self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height)
+                self.titre_gauss1.set("Gaussienne ellipse G :")
+                self.titre_gauss2.set("Gaussienne ellipse P :")
+                self.gauss_amp1.set('Amplitude: {} +\- {}'.format(g[0]* self.pixel_size, np.sqrt(g[3][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean: {} +\- {}'.format(g[1]* self.pixel_size, np.sqrt(g[3][1])* self.pixel_size))
+                self.gauss_stddev1.set('Standard Deviation: {} +\- {}'.format(g[2]* self.pixel_size, np.sqrt(g[3][2])* self.pixel_size))
+                self.gauss_amp2.set('Amplitude: {} +\- {}'.format(p[0]* self.pixel_size, np.sqrt(p[3][0])* self.pixel_size))
+                self.gauss_mean2.set('Mean: {} +\- {}'.format(p[1]* self.pixel_size, np.sqrt(p[3][1])* self.pixel_size))
+                self.gauss_stddev2.set('Standard Deviation: {} +\- {}'.format(p[2]* self.pixel_size, np.sqrt(p[3][2])* self.pixel_size))
+            if self.choix_fig == 3 :
+                self.fig_XY, d = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
+                self.titre_gauss1.set("Gaussienne 2D :")
+                self.titre_gauss2.set("")
+                self.gauss_amp1.set('Amplitude: {} +\- {}'.format(d[0]* self.pixel_size, np.sqrt(d[6][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean x: {} +\- {}'.format(d[1]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
+                self.gauss_stddev1.set('Mean y: {} +\- {}'.format(d[2]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
+                self.gauss_amp2.set('Standard Deviation x: {} +\- {}'.format(d[3]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
+                self.gauss_mean2.set('Standard Deviation y: {} +\- {}'.format(d[4]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
+                self.gauss_stddev2.set('Theta: {}'.format(d[5])* self.pixel_size)
 
         #cadre affichage profils
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
-        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots)#,pack_toolbar=False)
+        self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots,pack_toolbar=False)
         self.toolbar.grid(row=0,column=0)
         self.toolbar.update()    
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()
         self.cadre_disp_XY.grid(row=1,column=0,sticky="NSEW")
-        
         return self.fig_XY
 
-    
-
-        
 
 root = Fenetre()
 root.window.mainloop() # Lancement de la boucle principale
