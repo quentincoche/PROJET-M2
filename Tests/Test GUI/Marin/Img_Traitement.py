@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from matplotlib.figure import Figure  
 from matplotlib import rcParams
 from astropy import modeling
-from astropy.io import ascii
 from skimage.draw import line
 from PIL import Image, ImageStat
 import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
@@ -39,11 +38,15 @@ class Traitement():
         kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(10,10))
 
         otsu = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
-        ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
-        #otsu= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 2) 
-        img_opn = cv2.morphologyEx(otsu, cv2.MORPH_OPEN, kernel)
+        #ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
+        otsu= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 3) 
+        
+        img_cls = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
+        img_opn = cv2.morphologyEx(img_cls, cv2.MORPH_OPEN, kernel)
         #frame= cv2.fastNlMeansDenoising( img , None , 10 , 7 , 21)
-        return img_opn
+        #plt.imshow(img_opn)
+        #plt.show()
+        return img_cls
 
 
     def calcul_traitement(self,frame, otsu):
@@ -51,6 +54,7 @@ class Traitement():
         # find contours in the binary image
         contours, hierarchy = cv2.findContours(otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
+        #print(contours)
 
         for c in contours:
             # permet de fit une ellipse sur toutes les formes identifiés sur l'image
@@ -60,7 +64,7 @@ class Traitement():
             area = cv2.contourArea(c)
             if area <= 1000:  # skip ellipses smaller then 
                 continue
-
+            #cv2.drawContours(frame, [c], 0, (0,255,0), 3)
             # calculate moments for each contour
             M = cv2.moments(c)
 

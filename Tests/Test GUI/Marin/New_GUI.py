@@ -126,7 +126,6 @@ class Fenetre(Thread):
 
         #Temps en ms entre chaque actualisation de l'interface
         self.delay=15
-        self.pixel_size = 1
 
         #Variable de l'écran de l'image traité
         self.frame2=[]
@@ -140,6 +139,10 @@ class Fenetre(Thread):
         #self.plot()
         self.Interface() #Lance la fonction Interface
         self.flux_cam()
+
+        #detection du nombre de pixels par pouce: utile pour l'affichage des plots
+        self.dpi = self.cadre_plots.winfo_fpixels('1i')
+        self.pixel_size = self.vid.pixel_size
         
 
 
@@ -574,10 +577,6 @@ class Fenetre(Thread):
             self.fig_XY = Figure()
             self.fig_width = self.cadre_plots.winfo_width() 
             self.fig_height = self.cadre_plots.winfo_height()
-            #detection du nombre de pixels par pouce: utile pour l'affichage des plots
-            self.dpi = self.cadre_plots.winfo_fpixels('1i')
-            self.pixel_size = 1 #self.vid.pixel_size
-
                 
             if self.choix_fig == 1 :
                 self.fig_XY, x, y = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height)
