@@ -55,7 +55,6 @@ import opencv_module as OpenCam
 import Img_Traitement as Img_Traitement
 
 
-
 # La Classe Fenetre contient l'ensemble du programme #
 class Fenetre(Thread):
 
@@ -144,7 +143,10 @@ class Fenetre(Thread):
 
         #detection du nombre de pixels par pouce: utile pour l'affichage des plots
         self.dpi = self.cadre_plots.winfo_fpixels('1i')
-        self.pixel_size = self.vid.pixel_size
+        try:    
+            self.pixel_size = self.vid.pixel_size
+        except:
+            pass
         
 
 
@@ -236,6 +238,18 @@ class Fenetre(Thread):
         btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
         btnexp.grid(row=0,column=1,sticky="nsew")
 
+        labelSpace5=tk.Label(self.cmdup, text='  ', bg='gray')
+        labelSpace5.grid(row=0,column=2)
+
+            #Choix du filtre
+        selection_filtre=tk.Label(self.cmdup,text="Selectionnez Filtre",bg="gray")
+        selection_filtre.grid(row=0,column=3,sticky="nse")
+        liste_filtres =["Otsu","Adaptatif"]
+        self.liste_combobox2 = ttk.Combobox(self.cmdup,values=liste_filtres)
+        self.liste_combobox2.grid(row=0,column=4,sticky="nse")
+        self.liste_combobox2.current(0)
+        self.liste_combobox2.bind("<<ComboboxSelected>>",self.choix_filtre)
+
 
     def display(self):
 
@@ -301,6 +315,10 @@ class Fenetre(Thread):
         self.labelg031 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=9,column=2,sticky="nsew")
         self.labelg04 = tk.Label(self.results,textvariable=self.gauss_stddev2,font=(None,self.fsize)).grid(row=10,column=1,sticky="nsew")
         self.labelg041 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=10,column=2,sticky="nsew")
+        self.labelg120=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=6,column=0,sticky="nsew")
+        self.labelg130=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=7,column=0,sticky="nsew")
+        self.labelg030=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=9,column=0,sticky="nsew")
+        self.labelg040=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=10,column=0,sticky="nsew")
 
 
 
@@ -556,7 +574,14 @@ class Fenetre(Thread):
             self.choix_fig=2
         if selection =="Fit Gaussien 2D":
             self.choix_fig=3
+        return
 
+    def choix_filtre(self,parameter):
+        selection = self.liste_combobox2.get()
+        if selection =="Otsu":
+            self.choix_filtre=1
+        if selection =="Adaptatif":
+            self.choix_filtre=0
         return
 
     def plot(self):

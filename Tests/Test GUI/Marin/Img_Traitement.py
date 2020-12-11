@@ -19,6 +19,7 @@ import time #Bibliothèque permettant d'utiliser l'heure de l'ordinateur
 
 rcParams.update({'figure.autolayout': True})
 
+ 
 class Traitement():
 
     def traitement(self, img, choix=0):
@@ -31,7 +32,6 @@ class Traitement():
         temps=time.time()-t
         print("Temps de traitement de l'image : ", temps)
         return img100, ellipse, cX, cY, choix_fig
-
 
     def binarisation(self,img, choix):
         """ Filtrage de l'image et binarisation de celle-ci"""
@@ -108,7 +108,7 @@ class Traitement():
 
         return crop_img, self.ellipse, self.cX, self.cY
 
-
+  
     def fond (self, frame):
         """Fonction qui récupère une partie du fond puis le "patch" sur le faisceau pour moyenner le fond de l'image"""
         #lance un crop pour récuperer la taille du crop
@@ -246,7 +246,7 @@ class Traitement():
 
         return fig, data_x, data_y
 
-    
+   
     def plot_2D(self,dpi,width,height):
 
         t=time.time()
@@ -293,7 +293,7 @@ class Traitement():
 
         return fig2, data_2D
         
-    
+
     def points_ellipse(self):
         """
         Permet de récupérer les points extremes de l'image selon le grand et
@@ -395,8 +395,7 @@ class Traitement():
         PP1, PP2=[np.int32(PP1l),np.int32(PP1c)], [np.int32(PP2l),np.int32(PP2c)]
 
         return GP1, GP2, PP1, PP2
-
-
+   
     def trace_ellipse(self,dpi,cv_width,cv_height):
         """ Trace le fit gaussien selon les axes de l'ellipse"""
         t=time.time()
