@@ -520,7 +520,7 @@ class Fenetre(Thread):
         self.t2.start()
 
     def disp_traitement(self):
-        self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame)
+        self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame,self.choix_filtre)
         self.affich_traitement()
     
     def affich_traitement(self):

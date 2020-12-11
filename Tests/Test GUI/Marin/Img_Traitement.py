@@ -86,8 +86,13 @@ class Traitement():
 
         av_fond=self.fond(frame) #sort la moyenne du fond
 
-        self.img=self.img-av_fond #retranche le fond de l'image
-        frame=np.array(frame-av_fond).astype(np.uint8) #Retranche le fond de l'image et le mets en 8bits entier pour le transformer en couleur
+        av_img=self.img-av_fond #retranche le fond de l'image
+        img_indices = self.img-av_img < 0 #Vérifie que l'image sans fond n'a pas pixel inférieur à 0
+        self.img[img_indices]=0 #remplace les pixels inférieur à 0 par 0
+
+        av_frame=np.array(frame-av_fond).astype(np.uint8) #Retranche le fond de l'image et le mets en 8bits entier pour le transformer en couleur
+        frame_indices = frame-av_frame < 0
+        frame[frame_indices]=0
 
         #Remet l'image en RGB pour y dessiner toutes les formes par la suite et en couleur
         frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
