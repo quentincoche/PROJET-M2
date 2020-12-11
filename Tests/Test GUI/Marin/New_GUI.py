@@ -361,8 +361,8 @@ class Fenetre(Thread):
         self.align=False
         self.titre_gauss1.set("")
         self.titre_gauss2.set("")
-        self.gauss_amp1.set("")
-        self.gauss_amp2.set("")
+        self.gauss_amp1.set(0)
+        self.gauss_amp2.set(0)
 
     def stop_profil(self):
         """Fonction permettant d'enlever le plots"""
