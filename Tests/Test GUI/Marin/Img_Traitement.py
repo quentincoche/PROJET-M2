@@ -26,7 +26,7 @@ class Traitement():
         t=time.time()
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         img_bin=self.binarisation(gray, choix)
-        self.img=img
+        self.img=gray
         img100, ellipse, cX, cY=self.calcul_traitement(self.img, img_bin)
         choix_fig = 1
         temps=time.time()-t

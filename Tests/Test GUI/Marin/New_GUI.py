@@ -134,6 +134,9 @@ class Fenetre(Thread):
         #Variable pour l'aligenement des faisceaux
         self.align=False
         self.choix_fig=0
+        self.Bx=0
+        self.By=0
+        self.H=False
 
         #Appel de toutes les fonctions permettant l'affichage de notre programme
         self.display()
@@ -214,16 +217,20 @@ class Fenetre(Thread):
         btnalign = tk.Button(self.cmdleft, text='Alignement de faisceaux', command=self.alignement)
         btnalign.grid(row=8, column=0, sticky="nsew")
 
+            #Bouton hold de faisceaux
+        btnhold = tk.Button(self.cmdleft, text='Hold', command=self.hold)
+        btnhold.grid(row=9, column=0, sticky="nsew")
+
             #Bouton arrêt alignement
         btn_stopalign = tk.Button(self.cmdleft, text='Arrêt alignement', command=self.arret_align)
-        btn_stopalign.grid(row=9, column=0, sticky="nsew")
+        btn_stopalign.grid(row=10, column=0, sticky="nsew")
 
         labelSpace=tk.Label(self.cmdleft, text='', bg='gray')
-        labelSpace.grid(row=10,column=0)
+        labelSpace.grid(row=11,column=0)
 
             #Bouton quitter
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=11,column=0,sticky="nsew")
+        btnquit.grid(row=12,column=0,sticky="nsew")
 
         #commandes superieures
             #Taille de la zone de commande
@@ -352,6 +359,10 @@ class Fenetre(Thread):
     def arret_align(self):
         """Fonction d'arrêt de l'alignement"""
         self.align=False
+        self.titre_gauss1.set("")
+        self.titre_gauss2.set("")
+        self.gauss_amp1.set("")
+        self.gauss_amp2.set("")
 
     def stop_profil(self):
         """Fonction permettant d'enlever le plots"""
@@ -362,7 +373,10 @@ class Fenetre(Thread):
                 self.gauss_1.set(0)
                 self.gauss_2.set(0)
 
-
+    def hold(self):
+        self.H=True
+        self.Bx=self.baryX
+        self.By=self.baryY
 
 
     #####################
@@ -406,10 +420,36 @@ class Fenetre(Thread):
                 test=False
                 self.align = False
                 tk.messagebox.showerror("Alignement impossible", "Il faut traiter le premier faisceau pour permettre l'alignement. \n Pour cela cliquez sur le bouton traitement après ce message.")
-            if test == True:
-                #Dessine une croix sur l'écran pour permettre alignement
-                cv2.line(frame, (self.baryX, 0), (self.baryX, frame.shape[0]), (255, 0, 0), 3)#Dessine une croix sur le barycentre de l'image
-                cv2.line(frame, (0, self.baryY), (frame.shape[1], self.baryY), (255, 0, 0), 3)
+            if self.H == False:
+                if test == True:
+                    #Dessine une croix sur l'écran pour permettre alignement
+                
+                    cv2.line(frame, (self.baryX, 0), (self.baryX, frame.shape[0]), (255, 0, 0), 3)#Dessine une croix sur le barycentre de l'image
+                    cv2.line(frame, (0, self.baryY), (frame.shape[1], self.baryY), (255, 0, 0), 3)
+            else:
+                if test==True:
+                    cv2.line(frame, (self.Bx, 0), (self.Bx, frame.shape[0]), (255, 0, 0), 3)#Dessine une croix sur le barycentre de l'image
+                    cv2.line(frame, (0, self.By), (frame.shape[1], self.By), (255, 0, 0), 3)
+                    otsu = cv2.GaussianBlur(frame,(5,5),0) #Met un flou gaussien
+                    ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+                    kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
+                    img_cls = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
+                    img_opn = cv2.morphologyEx(img_cls, cv2.MORPH_OPEN, kernel)
+                    contours, hierarchy = cv2.findContours(otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+                    contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
+                    for c in contours:
+                        M = cv2.moments(c)
+                        if M["m00"] != 0:
+                            self.cX = int(M["m10"] / M["m00"])
+                            self.cY = int(M["m01"] / M["m00"])
+                        else:
+                            self.cX, self.cY = 0, 0
+                    cv2.line(frame, (self.cX, 0), (self.cX, frame.shape[0]), (255, 0, 0), 1)#Dessine une croix sur le barycentre de l'image
+                    cv2.line(frame, (0, self.cY), (frame.shape[1], self.cY), (255, 0, 0), 1)
+                    self.titre_gauss1.set("X aligne :")
+                    self.titre_gauss2.set("Y aligne :")
+                    self.gauss_amp1.set(self.cX * self.pixel_size)
+                    self.gauss_amp2.set(self.cY * self.pixel_size)
 
         #Get display size
         self.Screen_x = self.display1.winfo_width()
@@ -520,7 +560,7 @@ class Fenetre(Thread):
         self.t2.start()
 
     def disp_traitement(self):
-        self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame,self.choix_filtre)
+        self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame0,self.choix_filtre)
         self.affich_traitement()
     
     def affich_traitement(self):
