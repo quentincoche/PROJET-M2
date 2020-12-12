@@ -1,6 +1,6 @@
 # PROJET-M2
   
-Ce projet a pour but de programmer un analyseur de faisceaux laser. Il en permet l'analyse au moyen d'une caméra et de ce programme. Le projet portera essentiellement sur le développement d’un logiciel de traitement d’image en langage Python, permetant de calculer et fournir à l’utilisateur les caractéristiques du faisceau mesurées. Il correspond aux fonctionnalités principales des programmes commerciaux équivalents. 
+Ce projet a pour but de programmer un analyseur de faisceaux laser. Il permet l'analyse de celui-ci au moyen d'une caméra et de ce programme. Le projet portera essentiellement sur le développement d’un logiciel de traitements d’images en langage Python, permettant de calculer et fournir à l’utilisateur les caractéristiques du faisceau mesurées. Il correspond aux fonctionnalités principales des programmes commerciaux équivalents. 
   
 Le programme est en cours de **développement** et des bugs peuvent survenir et leurs signalements est appécié.  
   
