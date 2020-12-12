@@ -31,7 +31,7 @@ Il accuse certaines fonctionnalitées :
   
 ## Installation  
   
-Pour l'installation pour une caméra Basler veuillez suivre le Git : [pypylon](https://github.com/basler/pypylon) (à l'heure actuelle fonctionne sur les version Python jusqu'à la [3.8](https://www.python.org/downloads/release/python-386/).  
+Pour l'installation pour une caméra Basler veuillez suivre le Git : [pypylon](https://github.com/basler/pypylon) (à l'heure actuelle fonctionne sur les version Python jusqu'à la [3.8](https://www.python.org/downloads/release/python-386/)).  
 Le développement a été effectué sous Python et les bibliothèques à jour à la date du 12/12/2020.  
   
 Les dernières versions en cours de développement se trouvent à [Fork 1](https://github.com/quentincoche/PROJET-M2/tree/master/Tests/Test%20GUI/Marin) et [Fork 2](https://github.com/quentincoche/PROJET-M2/tree/master/Tests/Test%20GUI/Quentin).  
