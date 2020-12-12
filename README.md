@@ -3,6 +3,7 @@
 Ce projet a pour but de programmer un analyseur de faisceaux laser. Il en permet l'analyse au moyen d'une caméra et de ce programme. Le projet portera essentiellement sur le développement d’un logiciel de traitement d’image en langage Python, permetant de calculer et fournir à l’utilisateur les caractéristiques du faisceau mesurées. Il correspond aux fonctionnalités principales des programmes commerciaux équivalents. 
   
 Le programme est en cours de **développement** et des bugs peuvent survenir et leurs signalements est appécié.  
+  
 La base de développement est une caméra Basler ([acA1920-40uc](https://www.baslerweb.com/en/products/cameras/area-scan-cameras/ace/aca1920-40uc/) et [acA5472-17um](https://www.baslerweb.com/en/products/cameras/area-scan-cameras/ace/aca5472-17um/)) mais un module ouvert [OpenCV](https://opencv.org/) en permet l'usage le plus courant avec tout type de caméra.  
   
   
