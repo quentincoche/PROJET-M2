@@ -557,13 +557,13 @@ class Traitement():
         return fig, data_g, data_p
 
 
-    def divergence(self, lambda):
+    def divergence(self, lamb):
         """Calcul la divergence du faisceau"""
-        theta=(4*lambda)/(math.pi*self.ellipse[1][1]) #Calcul de la divergence
+        theta=(4*lamb)/(math.pi*self.ellipse[1][1]) #Calcul de la divergence
         return theta
 
 
-    def M_square(self, lambda):
+    def M_square(self, lamb):
         """Permet de déterminer le M^2 du faisceau"""
         img=self.binarisation(self.img, 3)
         contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
@@ -580,6 +580,6 @@ class Traitement():
                 continue
             ellipse = cv2.fitEllipse(c)
 
-        theta=self.divergence(lambda) #Récupère la divergence
-        M=(theta*math.pi*ellipse[1][1])/(4*lambda) #calcul du M^2
+        theta=self.divergence(lamb) #Récupère la divergence
+        M=(theta*math.pi*ellipse[1][1])/(4*lamb) #calcul du M^2
         return M

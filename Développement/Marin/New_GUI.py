@@ -269,6 +269,13 @@ class Fenetre(Thread):
         btnNoise = tk.Button(self.cmdup,text="Denoise image", command=self.DeNoise)
         btnNoise.grid(row=0,column=5,sticky="nsew")
 
+            #Lambda
+        self.Elambda = tk.Entry(self.cmdup)
+        self.Elambda.grid(row=0, column=7,sticky="nsew")
+        btnlambda= tk.Button(self.cmdup,text="M²", command=self.m2)
+        btnlambda.grid(row=0, column=8,sticky="nsew")
+
+
         #### Affichage de l'aide quand on survole les bouttons ####
 
         b = tk.tix.Balloon(self.window,bg="gray")
@@ -776,6 +783,12 @@ class Fenetre(Thread):
                     break
 
         self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
+        return
+
+    def m2(self):
+        self.lamb=float(self.Elambda.get())*10**(-9)
+        m=self.trmt.M_square(self.lamb)
+        print(m)
         return
 
 
