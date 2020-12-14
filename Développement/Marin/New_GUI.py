@@ -43,6 +43,7 @@ from tkinter import StringVar, ttk
 from tkinter import IntVar
 from tkinter import DoubleVar
 from tkinter import RIDGE
+from tkinter import tix
 from threading import Thread #Bibliothèque de multithreading pour optimiser le fonctionnement
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
 from pathlib import Path #Bibliothèque de gestion du path
@@ -78,7 +79,7 @@ class Fenetre(Thread):
         self.output_path = Path.cwd()  #Chemin de sortie de la photo
 
         """"Edition de l'interface"""
-        self.window = tk.Tk()  #Réalisation de la fenêtre principale
+        self.window = tix.Tk()  #Réalisation de la fenêtre principale
         self.window.state('zoomed') #Lance le GUI en plein écran
          
         self.window.title("Beam analyzer Python")
@@ -267,6 +268,39 @@ class Fenetre(Thread):
             #Denoise
         btnNoise = tk.Button(self.cmdup,text="Denoise image", command=self.DeNoise)
         btnNoise.grid(row=0,column=5,sticky="nsew")
+
+        #### Affichage de l'aide quand on survole les bouttons ####
+
+        b = tk.tix.Balloon(self.window,bg="gray")
+        b.bind_widget(btnquit,balloonmsg='Quitte le logiciel')
+        b.bind_widget(btnalign,balloonmsg='Affiche la position du barycentre du faisceau au moment de la pression, pour\n vérifier la bonne position du faisceau')
+        b.bind_widget(btnhold,balloonmsg='Permet de mémoriser la position du barycentre du faisceau au moment de la pression, puis d\'afficher\n la position en temps réel du barycentre pour aligner un deuxième faisceau avec le premier')
+        b.bind_widget(btn_stopalign,balloonmsg='Arrête la fonction d\'alignement de faisceaux')
+        b.bind_widget(btnexp,balloonmsg='Réglage automatique du temps d\'exposition après pression du bouton')
+        b.bind_widget(btnNoise,balloonmsg='Permet d\'appliquer un Denoiser sur l\'image dans le cas où il y aurait\n beaucoup de bruit, long temps de traitement')
+        b.bind_widget(btnvideo,balloonmsg='Lance le traitement d\'image.\
+            \n Permet de détecter plus ou moins grossièrement selon la méthode de\n seuillage la forme de l\'ellipse ainsi que la position du barycentre de limage croppée')
+        b.bind_widget(self.liste_combobox,balloonmsg='Choix du fit à afficher :\n\
+             -Fit XY -> fit gaussien selon les axes X et Y \n\
+             -Fit axes ellipse -> fit gaussien selon les axes de l\'ellipse (grand et petit axes)\n\
+             -Fit gauss2D -> fit gaussien sur les deux dimensions \n Appuyer sur le bouton Profils pour afficher les graphes')
+        b.bind_widget(self.liste_combobox2,balloonmsg='Choix de la technique de seuillage du faisceau :\n\
+             -Otsu -> binarisation selon l\'algorithme Otsu \n\
+             -Adaptatif -> binarisation adaptative par zone de l\'image\n\
+             -I/e² -> les pixels inférieurs à la valeur de Imax/e² sont mis à zero ')
+        b.bind_widget(btnprofiles,balloonmsg='Permet l\'affichage des courbes choisies')
+        b.bind_widget(btn_stpprof,balloonmsg='Permet d\'arrêter l\'affichage des courbes')
+        b.bind_widget(self.FrameCapture, balloonmsg='Sélection des images et/ou paramètres à enregistrer :\n\
+            -Preview -> l\'image en temps réel à gauche de l\'écran en .jpeg\n\
+            -Traité -> l\'image traité à droite de l\'écran en .jpeg\n\
+            -Plot -> Le graphique en bas de l\'écran en .jpeg\n\
+            -Coordonnées -> fichier texte des coordonnées du faisceaux (barycentre, ellipse) en .txt\n\
+            -Données Plot -> Paramètres associés à la gaussiennes du graph en .txt')
+        b.bind_widget(self.display1, balloonmsg='Affichage de la preview en temps réel')
+        b.bind_widget(self.display2, balloonmsg='Affichage de l\'image traité')
+        b.bind_widget(self.cadre_plots, balloonmsg='Affichage du graphique')
+        b.bind_widget(self.results, balloonmsg='Affichage des résultats du faisceau et du graph')
+        #b.bind_widget(button2, balloonmsg='Self-destruct button',statusmsg='Press this button and it will destroy itself')
         return
 
 
