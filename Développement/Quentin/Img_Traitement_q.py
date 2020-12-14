@@ -45,7 +45,8 @@ class Traitement():
         elif choix ==3 :
             thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
             amp=np.max(thres)
-            I=amp/math.exp^(1)**2
+            exponentielle = math.exp(1)
+            I=amp/exponentielle**2
             thres_indice0=thres<I
             thres_indice1=thres>I
             thres[thres_indice0]=0
