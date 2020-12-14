@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import tkinter as tk
 
 
 class openCamera():
@@ -47,6 +48,7 @@ class openCamera():
                 if self.temp_exp>=0:
                     exp_ok=True
                     print('Exp time too big')
+                    tk.messagebox.showerror("Exposure problem", "Temps d'exposition trop grand.")
                     break
                 else :
                     self.temp_exp=self.temp_exp+2
@@ -57,6 +59,7 @@ class openCamera():
                 if self.temp_exp<=-13:
                     exp_ok=True
                     print('Exp time too short')
+                    tk.messagebox.showerror("Exposure problem", "Temps d'exposition trop court.")
                     break
                 else: 
                     self.temp_exp=self.temp_exp-1
