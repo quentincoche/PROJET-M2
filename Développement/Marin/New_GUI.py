@@ -547,7 +547,7 @@ class Fenetre(Thread):
                 if self.choix_fig == 1 or self.choix_fig ==2 :
                     plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
                     S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
-                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " \u03BCm", "\n", str(self.gauss_mean1.get()), " \u03BCm", "\n", str(self.gauss_stddev1.get()), " \u03BCm", "\n\n", str(self.titre_gauss2.get()), "\n", str(self.gauss_amp2.get()), " \u03BCm", "\n", str(self.gauss_mean2.get()), " \u03BCm", "\n", str(self.gauss_stddev2.get()), " \u03BCm")
+                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " µm", "\n", str(self.gauss_mean1.get()), " µm", "\n", str(self.gauss_stddev1.get()), " µm", "\n\n", str(self.titre_gauss2.get()), "\n", str(self.gauss_amp2.get()), " µm", "\n", str(self.gauss_mean2.get()), " µm", "\n", str(self.gauss_stddev2.get()), " µm")
                     file2=''.join(tup2)
                     S5.write(file2)
                     S5.close()
@@ -555,7 +555,7 @@ class Fenetre(Thread):
                 if self.choix_fig == 3:
                     plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
                     S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
-                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " \u03BCm", "\n", str(self.gauss_mean1.get()), " \u03BCm", "\n", str(self.gauss_stddev1.get()), " \u03BCm", "\n", str(self.gauss_amp2.get()), " \u03BCm", "\n", str(self.gauss_mean2.get()), " \u03BCm", "\n", str(self.gauss_stddev2.get()), " °")
+                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " µm", "\n", str(self.gauss_mean1.get()), " µm", "\n", str(self.gauss_stddev1.get()), " µm", "\n", str(self.gauss_amp2.get()), " µm", "\n", str(self.gauss_mean2.get()), " µm", "\n", str(self.gauss_stddev2.get()), " °")
                     file2=''.join(tup2)
                     S5.write(file2)
                     S5.close()
@@ -594,11 +594,11 @@ class Fenetre(Thread):
         self.display2.create_image(self.Screen2_x/2,self.Screen2_x/(2*ratio),image=self.photo2)
 
         #pour affichage des parametres
-        self.cX.set(self.baryX * self.pixel_size)
-        self.cY.set(self.baryY * self.pixel_size) 
-        self.ellipse_width.set("{:.3f}".format(int(self.ellipse[1][1]) * self.pixel_size)) #3 lignes pour extraction des données du tuple ellipse
-        self.ellipse_height.set("{:.3f}".format(int(self.ellipse[1][0]) * self.pixel_size))
-        self.ellipse_angle.set("{:.3f}".format(int(self.ellipse[2])))
+        self.cX.set("{:.2f}".format(self.baryX * self.pixel_size))
+        self.cY.set("{:.2f}".format(self.baryY * self.pixel_size) )
+        self.ellipse_width.set("{:.2f}".format(int(self.ellipse[1][1]) * self.pixel_size)) #3 lignes pour extraction des données du tuple ellipse
+        self.ellipse_height.set("{:.2f}".format(int(self.ellipse[1][0]) * self.pixel_size))
+        self.ellipse_angle.set("{:.2f}".format(int(self.ellipse[2])))
 
         #self.window.after(self.delay, self.affich_traitement)
 
