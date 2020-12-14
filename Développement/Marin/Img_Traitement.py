@@ -266,6 +266,34 @@ class Traitement():
         t=time.time()
         print("start plot Gauss 2D")
         img=self.crop_img # on récupère l'image
+
+        Lg, Lp= [],[]
+        ang_ell=self.ellipse[2]
+
+        #on récupère les points des axes de la fonction précédente
+        GP1, GP2, PP1, PP2=self.points_ellipse()
+
+        #on récupère les valeurs des pixels selon la ligne qui relie les pixels trouvés précedemment
+        Gr, Gc=line(GP1[0], GP1[1], GP2[0], GP2[1])
+        Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1])
+
+        #Création des listes d'intensités de l'image en fonction de l'orientation de l'ellipse
+        if 45 <= ang_ell <135:
+            for y in range (len(Pr)-1) :
+                Lp=np.append(Lp, img[Pr[y], Pc[y]])
+            for i in range (len(Gr)-1) :
+                Lg=np.append(Lg, img[Gr[i], len(Gc)-2-i])
+                
+        else :
+            for y in range (len(Pr)-1) :
+                Lp=np.append(Lp, img[Pr[y], Pc[y]])
+            for i in range (len(Gr)-1) :
+                Lg=np.append(Lg, img[Gr[i], Gc[i]])
+
+        #Calcul des sigmas sur les valeurs             
+        sigma_g = np.std(Lg)
+        sigma_p = np.std(Lp) 
+
         
         fitter = modeling.fitting.LevMarLSQFitter()
 
@@ -274,7 +302,7 @@ class Traitement():
         
         amp=np.max(img)
 
-        w = modeling.models.Gaussian2D(amp, x0, y0, self.ellipse[1][1]/4, self.ellipse[1][0]/4,math.pi/180*self.ellipse[2]-0.5*math.pi)
+        w = modeling.models.Gaussian2D(amp, x0, y0, sigma_g, sigma_p,math.pi/180*ang_ell-0.5*math.pi)
         #print(w)
 
         yi, xi = np.indices(img.shape)
