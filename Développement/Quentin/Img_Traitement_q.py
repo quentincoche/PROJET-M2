@@ -21,7 +21,7 @@ rcParams.update({'figure.autolayout': True})
 
 class Traitement():
 
-    def traitement(self, img, choix=0):
+    def traitement(self, img, choix):
         t=time.time()
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         img_bin=self.binarisation(gray, choix)
@@ -34,14 +34,23 @@ class Traitement():
 
 
     def binarisation(self,img, choix):
+        print("choix = ",choix)
         """ Filtrage de l'image et binarisation de celle-ci"""
         kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
-        otsu = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
         if choix==1:
-            ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
-        else :
-            otsu= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 3) 
-        img_cls = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
+            thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
+            ret3,otsu = cv2.threshold(thres,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
+        elif choix ==2 :
+            thres= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 3) 
+        elif choix ==3 :
+            thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
+            amp=np.max(thres)
+            I=amp/math.exp^(1)**2
+            thres_indice0=thres<I
+            thres_indice1=thres>I
+            thres[thres_indice0]=0
+            thres[thres_indice1]=255
+        img_cls = cv2.morphologyEx(thres, cv2.MORPH_CLOSE, kernel)
         img_opn = cv2.morphologyEx(img_cls, cv2.MORPH_OPEN, kernel)
         #frame= cv2.fastNlMeansDenoising( img , None , 10 , 7 , 21)
         #plt.imshow(img_opn)
