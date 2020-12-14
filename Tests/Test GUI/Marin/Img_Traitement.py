@@ -557,29 +557,29 @@ class Traitement():
         return fig, data_g, data_p
 
 
-    def divergence(self, lambda):
-        """Calcul la divergence du faisceau"""
-        theta=(4*lambda)/(math.pi*self.ellipse[1][1]) #Calcul de la divergence
-        return theta
+    # def divergence(self, lambda):
+    #     """Calcul la divergence du faisceau"""
+    #     theta=(4*lambda)/(math.pi*self.ellipse[1][1]) #Calcul de la divergence
+    #     return theta
 
 
-    def M_square(self, lambda):
-        """Permet de déterminer le M^2 du faisceau"""
-        img=self.binarisation(self.img, 3)
-        contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
-        #print(contours)
+    # def M_square(self, lambda):
+    #     """Permet de déterminer le M^2 du faisceau"""
+    #     img=self.binarisation(self.img, 3)
+    #     contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    #     contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
+    #     #print(contours)
 
-        for c in contours:
-            # permet de fit une ellipse sur toutes les formes identifiés sur l'image
-            if len(c) < 5:
-                break
+    #     for c in contours:
+    #         # permet de fit une ellipse sur toutes les formes identifiés sur l'image
+    #         if len(c) < 5:
+    #             break
             
-            area = cv2.contourArea(c)
-            if area <= 1000:  # skip ellipses smaller then 
-                continue
-            ellipse = cv2.fitEllipse(c)
+    #         area = cv2.contourArea(c)
+    #         if area <= 1000:  # skip ellipses smaller then 
+    #             continue
+    #         ellipse = cv2.fitEllipse(c)
 
-        theta=self.divergence(lambda) #Récupère la divergence
-        M=(theta*math.pi*ellipse[1][1])/(4*lambda) #calcul du M^2
-        return M
+    #     theta=self.divergence(lambda) #Récupère la divergence
+    #     M=(theta*math.pi*ellipse[1][1])/(4*lambda) #calcul du M^2
+    #     return M
