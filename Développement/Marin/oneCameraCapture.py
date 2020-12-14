@@ -105,6 +105,7 @@ class cameraCapture(tk.Frame):
                 if self.temp_exp>=10000000.0:
                     exp_ok=True
                     print('Exp time too big')
+                    tk.messagebox.showerror("Exposure problem", "Temps d'exposition trop grand.")
                     break
                 else :
                     self.temp_exp=self.temp_exp*2.
@@ -115,6 +116,7 @@ class cameraCapture(tk.Frame):
                 if self.temp_exp<=self.tps_exp_min:
                     exp_ok=True
                     print('Exp time too short')
+                    tk.messagebox.showerror("Exposure problem", "Temps d'exposition trop court.")
                     break
                 else: 
                     self.temp_exp=self.temp_exp/1.3
