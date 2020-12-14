@@ -661,7 +661,7 @@ class Fenetre(Thread):
             self.fig_height = self.cadre_plots.winfo_height()
                 
             if self.choix_fig == 1 :
-                self.fig_XY, x, y = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height)
+                self.fig_XY, x, y = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height, self.pixel_size)
                 self.titre_gauss1.set("Gaussienne X :")
                 self.titre_gauss2.set("Gaussienne Y :")
                 self.gauss_amp1.set('Amplitude: {:.3f} +\- {:.3f}'.format(x[0]* self.pixel_size, np.sqrt(x[3][0])* self.pixel_size))
@@ -671,7 +671,7 @@ class Fenetre(Thread):
                 self.gauss_mean2.set('Mean: {:.3f} +\- {:.3f}'.format(y[1]* self.pixel_size, np.sqrt(y[3][1])* self.pixel_size))
                 self.gauss_stddev2.set('Standard Deviation: {:.3f} +\- {:.3f} µm'.format(y[2]* self.pixel_size, np.sqrt(y[3][2])* self.pixel_size))
             if self.choix_fig == 2 :
-                self.fig_XY, g, p= self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height)
+                self.fig_XY, g, p= self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height, self.pixel_size)
                 self.titre_gauss1.set("Gaussienne ellipse G :")
                 self.titre_gauss2.set("Gaussienne ellipse P :")
                 self.gauss_amp1.set('Amplitude: {:.3f} +\- {:.3f}'.format(g[0]* self.pixel_size, np.sqrt(g[3][0])* self.pixel_size))

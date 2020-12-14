@@ -45,7 +45,8 @@ class Traitement():
         elif choix ==3 :
             thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
             amp=np.max(thres)
-            I=amp/math.exp^(1)**2
+            exponentielle = math.exp(1)
+            I=amp/exponentielle**2
             thres_indice0=thres<I
             thres_indice1=thres>I
             thres[thres_indice0]=0
@@ -182,7 +183,7 @@ class Traitement():
         return crop_img
 
 
-    def trace_profil(self,dpi,width,height):
+    def trace_profil(self,dpi,width,height, pixel_size):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
         t=time.time()
         print('Start plot Gauss x,y')
@@ -202,6 +203,9 @@ class Traitement():
         #on fait une liste de ces valeurs
         x=np.arange(img_x)
         y=np.arange(img_y)
+
+        x_pixel=x * pixel_size
+        y_pixel=y * pixel_size
 
         sigma_x = np.std(Lx)
         sigma_y = np.std(Ly)
@@ -239,19 +243,19 @@ class Traitement():
         fig.set_size_inches(fig_width_i,fig_height_i)
         fig.suptitle("Gaussienne x,y")
         ax = fig.add_subplot(1 ,2 ,1)
-        ax.plot(x,Lx, label="Données bruts")
-        ax.plot(x, x_fitted_model(x), label="Modèle fitté")
-        ax.plot(x, line_X, label="I/e^2")
+        ax.plot(x_pixel, Lx, label="Données bruts")
+        ax.plot(x_pixel, x_fitted_model(x), label="Modèle fitté")
+        ax.plot(x_pixel , line_X, label="I/e^2")
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(y,Ly, label="Données bruts")
-        ax2.plot(y, y_fitted_model(y), label="Modèle fitté")
-        ax2.plot(y, line_Y, label="I/e^2")
+        ax2.plot(y_pixel, Ly, label="Données bruts")
+        ax2.plot(y_pixel, y_fitted_model(y), label="Modèle fitté")
+        ax2.plot(y_pixel, line_Y, label="I/e^2")
         ax.set_title('X profil')
-        ax.set_xlabel ("Largeur de l'image en pixels")
+        ax.set_xlabel ("Largeur de l'image en µm")
         ax.set_ylabel ("Intensité sur 8bits")
         ax.legend(loc='upper right')
         ax2.set_title ('Y profil')
-        ax2.set_xlabel ("Hauteur de l'image en pixels")
+        ax2.set_xlabel ("Hauteur de l'image en µm")
         ax2.set_ylabel ("Intensité sur 8bits")
         ax2.legend(loc='upper right')
 
@@ -438,7 +442,7 @@ class Traitement():
 
         return GP1, GP2, PP1, PP2
    
-    def trace_ellipse(self,dpi,cv_width,cv_height):
+    def trace_ellipse(self,dpi,cv_width,cv_height, pixel_size):
         """ Trace le fit gaussien selon les axes de l'ellipse"""
         t=time.time()
         print("Start plot Gauss ellipse axis")
@@ -475,6 +479,9 @@ class Traitement():
         #On créer la liste qui sert d'axe pour le fit
         G = np.arange(len(Lg))
         P = np.arange(len(Lp))
+
+        G_pixel = G*pixel_size
+        P_pixel = P*pixel_size
 
         #Calcul des sigmas sur les valeurs             
         sigma_g = np.std(Lg)
@@ -515,19 +522,19 @@ class Traitement():
         fig.set_size_inches(fig_width_i,fig_height_i)
         fig.suptitle("Gaussienne ellipse")
         ax = fig.add_subplot(1 ,2 ,1)
-        ax.plot(G,Lg, label="Données bruts")
-        ax.plot(G, G_fitted_model(G), label="Modèle fitté")
-        ax.plot(G, line_G, label="I/e^2")
+        ax.plot(G_pixel, Lg, label="Données bruts")
+        ax.plot(G_pixel, G_fitted_model(G), label="Modèle fitté")
+        ax.plot(G_pixel, line_G, label="I/e^2")
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(P,Lp, label="Données bruts")
-        ax2.plot(P, P_fitted_model(P), label="Modèle fitté")
-        ax2.plot(P, line_P, label="I/e^2")
+        ax2.plot(P_pixel, Lp, label="Données bruts")
+        ax2.plot(P_pixel, P_fitted_model(P), label="Modèle fitté")
+        ax2.plot(P_pixel, line_P, label="I/e^2")
         ax.set_title('Grand axe profil')
-        ax.set_xlabel ('Grand axe en pixel')
+        ax.set_xlabel ('Grand axe en µm')
         ax.set_ylabel ('Intensité sur 8bits')
         ax.legend(loc='upper right')
         ax2.set_title ('Petit axe profil')
-        ax2.set_xlabel ('Petit axe en pixel')
+        ax2.set_xlabel ('Petit axe en µm')
         ax2.set_ylabel ('Intensité sur 8bits')
         ax2.legend(loc='upper right')
 
