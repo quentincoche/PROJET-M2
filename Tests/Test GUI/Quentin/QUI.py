@@ -43,7 +43,6 @@ from tkinter import StringVar, ttk
 from tkinter import IntVar
 from tkinter import DoubleVar
 from tkinter import RIDGE
-from tkinter import tix
 from threading import Thread #Bibliothèque de multithreading pour optimiser le fonctionnement
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
 from pathlib import Path #Bibliothèque de gestion du path
@@ -80,7 +79,7 @@ class Fenetre(Thread):
         self.output_path = Path.cwd()  #Chemin de sortie de la photo
 
         """"Edition de l'interface"""
-        self.window = tix.Tk()  #Réalisation de la fenêtre principale
+        self.window = tk.Tk()  #Réalisation de la fenêtre principale
         self.window.state('zoomed') #Lance le GUI en plein écran
          
         self.window.title("Beam analyzer Python")
@@ -101,10 +100,6 @@ class Fenetre(Thread):
         #Variables d'affichage des figures
         self.choix_fig_XY = IntVar()
         self.choix_fig_XY = 0
-
-        #Variable choix du filtrede binarisation
-        self.choix_filtre = IntVar()
-        self.choix_filtre = 1
 
         #Variables du barycentre de l'image
         self.cX = IntVar()
@@ -247,31 +242,11 @@ class Fenetre(Thread):
             #Choix du filtre
         selection_filtre=tk.Label(self.cmdup,text="Selectionnez Filtre",bg="gray")
         selection_filtre.grid(row=0,column=3,sticky="nse")
-        liste_filtres =["Otsu","Adaptatif","I/e²"]
+        liste_filtres =["Otsu","Adaptatif"]
         self.liste_combobox2 = ttk.Combobox(self.cmdup,values=liste_filtres)
         self.liste_combobox2.grid(row=0,column=4,sticky="nse")
         self.liste_combobox2.current(0)
         self.liste_combobox2.bind("<<ComboboxSelected>>",self.choose_filter)
-        print(self.choix_filtre)
-
-        #### Affichage de l'aide quand on survole les bouttons ####
-
-        b = tk.tix.Balloon(self.window,bg="gray")
-        b.bind_widget(btnquit,balloonmsg='Quitte le logiciel')
-        b.bind_widget(btnalign,balloonmsg='Permet de mémoriser la position du barycentre du faisceau au moment de la pression, puis d\'afficher\n la position en temps réel du barycentre pour aligner un deuxième faisceau avec le premier')
-        b.bind_widget(btnexp,balloonmsg='Réglage automatique du temps d\'exposition après pression du bouton')
-        b.bind_widget(btnvideo,balloonmsg='Lance le traitement d\'image.\
-            \n Permet de détecter plus ou moins grossièrement selon la méthode de\n seuillage la forme de l\'ellipse ainsi que la position du barycentre de limage croppée')
-        b.bind_widget(self.liste_combobox,balloonmsg='Choix du fit à afficher :\n\
-             -Fit XY -> fit gaussien selon les axes X et Y \n\
-             -Fit axes ellipse -> fit gaussien selon les axes de l\'ellipse (grand et petit axes)\n\
-             -Fit gauss2D -> fit gaussien sur les deux dimensions \n Appuyer sur le bouton Profils pour afficher les graphes')
-        b.bind_widget(self.liste_combobox2,balloonmsg='Choix de la technique de seuillage du faisceau :\n\
-             -Otsu -> binarisation selon l\'algorithme Otsu \n\
-             -Adaptatif -> \n\
-             -I/e² -> les pixels inférieurs à la valeur de Imax/e² sont mis à zero ')
-        #b.bind_widget(button2, balloonmsg='Self-destruct button',statusmsg='Press this button and it will destroy itself')
-
 
 
     def display(self):
@@ -600,10 +575,7 @@ class Fenetre(Thread):
         if selection =="Otsu":
             self.choix_filtre=1
         if selection =="Adaptatif":
-            self.choix_filtre=2
-        if selection =="I/e²":
-            self.choix_filtre=3
-        
+            self.choix_filtre=0
         return
 
     def plot(self):
@@ -656,7 +628,7 @@ class Fenetre(Thread):
                 self.gauss_stddev1.set('Mean y: {:.3f} +\- {:.3f}'.format(d[2]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
                 self.gauss_amp2.set('Standard Deviation x: {:.3f} +\- {:.3f}'.format(d[3]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
                 self.gauss_mean2.set('Standard Deviation y: {:.3f} +\- {:.3f}'.format(d[4]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
-                self.gauss_stddev2.set('Theta: {}'.format(d[5])*180/np.pi)
+                self.gauss_stddev2.set('Theta: {}'.format(d[5]))
 
         #cadre affichage profils
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
