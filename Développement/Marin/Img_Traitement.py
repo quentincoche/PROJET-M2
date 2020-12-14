@@ -22,7 +22,7 @@ rcParams.update({'figure.autolayout': True})
  
 class Traitement():
 
-    def traitement(self, img, choix=0):
+    def traitement(self, img, choix):
         t=time.time()
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         img_bin=self.binarisation(gray, choix)
@@ -33,18 +33,20 @@ class Traitement():
         print("Temps de traitement de l'image : ", temps)
         return img100, ellipse, cX, cY, choix_fig
 
-    def binarisation(self,img, choix):
+    def binarisation(self, img, choix):
         """ Filtrage de l'image et binarisation de celle-ci"""
         kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
+        thres=img
         if choix==1:
-            thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
-            ret3,otsu = cv2.threshold(thres,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
+            gauss = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
+            ret3,otsu = cv2.threshold(gauss,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         elif choix ==2 :
             thres= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 3) 
         elif choix ==3 :
             thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
             amp=np.max(thres)
-            I=amp/math.exp^()**2
+            exponentielle = math.exp(1)
+            I=amp/exponentielle**2
             thres_indice0=thres<I
             thres_indice1=thres>I
             thres[thres_indice0]=0
@@ -147,7 +149,7 @@ class Traitement():
         mask.paste(patch, box=(self.X,self.Y)) #Copie le patch sur l'image
         fond = ImageStat.Stat(mask) #les stats de l'image
         av_fond=fond.mean #Sort le fond moyen de l'image plus du patch
-        print(av_fond)
+        print("Moyenne du fond", av_fond)
 
         return av_fond
 
@@ -181,7 +183,7 @@ class Traitement():
         return crop_img
 
 
-    def trace_profil(self,dpi,width,height):
+    def trace_profil(self,dpi,width,height, pixel_size):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
         t=time.time()
         print('Start plot Gauss x,y')
@@ -201,6 +203,9 @@ class Traitement():
         #on fait une liste de ces valeurs
         x=np.arange(img_x)
         y=np.arange(img_y)
+
+        x_pixel=x * pixel_size
+        y_pixel=y * pixel_size
 
         sigma_x = np.std(Lx)
         sigma_y = np.std(Ly)
@@ -227,8 +232,8 @@ class Traitement():
         fig_width_i = width / dpi
         fig_height_i = height / dpi
 
-        Ie_X = np.max(Lx)/math.exp()**2
-        Ie_Y = np.max(Ly)/math.exp()**2
+        Ie_X = np.max(Lx)/math.exp(1)**2
+        Ie_Y = np.max(Ly)/math.exp(1)**2
 
         line_X=np.linspace(Ie_X, Ie_X, len(Lx))
         line_Y=np.linspace(Ie_Y, Ie_Y, len(Ly))
@@ -238,19 +243,19 @@ class Traitement():
         fig.set_size_inches(fig_width_i,fig_height_i)
         fig.suptitle("Gaussienne x,y")
         ax = fig.add_subplot(1 ,2 ,1)
-        ax.plot(x,Lx, label="Données bruts")
-        ax.plot(x, x_fitted_model(x), label="Modèle fitté")
-        ax.plot(x, line_X, label="I/e^2")
+        ax.plot(x_pixel, Lx, label="Données bruts")
+        ax.plot(x_pixel, x_fitted_model(x), label="Modèle fitté")
+        ax.plot(x_pixel , line_X, label="I/e^2")
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(y,Ly, label="Données bruts")
-        ax2.plot(y, y_fitted_model(y), label="Modèle fitté")
-        ax2.plot(y, line_Y, label="I/e^2")
+        ax2.plot(y_pixel, Ly, label="Données bruts")
+        ax2.plot(y_pixel, y_fitted_model(y), label="Modèle fitté")
+        ax2.plot(y_pixel, line_Y, label="I/e^2")
         ax.set_title('X profil')
-        ax.set_xlabel ("Largeur de l'image en pixels")
+        ax.set_xlabel ("Largeur de l'image en µm")
         ax.set_ylabel ("Intensité sur 8bits")
         ax.legend(loc='upper right')
         ax2.set_title ('Y profil')
-        ax2.set_xlabel ("Hauteur de l'image en pixels")
+        ax2.set_xlabel ("Hauteur de l'image en µm")
         ax2.set_ylabel ("Intensité sur 8bits")
         ax2.legend(loc='upper right')
 
@@ -265,6 +270,34 @@ class Traitement():
         t=time.time()
         print("start plot Gauss 2D")
         img=self.crop_img # on récupère l'image
+
+        Lg, Lp= [],[]
+        ang_ell=self.ellipse[2]
+
+        #on récupère les points des axes de la fonction précédente
+        GP1, GP2, PP1, PP2=self.points_ellipse()
+
+        #on récupère les valeurs des pixels selon la ligne qui relie les pixels trouvés précedemment
+        Gr, Gc=line(GP1[0], GP1[1], GP2[0], GP2[1])
+        Pr, Pc=line(PP1[0], PP1[1], PP2[0], PP2[1])
+
+        #Création des listes d'intensités de l'image en fonction de l'orientation de l'ellipse
+        if 45 <= ang_ell <135:
+            for y in range (len(Pr)-1) :
+                Lp=np.append(Lp, img[Pr[y], Pc[y]])
+            for i in range (len(Gr)-1) :
+                Lg=np.append(Lg, img[Gr[i], len(Gc)-2-i])
+                
+        else :
+            for y in range (len(Pr)-1) :
+                Lp=np.append(Lp, img[Pr[y], Pc[y]])
+            for i in range (len(Gr)-1) :
+                Lg=np.append(Lg, img[Gr[i], Gc[i]])
+
+        #Calcul des sigmas sur les valeurs             
+        sigma_g = np.std(Lg)
+        sigma_p = np.std(Lp) 
+
         
         fitter = modeling.fitting.LevMarLSQFitter()
 
@@ -273,7 +306,7 @@ class Traitement():
         
         amp=np.max(img)
 
-        w = modeling.models.Gaussian2D(amp, x0, y0, self.ellipse[1][1]/4, self.ellipse[1][0]/4,math.pi/180*self.ellipse[2]-0.5*math.pi)
+        w = modeling.models.Gaussian2D(amp, x0, y0, sigma_g, sigma_p,math.pi/180*ang_ell-0.5*math.pi)
         #print(w)
 
         yi, xi = np.indices(img.shape)
@@ -409,7 +442,7 @@ class Traitement():
 
         return GP1, GP2, PP1, PP2
    
-    def trace_ellipse(self,dpi,cv_width,cv_height):
+    def trace_ellipse(self,dpi,cv_width,cv_height, pixel_size):
         """ Trace le fit gaussien selon les axes de l'ellipse"""
         t=time.time()
         print("Start plot Gauss ellipse axis")
@@ -447,6 +480,9 @@ class Traitement():
         G = np.arange(len(Lg))
         P = np.arange(len(Lp))
 
+        G_pixel = G*pixel_size
+        P_pixel = P*pixel_size
+
         #Calcul des sigmas sur les valeurs             
         sigma_g = np.std(Lg)
         sigma_p = np.std(Lp) 
@@ -474,8 +510,8 @@ class Traitement():
         fig_width_i = cv_width / dpi
         fig_height_i = cv_height / dpi
 
-        Ie_G = np.max(Lg)/math.exp()**2
-        Ie_P = np.max(Lp)/math.exp()**2
+        Ie_G = np.max(Lg)/math.exp(1)**2
+        Ie_P = np.max(Lp)/math.exp(1)**2
 
         line_G=np.linspace(Ie_G, Ie_G, len(Lg))
         line_P=np.linspace(Ie_P, Ie_P, len(Lp))
@@ -486,19 +522,19 @@ class Traitement():
         fig.set_size_inches(fig_width_i,fig_height_i)
         fig.suptitle("Gaussienne ellipse")
         ax = fig.add_subplot(1 ,2 ,1)
-        ax.plot(G,Lg, label="Données bruts")
-        ax.plot(G, G_fitted_model(G), label="Modèle fitté")
-        ax.plot(G, line_G, label="I/e^2")
+        ax.plot(G_pixel, Lg, label="Données bruts")
+        ax.plot(G_pixel, G_fitted_model(G), label="Modèle fitté")
+        ax.plot(G_pixel, line_G, label="I/e^2")
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(P,Lp, label="Données bruts")
-        ax2.plot(P, P_fitted_model(P), label="Modèle fitté")
-        ax2.plot(P, line_P, label="I/e^2")
+        ax2.plot(P_pixel, Lp, label="Données bruts")
+        ax2.plot(P_pixel, P_fitted_model(P), label="Modèle fitté")
+        ax2.plot(P_pixel, line_P, label="I/e^2")
         ax.set_title('Grand axe profil')
-        ax.set_xlabel ('Grand axe en pixel')
+        ax.set_xlabel ('Grand axe en µm')
         ax.set_ylabel ('Intensité sur 8bits')
         ax.legend(loc='upper right')
         ax2.set_title ('Petit axe profil')
-        ax2.set_xlabel ('Petit axe en pixel')
+        ax2.set_xlabel ('Petit axe en µm')
         ax2.set_ylabel ('Intensité sur 8bits')
         ax2.legend(loc='upper right')
 
