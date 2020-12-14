@@ -100,6 +100,10 @@ class Fenetre(Thread):
         self.choix_fig_XY = IntVar()
         self.choix_fig_XY = 0
 
+        #Variable choix du filtrede binarisation
+        self.choix_filtre = IntVar()
+        self.choix_filtre = 1
+
         #Variables du barycentre de l'image
         self.cX = IntVar()
         self.cY = IntVar()
@@ -251,7 +255,7 @@ class Fenetre(Thread):
             #Choix du filtre
         selection_filtre=tk.Label(self.cmdup,text="Selectionnez Filtre",bg="gray")
         selection_filtre.grid(row=0,column=3,sticky="nse")
-        liste_filtres =["Otsu","Adaptatif"]
+        liste_filtres =["Otsu","Adaptatif","I/e²"]
         self.liste_combobox2 = ttk.Combobox(self.cmdup,values=liste_filtres)
         self.liste_combobox2.grid(row=0,column=4,sticky="nse")
         self.liste_combobox2.current(0)
@@ -592,9 +596,9 @@ class Fenetre(Thread):
         #pour affichage des parametres
         self.cX.set(self.baryX * self.pixel_size)
         self.cY.set(self.baryY * self.pixel_size) 
-        self.ellipse_width.set(int(self.ellipse[1][1]) * self.pixel_size) #3 lignes pour extraction des données du tuple ellipse
-        self.ellipse_height.set(int(self.ellipse[1][0]) * self.pixel_size)
-        self.ellipse_angle.set(int(self.ellipse[2]))
+        self.ellipse_width.set("{:.3f}".format(int(self.ellipse[1][1]) * self.pixel_size)) #3 lignes pour extraction des données du tuple ellipse
+        self.ellipse_height.set("{:.3f}".format(int(self.ellipse[1][0]) * self.pixel_size))
+        self.ellipse_angle.set("{:.3f}".format(int(self.ellipse[2])))
 
         #self.window.after(self.delay, self.affich_traitement)
 
@@ -630,6 +634,8 @@ class Fenetre(Thread):
             self.choix_filtre=1
         if selection =="Adaptatif":
             self.choix_filtre=0
+        if selection =="I/e²":
+            self.choix_filtre=3
         return
 
     def plot(self):
