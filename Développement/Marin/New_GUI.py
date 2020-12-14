@@ -142,6 +142,9 @@ class Fenetre(Thread):
         self.By=0
         self.H=False
 
+        #Variable denoise
+        self.noise=0
+
         #Appel de toutes les fonctions permettant l'affichage de notre programme
         self.display()
         #self.plot()
@@ -261,6 +264,11 @@ class Fenetre(Thread):
         self.liste_combobox2.current(0)
         self.liste_combobox2.bind("<<ComboboxSelected>>",self.choose_filter)
 
+            #Denoise
+        btnNoise = tk.Button(self.cmdup,text="Denoise image", command=self.DeNoise)
+        btnNoise.grid(row=0,column=5,sticky="nsew")
+        return
+
 
     def display(self):
 
@@ -329,7 +337,7 @@ class Fenetre(Thread):
         self.labelg130=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=7,column=0,sticky="nsew")
         self.labelg030=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=9,column=0,sticky="nsew")
         self.labelg040=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=10,column=0,sticky="nsew")
-
+        return
 
 
     def destructor(self):
@@ -337,27 +345,34 @@ class Fenetre(Thread):
         print("[INFO] closing...")
         self.window.quit()
         self.window.destroy() # Ferme la fenêtre
+        return
 
 
     #Fonction définissant l'image à enregistrer   
     def choice0(self):
         self.coch0=1
+        return
     
     def choice1(self):
         self.coch1=1
+        return
  
     def choice2(self):
         self.coch2=1
+        return
 
     def choice3(self):
         self.coch3=1
+        return
  
     def choice4(self):
         self.coch4=1
+        return
 
     def alignement(self):
         """Fonction pour alignement de faisceaux"""
         self.align=True
+        return
     
     def arret_align(self):
         """Fonction d'arrêt de l'alignement"""
@@ -366,20 +381,29 @@ class Fenetre(Thread):
         self.titre_gauss2.set("")
         self.gauss_amp1.set(0)
         self.gauss_amp2.set(0)
+        return
 
     def stop_profil(self):
         """Fonction permettant d'enlever le plots"""
         for widget in self.cadre_plots.winfo_children():
-                widget.destroy()
-                self.titre_gauss1.set("")
-                self.titre_gauss2.set("")
-                self.gauss_1.set(0)
-                self.gauss_2.set(0)
+            widget.destroy()
+            self.titre_gauss1.set("")
+            self.titre_gauss2.set("")
+            self.gauss_1.set(0)
+            self.gauss_2.set(0)
+        return
+            
 
     def hold(self):
         self.H=True
         self.Bx=self.baryX
         self.By=self.baryY
+        return
+
+    def DeNoise(self):
+        self.noise=1
+        return
+
 
 
     #####################
@@ -390,6 +414,7 @@ class Fenetre(Thread):
         """Lance la fonction d'affichage de la preview  dans un thread"""
         self.t1=Thread(target=self.update(), args=(self.window, self.display1, self.Screen_x, self.Screen_y)) #boucle la fonction d'acquisition de la caméra
         self.t1.start()
+        return
 
     
     def update(self):
@@ -484,95 +509,24 @@ class Fenetre(Thread):
 
         #recall the function after a delay
         self.window.after(self.delay, self.update)
-
-       
-
-    def capture(self):
-        """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
-        ts = datetime.datetime.now()
-        try:
-            os.mkdir('Snapshot') #Créer un dossier snapshot pour les images
-        except OSError:
-            pass
-        path=self.output_path.joinpath('Snapshot') #défini le path pour les images
-        #print(path)
-        while True :
-            if self.coch0==1:
-                filename = "preview_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
-                image = Img.fromarray(self.frame)
-                S=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
-                image.save(S)
-                S.close()
-                print("[INFO] saved {}".format(filename))
-            if self.coch1==1:
-                try :
-                    self.photo2 
-                    filename_2 = "treatment_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-                    image2 = Img.fromarray(self.frame2)
-                    S2=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_2, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
-                    image2.save(S2)
-                    S2.close()
-                    print("[INFO] saved {}".format(filename_2))
-                except:
-                    tk.messagebox.showerror("Save Problem", "Problème de traitement")
-                    break
-            if self.coch2==1:
-                if self.choix_fig != 0 :
-                    filename_xy = "plot_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-                    S3=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_xy, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
-                    self.fig_XY.savefig("plot", dpi=1200)
-                    Im=Img.open("plot.png")
-                    im = Im.convert("RGB")
-                    im.save(S3)
-                    S3.close()
-                    print("[INFO] saved {}".format(filename_xy))
-                else:
-                    tk.messagebox.showerror("Save Problem", "Problème de Plots")
-                    break
-            if self.coch3==1:
-                try :
-                    self.photo2
-                    coord = "coordonnées_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-                    S4=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=coord, filetypes = (("Text files","*.txt"),("all files","*.*")))
-                    tup=("Barycentre X = ", str(self.cX.get()), " \u03BCm", "\n", "Barycentre Y = ", str(self.cY.get()), " \u03BCm", "\n\n", "Grand axe ellipse = ", str(self.ellipse_width.get()), " \u03BCm", "\n", "Petit axe ellipse = ", str(self.ellipse_height.get()), " \u03BCm", "\n", "Angle ellipse = ", str(self.ellipse_angle.get()), " °")
-                    file=''.join(tup)
-                    S4.write(file)
-                    S4.close()
-                    print("[INFO] saved {}".format(coord))
-                except:
-                    tk.messagebox.showerror("Save Problem", "Problème de traitement")
-                    break
-            if self.coch4==1:
-                if self.choix_fig == 1 or self.choix_fig ==2 :
-                    plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-                    S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
-                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " µm", "\n", str(self.gauss_mean1.get()), " µm", "\n", str(self.gauss_stddev1.get()), " µm", "\n\n", str(self.titre_gauss2.get()), "\n", str(self.gauss_amp2.get()), " µm", "\n", str(self.gauss_mean2.get()), " µm", "\n", str(self.gauss_stddev2.get()), " µm")
-                    file2=''.join(tup2)
-                    S5.write(file2)
-                    S5.close()
-                    print("[INFO] saved {}".format(plot))
-                if self.choix_fig == 3:
-                    plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-                    S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
-                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " µm", "\n", str(self.gauss_mean1.get()), " µm", "\n", str(self.gauss_stddev1.get()), " µm", "\n", str(self.gauss_amp2.get()), " µm", "\n", str(self.gauss_mean2.get()), " µm", "\n", str(self.gauss_stddev2.get()), " °")
-                    file2=''.join(tup2)
-                    S5.write(file2)
-                    S5.close()
-                    print("[INFO] saved {}".format(plot))
-                else:
-                    tk.messagebox.showerror("Save Problem", "Problème de Plots")
-                    break
-            
-        self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
         
 
     def video_tool(self):
         self.t2 = Thread(target=self.disp_traitement)
         self.t2.start()
+        return
+
 
     def disp_traitement(self):
-        self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame0,self.choix_filtre)
+        if self.noise==1:
+            self.frame= cv2.fastNlMeansDenoising( self.frame , None , 10 , 7 , 21)
+            self.noise=0
+        else :
+            pass
+        self.frame2, self.ellipse, self.baryX, self.baryY, self.choix_fig_XY = self.trmt.traitement(self.frame,self.choix_filtre)
         self.affich_traitement()
+        return
+
     
     def affich_traitement(self):
         #Get display size
@@ -598,8 +552,8 @@ class Fenetre(Thread):
         self.ellipse_width.set("{:.2f}".format(int(self.ellipse[1][1]) * self.pixel_size)) #3 lignes pour extraction des données du tuple ellipse
         self.ellipse_height.set("{:.2f}".format(int(self.ellipse[1][0]) * self.pixel_size))
         self.ellipse_angle.set("{:.2f}".format(int(self.ellipse[2])))
-
-        #self.window.after(self.delay, self.affich_traitement)
+        return
+        
 
     def exp(self):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
@@ -614,6 +568,7 @@ class Fenetre(Thread):
                 pass
         return
 
+
     def choix_figure(self, parameter):
         selection = self.liste_combobox.get()
         #print(selection)
@@ -625,8 +580,8 @@ class Fenetre(Thread):
             self.choix_fig=2
         if selection =="Fit Gaussien 2D":
             self.choix_fig=3
-
         return
+
 
     def choose_filter(self,parameter):
         selection = self.liste_combobox2.get()
@@ -636,8 +591,8 @@ class Fenetre(Thread):
             self.choix_filtre=2
         if selection =="I/e²":
             self.choix_filtre=3
-        
         return
+
 
     def plot(self):
         "choix_fig_XY = 0 quand le traitement d'image n'a pas encore été effectué, et = 1 après le traitement. le graphe apparait après pression du bouton profils"
@@ -699,6 +654,95 @@ class Fenetre(Thread):
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()
         self.cadre_disp_XY.grid(row=1,column=0,sticky="NSEW")
         return self.fig_XY
+
+
+    def capture(self):
+        """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
+        ts = datetime.datetime.now()
+        try:
+            os.mkdir('Snapshot') #Créer un dossier snapshot pour les images
+        except OSError:
+            pass
+        path=self.output_path.joinpath('Save') #défini le path pour les images
+        #print(path)
+        while True :
+
+            if self.coch0==1: #Enregistrement de la preview
+                filename = "preview_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
+                image = Img.fromarray(self.frame) #Création de l'image à partir de l'array
+                #Boîte de dialogue de la sauvegarde
+                S=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                image.save(S) #Sauvegarde
+                S.close() #Fermeture de la boîte de dialogue
+                print("[INFO] saved {}".format(filename))
+
+            if self.coch1==1:#Enregistrement du traitement
+                try :
+                    self.photo2 
+                    filename_2 = "treatment_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    image2 = Img.fromarray(self.frame2)
+                    S2=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_2, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                    image2.save(S2)
+                    S2.close()
+                    print("[INFO] saved {}".format(filename_2))
+                except:
+                    tk.messagebox.showerror("Save Problem", "Problème de traitement")
+                    break
+
+            if self.coch2==1:#Enregistrement des graphs
+                if self.choix_fig != 0 :
+                    filename_xy = "plot_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    S3=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_xy, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                    self.fig_XY.savefig("plot", dpi=1200) #Sauvegarde du plot en 1200dpi
+                    Im=Img.open("plot.png") #Transformation en image
+                    im = Im.convert("RGB") #Convertion vers JPEG
+                    im.save(S3)
+                    S3.close()
+                    print("[INFO] saved {}".format(filename_xy))
+                else:
+                    tk.messagebox.showerror("Save Problem", "Problème de Plots")
+                    break
+
+            if self.coch3==1:#Enregistrement des coordonnées
+                try :
+                    self.photo2
+                    coord = "coordonnées_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    S4=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=coord, filetypes = (("Text files","*.txt"),("all files","*.*")))
+                    #Création d'un tuple à partir des données affichées
+                    tup=("Barycentre X = ", str(self.cX.get()), " \u03BCm", "\n", "Barycentre Y = ", str(self.cY.get()), " \u03BCm", "\n\n", "Grand axe ellipse = ", str(self.ellipse_width.get()), " \u03BCm", "\n", "Petit axe ellipse = ", str(self.ellipse_height.get()), " \u03BCm", "\n", "Angle ellipse = ", str(self.ellipse_angle.get()), " °")
+                    file=''.join(tup)
+                    S4.write(file)
+                    S4.close()
+                    print("[INFO] saved {}".format(coord))
+                except:
+                    tk.messagebox.showerror("Save Problem", "Problème de traitement")
+                    break
+
+            if self.coch4==1:#Enregistrement des données pour les gauss 1D
+                if self.choix_fig == 1 or self.choix_fig ==2 :
+                    plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
+                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " µm", "\n", str(self.gauss_mean1.get()), " µm", "\n", str(self.gauss_stddev1.get()), " µm", "\n\n", str(self.titre_gauss2.get()), "\n", str(self.gauss_amp2.get()), " µm", "\n", str(self.gauss_mean2.get()), " µm", "\n", str(self.gauss_stddev2.get()), " µm")
+                    file2=''.join(tup2)
+                    S5.write(file2)
+                    S5.close()
+                    print("[INFO] saved {}".format(plot))
+
+                if self.choix_fig == 3:#Enregistrement des données pour les gauss 2D
+                    plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
+                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " µm", "\n", str(self.gauss_mean1.get()), " µm", "\n", str(self.gauss_stddev1.get()), " µm", "\n", str(self.gauss_amp2.get()), " µm", "\n", str(self.gauss_mean2.get()), " µm", "\n", str(self.gauss_stddev2.get()), " °")
+                    file2=''.join(tup2)
+                    S5.write(file2)
+                    S5.close()
+                    print("[INFO] saved {}".format(plot))
+
+                else:
+                    tk.messagebox.showerror("Save Problem", "Problème de Plots")
+                    break
+
+        self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
+        return
 
 
 root = Fenetre()
