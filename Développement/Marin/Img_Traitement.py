@@ -22,7 +22,7 @@ rcParams.update({'figure.autolayout': True})
  
 class Traitement():
 
-    def traitement(self, img, choix=0):
+    def traitement(self, img, choix):
         t=time.time()
         gray=cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
         img_bin=self.binarisation(gray, choix)
@@ -33,18 +33,19 @@ class Traitement():
         print("Temps de traitement de l'image : ", temps)
         return img100, ellipse, cX, cY, choix_fig
 
-    def binarisation(self,img, choix):
+    def binarisation(self, img, choix):
         """ Filtrage de l'image et binarisation de celle-ci"""
         kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
+        thres=img
         if choix==1:
-            thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
-            ret3,otsu = cv2.threshold(thres,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
+            gauss = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
+            ret3,otsu = cv2.threshold(gauss,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         elif choix ==2 :
             thres= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 3) 
         elif choix ==3 :
             thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
             amp=np.max(thres)
-            I=amp/math.exp^()**2
+            I=amp/math.exp^(1)**2
             thres_indice0=thres<I
             thres_indice1=thres>I
             thres[thres_indice0]=0
@@ -227,8 +228,8 @@ class Traitement():
         fig_width_i = width / dpi
         fig_height_i = height / dpi
 
-        Ie_X = np.max(Lx)/math.exp()**2
-        Ie_Y = np.max(Ly)/math.exp()**2
+        Ie_X = np.max(Lx)/math.exp(1)**2
+        Ie_Y = np.max(Ly)/math.exp(1)**2
 
         line_X=np.linspace(Ie_X, Ie_X, len(Lx))
         line_Y=np.linspace(Ie_Y, Ie_Y, len(Ly))
@@ -474,8 +475,8 @@ class Traitement():
         fig_width_i = cv_width / dpi
         fig_height_i = cv_height / dpi
 
-        Ie_G = np.max(Lg)/math.exp()**2
-        Ie_P = np.max(Lp)/math.exp()**2
+        Ie_G = np.max(Lg)/math.exp(1)**2
+        Ie_P = np.max(Lp)/math.exp(1)**2
 
         line_G=np.linspace(Ie_G, Ie_G, len(Lg))
         line_P=np.linspace(Ie_P, Ie_P, len(Lp))

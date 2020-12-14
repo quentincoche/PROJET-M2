@@ -407,7 +407,7 @@ class Fenetre(Thread):
                 print("Problem to get an image") #Impossible de récuperer le flux de la caméra
                 tk.messagebox.showerror("Problem to get an image") #Affichage d'un message d'erreur
                 exit()
-
+    
         self.frame=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1) #Convertit l'image en 8bits pour en permettre l'affichage sur tous les écrans
         frame=self.frame
 
@@ -531,7 +531,7 @@ class Fenetre(Thread):
                     self.photo2
                     coord = "coordonnées_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
                     S4=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=coord, filetypes = (("Text files","*.txt"),("all files","*.*")))
-                    tup=("Barycentre X = ", str(self.cX.get()), "\n", "Barycentre Y = ", str(self.cY.get()), "\n\n", "Grand axe ellipse = ", str(self.ellipse_width.get()), "\n", "Petit axe ellipse = ", str(self.ellipse_height.get()), "\n", "Angle ellipse = ", str(self.ellipse_angle.get()))
+                    tup=("Barycentre X = ", str(self.cX.get()), " \u03BCm", "\n", "Barycentre Y = ", str(self.cY.get()), " \u03BCm", "\n\n", "Grand axe ellipse = ", str(self.ellipse_width.get()), " \u03BCm", "\n", "Petit axe ellipse = ", str(self.ellipse_height.get()), " \u03BCm", "\n", "Angle ellipse = ", str(self.ellipse_angle.get()), " °")
                     file=''.join(tup)
                     S4.write(file)
                     S4.close()
@@ -540,10 +540,18 @@ class Fenetre(Thread):
                     tk.messagebox.showerror("Save Problem", "Problème de traitement")
                     break
             if self.coch4==1:
-                if self.choix_fig != 0 :
+                if self.choix_fig == 1 or self.choix_fig ==2 :
                     plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
                     S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
-                    tup2=("Gauss 1 = ", ascii.write(self.gauss_1.get()), "\n", "Gauss 2 = ", ascii.write(self.gauss_2.get()))
+                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " \u03BCm", "\n", str(self.gauss_mean1.get()), " \u03BCm", "\n", str(self.gauss_stddev1.get()), " \u03BCm", "\n\n", str(self.titre_gauss2.get()), "\n", str(self.gauss_amp2.get()), " \u03BCm", "\n", str(self.gauss_mean2.get()), " \u03BCm", "\n", str(self.gauss_stddev2.get()), " \u03BCm")
+                    file2=''.join(tup2)
+                    S5.write(file2)
+                    S5.close()
+                    print("[INFO] saved {}".format(plot))
+                if self.choix_fig == 3:
+                    plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                    S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
+                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " \u03BCm", "\n", str(self.gauss_mean1.get()), " \u03BCm", "\n", str(self.gauss_stddev1.get()), " \u03BCm", "\n", str(self.gauss_amp2.get()), " \u03BCm", "\n", str(self.gauss_mean2.get()), " \u03BCm", "\n", str(self.gauss_stddev2.get()), " °")
                     file2=''.join(tup2)
                     S5.write(file2)
                     S5.close()
@@ -674,7 +682,7 @@ class Fenetre(Thread):
                 self.gauss_stddev1.set('Mean y: {:.3f} +\- {:.3f}'.format(d[2]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
                 self.gauss_amp2.set('Standard Deviation x: {:.3f} +\- {:.3f}'.format(d[3]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
                 self.gauss_mean2.set('Standard Deviation y: {:.3f} +\- {:.3f}'.format(d[4]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
-                self.gauss_stddev2.set('Theta: {:.3f}'.format(d[5])* self.pixel_size)
+                self.gauss_stddev2.set('Theta: {:.3f}'.format(d[5]))
 
         #cadre affichage profils
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
