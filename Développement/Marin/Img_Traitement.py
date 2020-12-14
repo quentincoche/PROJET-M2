@@ -36,12 +36,20 @@ class Traitement():
     def binarisation(self,img, choix):
         """ Filtrage de l'image et binarisation de celle-ci"""
         kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
-        otsu = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
         if choix==1:
-            ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
-        else :
-            otsu= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 3) 
-        img_cls = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
+            thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
+            ret3,otsu = cv2.threshold(thres,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
+        elif choix ==2 :
+            thres= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 3) 
+        elif choix ==3 :
+            thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
+            amp=np.max(thres)
+            I=amp/math.exp^()**2
+            thres_indice0=thres<I
+            thres_indice1=thres>I
+            thres[thres_indice0]=0
+            thres[thres_indice1]=255
+        img_cls = cv2.morphologyEx(thres, cv2.MORPH_CLOSE, kernel)
         img_opn = cv2.morphologyEx(img_cls, cv2.MORPH_OPEN, kernel)
         #frame= cv2.fastNlMeansDenoising( img , None , 10 , 7 , 21)
         #plt.imshow(img_opn)
@@ -49,10 +57,10 @@ class Traitement():
         return img_opn
 
 
-    def calcul_traitement(self,frame, otsu):
+    def calcul_traitement(self,frame, thres):
         """ Amélioration de l'image par binarisation d'Otsu """    
         # find contours in the binary image
-        contours, hierarchy = cv2.findContours(otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(thres,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
         #print(contours)
 
@@ -219,8 +227,8 @@ class Traitement():
         fig_width_i = width / dpi
         fig_height_i = height / dpi
 
-        Ie_X = np.max(Lx)/math.exp(2)
-        Ie_Y = np.max(Ly)/math.exp(2)
+        Ie_X = np.max(Lx)/math.exp()**2
+        Ie_Y = np.max(Ly)/math.exp()**2
 
         line_X=np.linspace(Ie_X, Ie_X, len(Lx))
         line_Y=np.linspace(Ie_Y, Ie_Y, len(Ly))
@@ -466,8 +474,8 @@ class Traitement():
         fig_width_i = cv_width / dpi
         fig_height_i = cv_height / dpi
 
-        Ie_G = np.max(Lg)/math.exp(2)
-        Ie_P = np.max(Lp)/math.exp(2)
+        Ie_G = np.max(Lg)/math.exp()**2
+        Ie_P = np.max(Lp)/math.exp()**2
 
         line_G=np.linspace(Ie_G, Ie_G, len(Lg))
         line_P=np.linspace(Ie_P, Ie_P, len(Lp))
