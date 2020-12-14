@@ -694,7 +694,7 @@ class Fenetre(Thread):
         """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
         ts = datetime.datetime.now()
         try:
-            os.mkdir('Snapshot') #Créer un dossier snapshot pour les images
+            os.mkdir('Save') #Créer un dossier snapshot pour les images
         except OSError:
             pass
         path=self.output_path.joinpath('Save') #défini le path pour les images

@@ -1,7 +1,0 @@
-Gaussienne 2D :
-Amplitude: 500.345 +\- 5.302 µm
-Mean x: 1827.377 +\- 2.124 µm
-Mean y: 2339.342 +\- 2.124 µm
-Standard Deviation x: 259.655 +\- 2.740 µm
-Standard Deviation y: 199.025 +\- 2.740 µm
-Theta: -1.429 °
