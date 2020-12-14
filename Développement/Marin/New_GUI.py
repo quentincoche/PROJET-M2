@@ -252,14 +252,14 @@ class Fenetre(Thread):
         labelSpace5=tk.Label(self.cmdup, text='  ', bg='gray')
         labelSpace5.grid(row=0,column=2)
 
-            #Choix du filtre
+           #Choix du filtre
         selection_filtre=tk.Label(self.cmdup,text="Selectionnez Filtre",bg="gray")
         selection_filtre.grid(row=0,column=3,sticky="nse")
         liste_filtres =["Otsu","Adaptatif","I/e²"]
         self.liste_combobox2 = ttk.Combobox(self.cmdup,values=liste_filtres)
         self.liste_combobox2.grid(row=0,column=4,sticky="nse")
         self.liste_combobox2.current(0)
-        self.liste_combobox2.bind("<<ComboboxSelected>>",self.choix_filtre)
+        self.liste_combobox2.bind("<<ComboboxSelected>>",self.choose_filter)
 
 
     def display(self):
@@ -625,16 +625,18 @@ class Fenetre(Thread):
             self.choix_fig=2
         if selection =="Fit Gaussien 2D":
             self.choix_fig=3
+
         return
 
-    def choix_filtre(self,parameter):
+    def choose_filter(self,parameter):
         selection = self.liste_combobox2.get()
         if selection =="Otsu":
             self.choix_filtre=1
         if selection =="Adaptatif":
-            self.choix_filtre=0
+            self.choix_filtre=2
         if selection =="I/e²":
             self.choix_filtre=3
+        
         return
 
     def plot(self):

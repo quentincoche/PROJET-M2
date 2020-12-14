@@ -148,7 +148,7 @@ class Traitement():
         mask.paste(patch, box=(self.X,self.Y)) #Copie le patch sur l'image
         fond = ImageStat.Stat(mask) #les stats de l'image
         av_fond=fond.mean #Sort le fond moyen de l'image plus du patch
-        print(av_fond)
+        print("Moyenne du fond", av_fond)
 
         return av_fond
 
