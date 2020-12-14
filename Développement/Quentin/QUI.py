@@ -246,7 +246,7 @@ class Fenetre(Thread):
         self.liste_combobox2 = ttk.Combobox(self.cmdup,values=liste_filtres)
         self.liste_combobox2.grid(row=0,column=4,sticky="nse")
         self.liste_combobox2.current(0)
-        self.liste_combobox2.bind("<<ComboboxSelected>>",self.choix_filtre)
+        self.liste_combobox2.bind("<<ComboboxSelected>>",self.choose_filter)
 
 
     def display(self):
@@ -301,18 +301,18 @@ class Fenetre(Thread):
         #Paramètre gaussienne
         self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1,font=(None,self.fsize)).grid(row=5,column=0,sticky="nsew")
         self.labelg11 = tk.Label(self.results,textvariable=self.gauss_amp1,font=(None,self.fsize)).grid(row=5,column=1,sticky="nsew")
-        self.labelg111 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=5,column=2,sticky="nsew")
+        self.labelg111 = tk.Label(self.results,text=" ",font=(None,self.fsize)).grid(row=5,column=2,sticky="nsew")
         self.labelg12 = tk.Label(self.results,textvariable=self.gauss_mean1,font=(None,self.fsize)).grid(row=6,column=1,sticky="nsew")
         self.labelg121 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=6,column=2,sticky="nsew")
         self.labelg13 = tk.Label(self.results,textvariable=self.gauss_stddev1,font=(None,self.fsize)).grid(row=7,column=1,sticky="nsew")
         self.labelg131 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=7,column=2,sticky="nsew")
         self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2,font=(None,self.fsize)).grid(row=8,column=0,sticky="nsew")
         self.labelg02 = tk.Label(self.results,textvariable=self.gauss_amp2,font=(None,self.fsize)).grid(row=8,column=1,sticky="nsew")
-        self.labelg021 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=8,column=2,sticky="nsew")
+        self.labelg021 = tk.Label(self.results,text=" ",font=(None,self.fsize)).grid(row=8,column=2,sticky="nsew")
         self.labelg03 = tk.Label(self.results,textvariable=self.gauss_mean2,font=(None,self.fsize)).grid(row=9,column=1,sticky="nsew")
         self.labelg031 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=9,column=2,sticky="nsew")
         self.labelg04 = tk.Label(self.results,textvariable=self.gauss_stddev2,font=(None,self.fsize)).grid(row=10,column=1,sticky="nsew")
-        self.labelg041 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=10,column=2,sticky="nsew")
+        self.labelg041 = tk.Label(self.results,text="°",font=(None,self.fsize)).grid(row=10,column=2,sticky="nsew")
 
 
 
@@ -570,7 +570,7 @@ class Fenetre(Thread):
 
         return
 
-    def choix_filtre(self,parameter):
+    def choose_filter(self,parameter):
         selection = self.liste_combobox2.get()
         if selection =="Otsu":
             self.choix_filtre=1
@@ -603,32 +603,32 @@ class Fenetre(Thread):
                 self.fig_XY, x, y = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height)
                 self.titre_gauss1.set("Gaussienne X :")
                 self.titre_gauss2.set("Gaussienne Y :")
-                self.gauss_amp1.set('Amplitude: {} +\- {}'.format(x[0]* self.pixel_size, np.sqrt(x[3][0])* self.pixel_size))
-                self.gauss_mean1.set('Mean: {} +\- {}'.format(x[1]* self.pixel_size, np.sqrt(x[3][1])* self.pixel_size))
-                self.gauss_stddev1.set('Standard Deviation: {} +\- {}'.format(x[2]* self.pixel_size, np.sqrt(x[3][2])* self.pixel_size))
-                self.gauss_amp2.set('Amplitude: {} +\- {}'.format(y[0]* self.pixel_size, np.sqrt(y[3][0])* self.pixel_size))
-                self.gauss_mean2.set('Mean: {} +\- {}'.format(y[1]* self.pixel_size, np.sqrt(y[3][1])* self.pixel_size))
-                self.gauss_stddev2.set('Standard Deviation: {} +\- {}'.format(y[2]* self.pixel_size, np.sqrt(y[3][2])* self.pixel_size))
+                self.gauss_amp1.set('Amplitude: {:.3f} +\- {:.3f}'.format(x[0]* self.pixel_size, np.sqrt(x[3][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean: {:.3f} +\- {:.3f}'.format(x[1]* self.pixel_size, np.sqrt(x[3][1])* self.pixel_size))
+                self.gauss_stddev1.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(x[2]* self.pixel_size, np.sqrt(x[3][2])* self.pixel_size))
+                self.gauss_amp2.set('Amplitude: {:.3f} +\- {:.3f}'.format(y[0]* self.pixel_size, np.sqrt(y[3][0])* self.pixel_size))
+                self.gauss_mean2.set('Mean: {:.3f} +\- {:.3f}'.format(y[1]* self.pixel_size, np.sqrt(y[3][1])* self.pixel_size))
+                self.gauss_stddev2.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(y[2]* self.pixel_size, np.sqrt(y[3][2])* self.pixel_size))
             if self.choix_fig == 2 :
                 self.fig_XY, g, p= self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height)
                 self.titre_gauss1.set("Gaussienne ellipse G :")
                 self.titre_gauss2.set("Gaussienne ellipse P :")
-                self.gauss_amp1.set('Amplitude: {} +\- {}'.format(g[0]* self.pixel_size, np.sqrt(g[3][0])* self.pixel_size))
-                self.gauss_mean1.set('Mean: {} +\- {}'.format(g[1]* self.pixel_size, np.sqrt(g[3][1])* self.pixel_size))
-                self.gauss_stddev1.set('Standard Deviation: {} +\- {}'.format(g[2]* self.pixel_size, np.sqrt(g[3][2])* self.pixel_size))
-                self.gauss_amp2.set('Amplitude: {} +\- {}'.format(p[0]* self.pixel_size, np.sqrt(p[3][0])* self.pixel_size))
-                self.gauss_mean2.set('Mean: {} +\- {}'.format(p[1]* self.pixel_size, np.sqrt(p[3][1])* self.pixel_size))
-                self.gauss_stddev2.set('Standard Deviation: {} +\- {}'.format(p[2]* self.pixel_size, np.sqrt(p[3][2])* self.pixel_size))
+                self.gauss_amp1.set('Amplitude: {:.3f} +\- {:.3f}'.format(g[0]* self.pixel_size, np.sqrt(g[3][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean: {:.3f} +\- {:.3f}'.format(g[1]* self.pixel_size, np.sqrt(g[3][1])* self.pixel_size))
+                self.gauss_stddev1.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(g[2]* self.pixel_size, np.sqrt(g[3][2])* self.pixel_size))
+                self.gauss_amp2.set('Amplitude: {:.3f} +\- {:.3f}'.format(p[0]* self.pixel_size, np.sqrt(p[3][0])* self.pixel_size))
+                self.gauss_mean2.set('Mean: {:.3f} +\- {:.3f}'.format(p[1]* self.pixel_size, np.sqrt(p[3][1])* self.pixel_size))
+                self.gauss_stddev2.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(p[2]* self.pixel_size, np.sqrt(p[3][2])* self.pixel_size))
             if self.choix_fig == 3 :
                 self.fig_XY, d = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
                 self.titre_gauss1.set("Gaussienne 2D :")
                 self.titre_gauss2.set("")
-                self.gauss_amp1.set('Amplitude: {} +\- {}'.format(d[0]* self.pixel_size, np.sqrt(d[6][0])* self.pixel_size))
-                self.gauss_mean1.set('Mean x: {} +\- {}'.format(d[1]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
-                self.gauss_stddev1.set('Mean y: {} +\- {}'.format(d[2]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
-                self.gauss_amp2.set('Standard Deviation x: {} +\- {}'.format(d[3]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
-                self.gauss_mean2.set('Standard Deviation y: {} +\- {}'.format(d[4]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
-                self.gauss_stddev2.set('Theta: {}'.format(d[5])* self.pixel_size)
+                self.gauss_amp1.set('Amplitude: {:.3f} +\- {:.3f}'.format(d[0]* self.pixel_size, np.sqrt(d[6][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean x: {:.3f} +\- {:.3f}'.format(d[1]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
+                self.gauss_stddev1.set('Mean y: {:.3f} +\- {:.3f}'.format(d[2]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
+                self.gauss_amp2.set('Standard Deviation x: {:.3f} +\- {:.3f}'.format(d[3]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
+                self.gauss_mean2.set('Standard Deviation y: {:.3f} +\- {:.3f}'.format(d[4]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
+                self.gauss_stddev2.set('Theta: {}'.format(d[5])*180/np.pi)
 
         #cadre affichage profils
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
