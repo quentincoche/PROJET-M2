@@ -17,6 +17,7 @@ Il accuse certaines fonctionnalités :
     * Détection du Barycentre d'intensité de l'image  
     * Détection de l'ellipticité du faisceau principal  
     * Détection et crop du ROI de l'image  
+    * Suppression du fond moyen
   * Affichage des graphiques des gaussiennes associés :  
     * Selon x et y  
     * Selon le Grand axe et Petit axe de l'ellipse  
