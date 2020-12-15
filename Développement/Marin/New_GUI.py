@@ -303,10 +303,6 @@ class Fenetre(Thread):
             -Plot -> Le graphique en bas de l\'écran en .jpeg\n\
             -Coordonnées -> fichier texte des coordonnées du faisceaux (barycentre, ellipse) en .txt\n\
             -Données Plot -> Paramètres associés à la gaussiennes du graph en .txt')
-        b.bind_widget(self.display1, balloonmsg='Affichage de la preview en temps réel')
-        b.bind_widget(self.display2, balloonmsg='Affichage de l\'image traité')
-        b.bind_widget(self.cadre_plots, balloonmsg='Affichage du graphique')
-        b.bind_widget(self.results, balloonmsg='Affichage des résultats du faisceau et du graph')
         #b.bind_widget(button2, balloonmsg='Self-destruct button',statusmsg='Press this button and it will destroy itself')
         return
 

@@ -105,6 +105,10 @@ class Traitement():
         frame_indices = frame-av_frame < 0
         frame[frame_indices]=0
 
+        gauss = cv2.GaussianBlur(frame,(5,5),0)
+        By, Bx = np.unravel_index(np.argmax(gauss), gauss.shape)
+
+
         #Remet l'image en RGB pour y dessiner toutes les formes par la suite et en couleur
         frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
 
@@ -122,7 +126,7 @@ class Traitement():
         crop_img = self.crop(frame)
         self.crop_img = self.crop(self.img) 
 
-        return crop_img, self.ellipse, self.cX, self.cY
+        return crop_img, self.ellipse, Bx, By
 
   
     def fond (self, frame):
@@ -206,9 +210,6 @@ class Traitement():
         x=np.arange(img_x)
         y=np.arange(img_y)
 
-        x_pixel=x * pixel_size
-        y_pixel=y * pixel_size
-
         sigma_x = np.std(Lx)
         sigma_y = np.std(Ly)
 
@@ -224,6 +225,11 @@ class Traitement():
         x_fitted_model = fitterx(modelx, x, Lx)
         y_fitted_model = fittery(modely, y, Ly)
 
+        pxw=img_x*pixel_size/2
+        pyw=img_y*pixel_size/2
+        x_pixel=np.arange(start=-pxw, stop=pxw, step=pixel_size)
+        y_pixel=np.arange(start=-pyw, stop=pyw, step=pixel_size)
+
         #Création de la liste de données
         cov_diag_x = np.diag(fitterx.fit_info['param_cov'])
         cov_diag_y = np.diag(fittery.fit_info['param_cov'])
@@ -234,13 +240,29 @@ class Traitement():
         fig_width_i = width / dpi
         fig_height_i = height / dpi
 
-        #Ligne de hauteur I/e^2
-        Ie_X = np.max(Lx)/math.exp(1)**2
-        Ie_Y = np.max(Ly)/math.exp(1)**2
+        a=x_fitted_model.amplitude.value/np.exp(1)**2
+        b=y_fitted_model.amplitude.value/np.exp(1)**2
+        xlist, ylist=[],[]
+        temp=0
+        itx, ity=0,0
+        for n in x_fitted_model(x):
+            temp=abs(n-a)
+            itx+=1
+            if temp<1 and n not in xlist:
+                xlist.append(x[itx])
+        x1=-pxw+xlist[0]*pixel_size
+        x2=-pxw+xlist[-1]*pixel_size
+        dx=x2-x1
 
-        line_X=np.linspace(Ie_X, Ie_X, len(Lx))
-        line_Y=np.linspace(Ie_Y, Ie_Y, len(Ly))
-
+        for m in y_fitted_model(y):
+            temp=abs(m-b)
+            ity+=1
+            if temp<1 and m not in ylist:
+                ylist.append(y[ity])
+        y1=-pyw+ylist[0]*pixel_size
+        y2=-pyw+ylist[-1]*pixel_size
+        dy=y2-y1
+        
         #On affiche les courbes résultantes
         fig = Figure()
         fig.set_size_inches(fig_width_i,fig_height_i)
@@ -249,20 +271,22 @@ class Traitement():
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x_pixel, Lx, label="Données bruts")
         ax.plot(x_pixel, x_fitted_model(x), label="Modèle fitté")
-        ax.plot(x_pixel , line_X, label="I/e^2")
+        ax.annotate('', (x1, a), (x2, a), arrowprops=dict(arrowstyle="<->"))
+        ax.text(0, 1.1*a, 'I/e²=%.0f %s' % (dx, 'µm'), va='bottom', ha='center')
 
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(y_pixel, Ly, label="Données bruts")
+        ax2.plot(y_pixel, Ly, label="Données brutes")
         ax2.plot(y_pixel, y_fitted_model(y), label="Modèle fitté")
-        ax2.plot(y_pixel, line_Y, label="I/e^2")
+        ax2.annotate('', (y1, b), (y2, b), arrowprops=dict(arrowstyle="<->"))
+        ax2.text(0, 1.1*b, 'I/e²=%.0f %s' % (dy, 'µm'), va='bottom', ha='center')
 
         ax.set_title('X profil')
-        ax.set_xlabel ("Largeur de l'image en µm")
+        ax.set_xlabel ("Distance du centre en µm")
         ax.set_ylabel ("Intensité sur 8bits")
         ax.legend(loc='upper right')
 
         ax2.set_title ('Y profil')
-        ax2.set_xlabel ("Hauteur de l'image en µm")
+        ax2.set_xlabel ("Distance du centre en µm")
         ax2.set_ylabel ("Intensité sur 8bits")
         ax2.legend(loc='upper right')
 
@@ -488,9 +512,6 @@ class Traitement():
         G = np.arange(len(Lg))
         P = np.arange(len(Lp))
 
-        G_pixel = G*pixel_size
-        P_pixel = P*pixel_size
-
         #Calcul des sigmas sur les valeurs             
         sigma_g = np.std(Lg)
         sigma_p = np.std(Lp) 
@@ -508,6 +529,11 @@ class Traitement():
         G_fitted_model = fitterG(modelG, G, Lg)
         P_fitted_model = fitterP(modelP, P, Lp)
 
+        pgw=len(Lg)*pixel_size/2
+        ppw=len(Lp)*pixel_size/2
+        G_pixel=np.arange(start=-pgw, stop=pgw, step=pixel_size)
+        P_pixel=np.arange(start=-ppw, stop=ppw, step=pixel_size)
+
         #Créations des données à afficher
         cov_diag_g = np.diag(fitterG.fit_info['param_cov'])
         cov_diag_p = np.diag(fitterP.fit_info['param_cov'])
@@ -518,12 +544,28 @@ class Traitement():
         fig_width_i = cv_width / dpi
         fig_height_i = cv_height / dpi
 
-        #Ligne de hauteur I/e^2
-        Ie_G = np.max(Lg)/math.exp(1)**2
-        Ie_P = np.max(Lp)/math.exp(1)**2
+        a=G_fitted_model.amplitude.value/np.exp(1)**2
+        b=P_fitted_model.amplitude.value/np.exp(1)**2
+        glist, plist=[],[]
+        temp=0
+        itg,itp=0,0
+        for n in G_fitted_model(G):
+            temp=abs(n-a)
+            itg+=1
+            if temp<1 and n not in glist:
+                glist.append(G[itg])
+        g1=-pgw+glist[0]*pixel_size
+        g2=-pgw+glist[-1]*pixel_size
+        dg=g2-g1
 
-        line_G=np.linspace(Ie_G, Ie_G, len(Lg))
-        line_P=np.linspace(Ie_P, Ie_P, len(Lp))
+        for m in P_fitted_model(P):
+            temp=abs(m-b)
+            itp+=1
+            if temp<1 and m not in plist:
+                plist.append(P[itp])
+        p1=-ppw+plist[0]*pixel_size
+        p2=-ppw+plist[-1]*pixel_size
+        dp=p2-p1
 
 
         #affichage des résultats
@@ -532,14 +574,16 @@ class Traitement():
         fig.suptitle("Gaussienne ellipse")
 
         ax = fig.add_subplot(1 ,2 ,1)
-        ax.plot(G_pixel, Lg, label="Données bruts")
+        ax.plot(G_pixel, Lg, label="Données brutes")
         ax.plot(G_pixel, G_fitted_model(G), label="Modèle fitté")
-        ax.plot(G_pixel, line_G, label="I/e^2")
+        ax.annotate('', (g1, a), (g2, a), arrowprops=dict(arrowstyle="<->"))
+        ax.text(0, 1.1*a, 'I/e²=%.0f %s' % (dg, 'µm'), va='bottom', ha='center')
 
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(P_pixel, Lp, label="Données bruts")
+        ax2.plot(P_pixel, Lp, label="Données brutes")
         ax2.plot(P_pixel, P_fitted_model(P), label="Modèle fitté")
-        ax2.plot(P_pixel, line_P, label="I/e^2")
+        ax2.annotate('', (p1, a), (p2, a), arrowprops=dict(arrowstyle="<->"))
+        ax2.text(0, 1.1*a, 'I/e²=%.0f %s' % (dp, 'µm'), va='bottom', ha='center')
 
         ax.set_title('Grand axe profil')
         ax.set_xlabel ('Grand axe en µm')
