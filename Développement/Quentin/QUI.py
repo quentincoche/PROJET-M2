@@ -237,9 +237,16 @@ class Fenetre(Thread):
         labelSpace=tk.Label(self.cmdleft, text='', bg='gray')
         labelSpace.grid(row=11,column=0)
 
+        btn_M2 = tk.Button(self.cmdleft, text='Fit M²',)
+        btn_M2.grid(row=12, column=0, sticky="nsew")
+
+
+        labelSpace=tk.Label(self.cmdleft, text='', bg='gray')
+        labelSpace.grid(row=13,column=0)
+
             #Bouton quitter
         btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=12,column=0,sticky="nsew")
+        btnquit.grid(row=14,column=0,sticky="nsew")
 
         #COMMANDES SUPERIEURES
             #Taille de la zone de commande
@@ -359,6 +366,10 @@ class Fenetre(Thread):
         self.labelg030=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=9,column=0,sticky="nsew")
         self.labelg040=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=10,column=0,sticky="nsew")
         return
+
+    def Msquare(self):
+
+        
 
 
     def destructor(self):
