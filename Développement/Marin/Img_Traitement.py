@@ -119,8 +119,8 @@ class Traitement():
         thresh = cv2.ellipse(frame,self.ellipse,(0,255,0),1)
 
         #Dessine les formes sur l'image
-        cv2.line(frame, (self.cX, 0), (self.cX, frame.shape[0]), (255, 0, 0), 1)#Dessine une croix sur le barycentre de l'image
-        cv2.line(frame, (0, self.cY), (frame.shape[1], self.cY), (255, 0, 0), 1)
+        cv2.line(frame, (Bx, 0), (Bx, frame.shape[0]), (255, 0, 0), 1)#Dessine une croix sur le barycentre de l'image
+        cv2.line(frame, (0, By), (frame.shape[1], By), (255, 0, 0), 1)
 
         #coupe l'image sur le ROI
         crop_img = self.crop(frame)

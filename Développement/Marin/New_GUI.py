@@ -123,6 +123,9 @@ class Fenetre(Thread):
         self.gauss_amp2=StringVar()
         self.gauss_mean2=StringVar()
         self.gauss_stddev2=StringVar()
+        self.gauss_unit=StringVar()
+        self.gauss_unit.set("\u03BCm")
+
 
         #Valeurs d'initialisation des tailles de l'affichage
         self.Screen_x = 1500
@@ -370,6 +373,7 @@ class Fenetre(Thread):
         self.labelg03 = tk.Label(self.results,textvariable=self.gauss_mean2,font=(None,self.fsize)).grid(row=9,column=1,sticky="nsew")
         self.labelg031 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=9,column=2,sticky="nsew")
         self.labelg04 = tk.Label(self.results,textvariable=self.gauss_stddev2,font=(None,self.fsize)).grid(row=10,column=1,sticky="nsew")
+        self.labelg041 = tk.Label(self.results,textvariable=self.gauss_unit,font=(None,self.fsize)).grid(row=10,column=2,sticky="nsew")
         self.labelg120=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=6,column=0,sticky="nsew")
         self.labelg130=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=7,column=0,sticky="nsew")
         self.labelg030=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=9,column=0,sticky="nsew")
@@ -661,7 +665,8 @@ class Fenetre(Thread):
                 self.gauss_stddev1.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(x[2]* self.pixel_size, np.sqrt(x[3][2])* self.pixel_size))
                 self.gauss_amp2.set('Amplitude: {:.3f} +\- {:.3f}'.format(y[0]* self.pixel_size, np.sqrt(y[3][0])* self.pixel_size))
                 self.gauss_mean2.set('Mean: {:.3f} +\- {:.3f}'.format(y[1]* self.pixel_size, np.sqrt(y[3][1])* self.pixel_size))
-                self.gauss_stddev2.set('Standard Deviation: {:.3f} +\- {:.3f} µm'.format(y[2]* self.pixel_size, np.sqrt(y[3][2])* self.pixel_size))
+                self.gauss_stddev2.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(y[2]* self.pixel_size, np.sqrt(y[3][2])* self.pixel_size))
+                self.gauss_unit.set("\u03BCm")
             if self.choix_fig == 2 :
                 self.fig_XY, g, p= self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height, self.pixel_size)
                 self.titre_gauss1.set("Gaussienne ellipse G :")
@@ -671,7 +676,8 @@ class Fenetre(Thread):
                 self.gauss_stddev1.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(g[2]* self.pixel_size, np.sqrt(g[3][2])* self.pixel_size))
                 self.gauss_amp2.set('Amplitude: {:.3f} +\- {:.3f}'.format(p[0]* self.pixel_size, np.sqrt(p[3][0])* self.pixel_size))
                 self.gauss_mean2.set('Mean: {:.3f} +\- {:.3f}'.format(p[1]* self.pixel_size, np.sqrt(p[3][1])* self.pixel_size))
-                self.gauss_stddev2.set('Standard Deviation: {:.3f} +\- {:.3f} µm'.format(p[2]* self.pixel_size, np.sqrt(p[3][2])* self.pixel_size))
+                self.gauss_stddev2.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(p[2]* self.pixel_size, np.sqrt(p[3][2])* self.pixel_size))
+                self.gauss_unit.set("\u03BCm")
             if self.choix_fig == 3 :
                 self.fig_XY, d = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
                 self.titre_gauss1.set("Gaussienne 2D :")
@@ -681,7 +687,8 @@ class Fenetre(Thread):
                 self.gauss_stddev1.set('Mean y: {:.3f} +\- {:.3f}'.format(d[2]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
                 self.gauss_amp2.set('Standard Deviation x: {:.3f} +\- {:.3f}'.format(d[3]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
                 self.gauss_mean2.set('Standard Deviation y: {:.3f} +\- {:.3f}'.format(d[4]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
-                self.gauss_stddev2.set('Theta: {:.3f} °'.format(d[5]))
+                self.gauss_stddev2.set('Theta: {:.3f}'.format(d[5]))
+                self.gauss_unit.set("°")
 
         #cadre affichage profils
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
