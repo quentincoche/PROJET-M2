@@ -312,7 +312,7 @@ class Traitement():
         temps=time.time()-t
         print("Temps plot Gauss x,y : ", temps)
 
-        return fig, data_x, data_y
+        return fig, data_x, data_y, dx, dy
 
    
     def plot_2D(self,dpi,width,height):
@@ -620,7 +620,7 @@ class Traitement():
         temps = time.time()-t
         print("Temps plot Gauss ellipse : ", temps)
 
-        return fig, data_g, data_p
+        return fig, data_g, data_p, dg, dp
 
 
     def divergence(self, lamb):

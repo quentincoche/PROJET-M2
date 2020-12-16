@@ -39,11 +39,10 @@ import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import tkinter as tk #Bibliothèque d'affichage graphique
 from tkinter import filedialog
-from tkinter import StringVar, ttk
-from tkinter import IntVar
-from tkinter import DoubleVar
+from tkinter import StringVar, ttk, DoubleVar, IntVar, BooleanVar
 from tkinter import RIDGE
 from tkinter import tix
+from tkinter.filedialog import asksaveasfile
 from threading import Thread #Bibliothèque de multithreading pour optimiser le fonctionnement
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
 from pathlib import Path #Bibliothèque de gestion du path
@@ -120,13 +119,24 @@ class Fenetre(Thread):
         self.gauss_amp1=StringVar()
         self.gauss_mean1=StringVar()
         self.gauss_stddev1=StringVar()
+        self.gauss_Ie1=StringVar()
         self.gauss_amp2=StringVar()
         self.gauss_mean2=StringVar()
         self.gauss_stddev2=StringVar()
+        self.gauss_Ie2=StringVar()
         self.gauss_unit=StringVar()
+        self.gauss_unit2=StringVar()
         self.gauss_amp2_name=StringVar()
         self.gauss_unit.set("\u03BCm")
 
+
+        #Variable sélection enregistrement
+        self.coch0=BooleanVar() 
+        self.coch1=BooleanVar() 
+        self.coch2=BooleanVar() 
+        self.coch3=BooleanVar() 
+        self.coch4=BooleanVar() 
+        
 
         #Valeurs d'initialisation des tailles de l'affichage
         self.Screen_x = 1500
@@ -185,17 +195,15 @@ class Fenetre(Thread):
         label_snap=tk.Label(self.FrameCapture, text="Choix enregistrement :")
         label_snap.grid(row=0, column=0, sticky="nsew")
 
-        self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
-
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Preview", command=self.choice0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Preview", var=self.coch0)
         bouton_selection.grid(row=1, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Traité", command=self.choice1)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Traité", var=self.coch1)
         bouton_selection.grid(row=2, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot", command=self.choice2)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot", var=self.coch2)
         bouton_selection.grid(row=3, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Coordonnées", command=self.choice3)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Coordonnées", var=self.coch3)
         bouton_selection.grid(row=4, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Données Plot", command=self.choice4)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Données Plot", var=self.coch4)
         bouton_selection.grid(row=5, column=0)
 
 
@@ -368,17 +376,23 @@ class Fenetre(Thread):
         self.labelg121 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=6,column=2,sticky="nsew")
         self.labelg13 = tk.Label(self.results,textvariable=self.gauss_stddev1,font=(None,self.fsize)).grid(row=7,column=1,sticky="nsew")
         self.labelg131 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=7,column=2,sticky="nsew")
-        self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2,font=(None,self.fsize)).grid(row=8,column=0,sticky="nsew")
-        self.labelg02 = tk.Label(self.results,textvariable=self.gauss_amp2,font=(None,self.fsize)).grid(row=8,column=1,sticky="nsew")
-        self.labelg021 = tk.Label(self.results,textvariable=self.gauss_amp2_name,font=(None,self.fsize)).grid(row=8,column=2,sticky="nsew")
-        self.labelg03 = tk.Label(self.results,textvariable=self.gauss_mean2,font=(None,self.fsize)).grid(row=9,column=1,sticky="nsew")
-        self.labelg031 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=9,column=2,sticky="nsew")
-        self.labelg04 = tk.Label(self.results,textvariable=self.gauss_stddev2,font=(None,self.fsize)).grid(row=10,column=1,sticky="nsew")
-        self.labelg041 = tk.Label(self.results,textvariable=self.gauss_unit,font=(None,self.fsize)).grid(row=10,column=2,sticky="nsew")
+        self.labelg140 = tk.Label(self.results,text="",font=(None,self.fsize)).grid(row=8,column=0,sticky="nsew")
+        self.labelg141 = tk.Label(self.results,textvariable=self.gauss_Ie1,font=(None,self.fsize)).grid(row=8,column=1,sticky="nsew")
+        self.labelg142 = tk.Label(self.results,textvariable=self.gauss_unit2,font=(None,self.fsize)).grid(row=8,column=2,sticky="nsew")
+        self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2,font=(None,self.fsize)).grid(row=9,column=0,sticky="nsew")
+        self.labelg02 = tk.Label(self.results,textvariable=self.gauss_amp2,font=(None,self.fsize)).grid(row=9,column=1,sticky="nsew")
+        self.labelg021 = tk.Label(self.results,textvariable=self.gauss_amp2_name,font=(None,self.fsize)).grid(row=9,column=2,sticky="nsew")
+        self.labelg03 = tk.Label(self.results,textvariable=self.gauss_mean2,font=(None,self.fsize)).grid(row=10,column=1,sticky="nsew")
+        self.labelg031 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=10,column=2,sticky="nsew")
+        self.labelg04 = tk.Label(self.results,textvariable=self.gauss_stddev2,font=(None,self.fsize)).grid(row=11,column=1,sticky="nsew")
+        self.labelg041 = tk.Label(self.results,textvariable=self.gauss_unit,font=(None,self.fsize)).grid(row=11,column=2,sticky="nsew")
+        self.labelg05 = tk.Label(self.results,text="",font=(None,self.fsize)).grid(row=12,column=0,sticky="nsew")
+        self.labelg051 = tk.Label(self.results,textvariable=self.gauss_Ie2,font=(None,self.fsize)).grid(row=12,column=1,sticky="nsew")
+        self.labelg052 = tk.Label(self.results,textvariable=self.gauss_unit2,font=(None,self.fsize)).grid(row=12,column=2,sticky="nsew")
         self.labelg120=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=6,column=0,sticky="nsew")
         self.labelg130=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=7,column=0,sticky="nsew")
-        self.labelg030=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=9,column=0,sticky="nsew")
-        self.labelg040=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=10,column=0,sticky="nsew")
+        self.labelg030=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=10,column=0,sticky="nsew")
+        self.labelg040=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=11,column=0,sticky="nsew")
         return
 
 
@@ -389,27 +403,6 @@ class Fenetre(Thread):
         self.window.destroy() # Ferme la fenêtre
         return
 
-
-    #Fonction définissant l'image à enregistrer   
-    def choice0(self):
-        self.coch0=1
-        return
-    
-    def choice1(self):
-        self.coch1=1
-        return
- 
-    def choice2(self):
-        self.coch2=1
-        return
-
-    def choice3(self):
-        self.coch3=1
-        return
- 
-    def choice4(self):
-        self.coch4=1
-        return
 
     def alignement(self):
         """Fonction pour alignement de faisceaux"""
@@ -431,8 +424,6 @@ class Fenetre(Thread):
             widget.destroy()
             self.titre_gauss1.set("")
             self.titre_gauss2.set("")
-            self.gauss_1.set(0)
-            self.gauss_2.set(0)
         return
             
 
@@ -511,9 +502,13 @@ class Fenetre(Thread):
                     self.gauss_amp1.set('')
                     self.gauss_mean1.set('')
                     self.gauss_stddev1.set('')
+                    self.gauss_Ie1.set('')
                     self.gauss_amp2.set('')
                     self.gauss_mean2.set('')
                     self.gauss_stddev2.set('')
+                    self.gauss_Ie2.set('')
+                    self.gauss_unit.set("")
+                    self.gauss_unit2.set("")
 
                     self.gauss_amp1.set("{:.1f}".format(xc * self.pixel_size))
                     self.gauss_amp2.set("{:.1f}".format(yc * self.pixel_size))
@@ -656,28 +651,34 @@ class Fenetre(Thread):
             self.fig_height = self.cadre_plots.winfo_height()
                 
             if self.choix_fig == 1 :
-                self.fig_XY, x, y = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height, self.pixel_size)
+                self.fig_XY, x, y, Iex, Iey = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height, self.pixel_size)
                 self.titre_gauss1.set("Gaussienne X :")
                 self.titre_gauss2.set("Gaussienne Y :")
                 self.gauss_amp1.set('Amplitude: {:.1f} +\- {:.1f}'.format(x[0], np.sqrt(x[3][0])* self.pixel_size))
                 self.gauss_mean1.set('Mean: {:.1f} +\- {:.1f}'.format(x[1]* self.pixel_size, np.sqrt(x[3][1])* self.pixel_size))
                 self.gauss_stddev1.set('Standard Deviation: {:.1f} +\- {:.1f}'.format(x[2]* self.pixel_size, np.sqrt(x[3][2])* self.pixel_size))
+                self.gauss_Ie1.set('I/e² : {:.1f}'.format(Iex))
                 self.gauss_amp2.set('Amplitude: {:.1f} +\- {:.1f}'.format(y[0], np.sqrt(y[3][0])* self.pixel_size))
                 self.gauss_mean2.set('Mean: {:.1f} +\- {:.1f}'.format(y[1]* self.pixel_size, np.sqrt(y[3][1])* self.pixel_size))
+                self.gauss_Ie2.set('I/e² : {:.1f}'.format(Iey))
                 self.gauss_stddev2.set('Standard Deviation: {:.1f} +\- {:.1f}'.format(y[2]* self.pixel_size, np.sqrt(y[3][2])* self.pixel_size))
                 self.gauss_unit.set("\u03BCm")
+                self.gauss_unit2.set("\u03BCm")
                 self.gauss_amp2_name.set('')
             if self.choix_fig == 2 :
-                self.fig_XY, g, p= self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height, self.pixel_size)
+                self.fig_XY, g, p, Ieg, Iep= self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height, self.pixel_size)
                 self.titre_gauss1.set("Gaussienne ellipse G :")
                 self.titre_gauss2.set("Gaussienne ellipse P :")
                 self.gauss_amp1.set('Amplitude: {:.1f} +\- {:.1f}'.format(g[0], np.sqrt(g[3][0])* self.pixel_size))
                 self.gauss_mean1.set('Mean: {:.1f} +\- {:.1f}'.format(g[1]* self.pixel_size, np.sqrt(g[3][1])* self.pixel_size))
                 self.gauss_stddev1.set('Standard Deviation: {:.1f} +\- {:.1f}'.format(g[2]* self.pixel_size, np.sqrt(g[3][2])* self.pixel_size))
+                self.gauss_Ie1.set('I/e² : {:.1f}'.format(Ieg))
                 self.gauss_amp2.set('Amplitude: {:.1f} +\- {:.1f}'.format(p[0], np.sqrt(p[3][0])* self.pixel_size))
                 self.gauss_mean2.set('Mean: {:.1f} +\- {:.1f}'.format(p[1]* self.pixel_size, np.sqrt(p[3][1])* self.pixel_size))
                 self.gauss_stddev2.set('Standard Deviation: {:.1f} +\- {:.1f}'.format(p[2]* self.pixel_size, np.sqrt(p[3][2])* self.pixel_size))
+                self.gauss_Ie2.set('I/e² : {:.1f}'.format(Iep))
                 self.gauss_unit.set("\u03BCm")
+                self.gauss_unit2.set("\u03BCm")
                 self.gauss_amp2_name.set('')
             if self.choix_fig == 3 :
                 self.fig_XY, d = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
@@ -686,10 +687,13 @@ class Fenetre(Thread):
                 self.gauss_amp1.set('Amplitude: {:.1f} +\- {:.1f}'.format(d[0], np.sqrt(d[6][0])* self.pixel_size))
                 self.gauss_mean1.set('Mean x: {:.1f} +\- {:.1f}'.format(d[1]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
                 self.gauss_stddev1.set('Mean y: {:.1f} +\- {:.1f}'.format(d[2]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
+                self.gauss_Ie1.set("")
                 self.gauss_amp2.set('Standard Deviation x: {:.1f} +\- {:.1f}'.format(d[3]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
                 self.gauss_mean2.set('Standard Deviation y: {:.1f} +\- {:.1f}'.format(d[4]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
                 self.gauss_stddev2.set('Theta: {:.1f}'.format(d[5]))
+                self.gauss_Ie2.set("")
                 self.gauss_unit.set("°")
+                self.gauss_unit2.set("")
                 self.gauss_amp2_name.set("\u03BCm")
 
         #cadre affichage profils
@@ -713,81 +717,90 @@ class Fenetre(Thread):
         #print(path)
         while True :
 
-            if self.coch0==1: #Enregistrement de la preview
+            if self.coch0.get()==True: #Enregistrement de la preview
+                self.coch0.set(False)
                 filename = "preview_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))  # Construction du nom
                 image = Img.fromarray(self.frame) #Création de l'image à partir de l'array
                 #Boîte de dialogue de la sauvegarde
-                S=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                S=asksaveasfile(mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
                 image.save(S) #Sauvegarde
                 S.close() #Fermeture de la boîte de dialogue
                 print("[INFO] saved {}".format(filename))
 
-            if self.coch1==1:#Enregistrement du traitement
+            if self.coch1.get()==True:#Enregistrement du traitement
+                self.coch1.set(False)
                 try :
                     self.photo2 
                     filename_2 = "treatment_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
                     image2 = Img.fromarray(self.frame2)
-                    S2=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_2, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                    S2=asksaveasfile(mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_2, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
                     image2.save(S2)
                     S2.close()
                     print("[INFO] saved {}".format(filename_2))
                 except:
                     tk.messagebox.showerror("Save Problem", "Problème de traitement")
-                    break
+                    continue
 
-            if self.coch2==1:#Enregistrement des graphs
+            if self.coch2.get()==True:#Enregistrement des graphs
+                self.coch2.set(False)
                 if self.choix_fig != 0 :
                     filename_xy = "plot_{}.jpg".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-                    S3=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_xy, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
+                    S3=asksaveasfile(mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".jpg", initialfile=filename_xy, filetypes = (("JPEG files","*.jpg"),("all files","*.*")))
                     self.fig_XY.savefig("plot", dpi=1200) #Sauvegarde du plot en 1200dpi
                     Im=Img.open("plot.png") #Transformation en image
                     im = Im.convert("RGB") #Convertion vers JPEG
                     im.save(S3)
                     S3.close()
                     print("[INFO] saved {}".format(filename_xy))
+                    continue
                 else:
                     tk.messagebox.showerror("Save Problem", "Problème de Plots")
-                    break
+                    continue
 
-            if self.coch3==1:#Enregistrement des coordonnées
+            if self.coch3.get()==True:#Enregistrement des coordonnées
+                self.coch3.set(False)
                 try :
                     self.photo2
                     coord = "coordonnées_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-                    S4=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=coord, filetypes = (("Text files","*.txt"),("all files","*.*")))
+                    S4=asksaveasfile(mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=coord, filetypes = (("Text files","*.txt"),("all files","*.*")))
                     #Création d'un tuple à partir des données affichées
-                    tup=("Barycentre X = ", str(self.cX.get()), " \u03BCm", "\n", "Barycentre Y = ", str(self.cY.get()), " \u03BCm", "\n\n", "Grand axe ellipse = ", str(self.ellipse_width.get()), " \u03BCm", "\n", "Petit axe ellipse = ", str(self.ellipse_height.get()), " \u03BCm", "\n", "Angle ellipse = ", str(self.ellipse_angle.get()), " °")
+                    tup=("Barycentre X = ", str(self.cX.get()), " µm", "\n", "Barycentre Y = ", str(self.cY.get()), " µm", "\n\n", "Grand axe ellipse = ", str(self.ellipse_width.get()), " µm", "\n", "Petit axe ellipse = ", str(self.ellipse_height.get()), " µm", "\n", "Angle ellipse = ", str(self.ellipse_angle.get()), " °")
                     file=''.join(tup)
                     S4.write(file)
                     S4.close()
                     print("[INFO] saved {}".format(coord))
+                    continue
                 except:
                     tk.messagebox.showerror("Save Problem", "Problème de traitement")
-                    break
+                    continue
 
-            if self.coch4==1:#Enregistrement des données pour les gauss 1D
-                if self.choix_fig == 1 or self.choix_fig ==2 :
-                    plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-                    S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
-                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " µm", "\n", str(self.gauss_mean1.get()), " µm", "\n", str(self.gauss_stddev1.get()), " µm", "\n\n", str(self.titre_gauss2.get()), "\n", str(self.gauss_amp2.get()), " µm", "\n", str(self.gauss_mean2.get()), " µm", "\n", str(self.gauss_stddev2.get()), " µm")
-                    file2=''.join(tup2)
-                    S5.write(file2)
-                    S5.close()
-                    print("[INFO] saved {}".format(plot))
+            if self.coch4.get()==True:#Enregistrement des données pour les gauss 1D
+                self.coch4.set(False)
+                try :
+                    if self.choix_fig == 1 or self.choix_fig ==2 :
+                        plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                        S5=asksaveasfile(mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
+                        tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), "\n", str(self.gauss_mean1.get()), " µm", "\n", str(self.gauss_stddev1.get()), " µm", "\n", str(self.gauss_Ie1.get()), " µm", "\n\n", str(self.titre_gauss2.get()), "\n", str(self.gauss_amp2.get()), "\n", str(self.gauss_mean2.get()), " µm", "\n", str(self.gauss_stddev2.get()), " µm", "\n", str(self.gauss_Ie2.get()), " µm")
+                        file2=''.join(tup2)
+                        S5.write(file2)
+                        S5.close()
+                        print("[INFO] saved {}".format(plot))
+                        continue
 
-                if self.choix_fig == 3:#Enregistrement des données pour les gauss 2D
-                    plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
-                    S5=filedialog.asksaveasfile (mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
-                    tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " µm", "\n", str(self.gauss_mean1.get()), " µm", "\n", str(self.gauss_stddev1.get()), " µm", "\n", str(self.gauss_amp2.get()), " µm", "\n", str(self.gauss_mean2.get()), " µm", "\n", str(self.gauss_stddev2.get()), " °")
-                    file2=''.join(tup2)
-                    S5.write(file2)
-                    S5.close()
-                    print("[INFO] saved {}".format(plot))
-
-                else:
+                    if self.choix_fig == 3:#Enregistrement des données pour les gauss 2D
+                        plot = "PlotData_{}.txt".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
+                        S5=asksaveasfile(mode='w', title="Enregistrer sous",initialdir = path, defaultextension=".txt", initialfile=plot, filetypes = (("Text files","*.txt"),("all files","*.*")))
+                        tup2=(str(self.titre_gauss1.get()), "\n", str(self.gauss_amp1.get()), " µm", "\n", str(self.gauss_mean1.get()), " µm", "\n", str(self.gauss_stddev1.get()), " µm", "\n", str(self.gauss_amp2.get()), " µm", "\n", str(self.gauss_mean2.get()), " µm", "\n", str(self.gauss_stddev2.get()), " °")
+                        file2=''.join(tup2)
+                        S5.write(file2)
+                        S5.close()
+                        print("[INFO] saved {}".format(plot))
+                        continue
+                except:
                     tk.messagebox.showerror("Save Problem", "Problème de Plots")
-                    break
-
-        self.coch0, self.coch1, self.coch2, self.coch3, self.coch4 =0,0,0,0,0
+                    continue
+                break
+            break
         return
 
     def m2(self):
