@@ -124,6 +124,7 @@ class Fenetre(Thread):
         self.gauss_mean2=StringVar()
         self.gauss_stddev2=StringVar()
         self.gauss_unit=StringVar()
+        self.gauss_amp2_name=StringVar()
         self.gauss_unit.set("\u03BCm")
 
 
@@ -362,14 +363,14 @@ class Fenetre(Thread):
         #Paramètre gaussienne
         self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1,font=(None,self.fsize)).grid(row=5,column=0,sticky="nsew")
         self.labelg11 = tk.Label(self.results,textvariable=self.gauss_amp1,font=(None,self.fsize)).grid(row=5,column=1,sticky="nsew")
-        self.labelg111 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=5,column=2,sticky="nsew")
+        self.labelg111 = tk.Label(self.results,text="",font=(None,self.fsize)).grid(row=5,column=2,sticky="nsew")
         self.labelg12 = tk.Label(self.results,textvariable=self.gauss_mean1,font=(None,self.fsize)).grid(row=6,column=1,sticky="nsew")
         self.labelg121 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=6,column=2,sticky="nsew")
         self.labelg13 = tk.Label(self.results,textvariable=self.gauss_stddev1,font=(None,self.fsize)).grid(row=7,column=1,sticky="nsew")
         self.labelg131 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=7,column=2,sticky="nsew")
         self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2,font=(None,self.fsize)).grid(row=8,column=0,sticky="nsew")
         self.labelg02 = tk.Label(self.results,textvariable=self.gauss_amp2,font=(None,self.fsize)).grid(row=8,column=1,sticky="nsew")
-        self.labelg021 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=8,column=2,sticky="nsew")
+        self.labelg021 = tk.Label(self.results,textvariable=self.gauss_amp2_name,font=(None,self.fsize)).grid(row=8,column=2,sticky="nsew")
         self.labelg03 = tk.Label(self.results,textvariable=self.gauss_mean2,font=(None,self.fsize)).grid(row=9,column=1,sticky="nsew")
         self.labelg031 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=9,column=2,sticky="nsew")
         self.labelg04 = tk.Label(self.results,textvariable=self.gauss_stddev2,font=(None,self.fsize)).grid(row=10,column=1,sticky="nsew")
@@ -493,32 +494,30 @@ class Fenetre(Thread):
                 if test == True:
                     #Dessine une croix sur l'écran pour permettre alignement
                 
-                    cv2.line(frame, (self.baryX, 0), (self.baryX, frame.shape[0]), (255, 0, 0), 3)#Dessine une croix sur le barycentre de l'image
-                    cv2.line(frame, (0, self.baryY), (frame.shape[1], self.baryY), (255, 0, 0), 3)
+                    cv2.line(frame, (self.baryX, 0), (self.baryX, frame.shape[0]), (255, 0, 0), 2)#Dessine une croix sur le barycentre de l'image
+                    cv2.line(frame, (0, self.baryY), (frame.shape[1], self.baryY), (255, 0, 0), 2)
             else:
                 if test==True:
+                    gauss = cv2.GaussianBlur(self.frame,(5,5),0) #Met un flou gaussien
+                    yc, xc = np.unravel_index(np.argmax(gauss), gauss.shape)
+
+                    cv2.line(frame, (xc, 0), (xc, frame.shape[0]), (255, 0, 0), 1)#Dessine une croix sur le barycentre de l'image
+                    cv2.line(frame, (0, yc), (frame.shape[1], yc), (255, 0, 0), 1)
                     cv2.line(frame, (self.Bx, 0), (self.Bx, frame.shape[0]), (255, 0, 0), 3)#Dessine une croix sur le barycentre de l'image
                     cv2.line(frame, (0, self.By), (frame.shape[1], self.By), (255, 0, 0), 3)
-                    otsu = cv2.GaussianBlur(frame,(5,5),0) #Met un flou gaussien
-                    ret3,otsu = cv2.threshold(otsu,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-                    kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
-                    img_cls = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
-                    img_opn = cv2.morphologyEx(img_cls, cv2.MORPH_OPEN, kernel)
-                    contours, hierarchy = cv2.findContours(otsu,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-                    contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
-                    for c in contours:
-                        M = cv2.moments(c)
-                        if M["m00"] != 0:
-                            self.cX = int(M["m10"] / M["m00"])
-                            self.cY = int(M["m01"] / M["m00"])
-                        else:
-                            self.cX, self.cY = 0, 0
-                    cv2.line(frame, (self.cX, 0), (self.cX, frame.shape[0]), (255, 0, 0), 1)#Dessine une croix sur le barycentre de l'image
-                    cv2.line(frame, (0, self.cY), (frame.shape[1], self.cY), (255, 0, 0), 1)
+
                     self.titre_gauss1.set("X aligne :")
                     self.titre_gauss2.set("Y aligne :")
-                    self.gauss_amp1.set(self.cX * self.pixel_size)
-                    self.gauss_amp2.set(self.cY * self.pixel_size)
+                    self.gauss_amp1.set('')
+                    self.gauss_mean1.set('')
+                    self.gauss_stddev1.set('')
+                    self.gauss_amp2.set('')
+                    self.gauss_mean2.set('')
+                    self.gauss_stddev2.set('')
+
+                    self.gauss_amp1.set("{:.1f}".format(xc * self.pixel_size))
+                    self.gauss_amp2.set("{:.1f}".format(yc * self.pixel_size))
+
 
         #Get display size
         self.Screen_x = self.display1.winfo_width()
@@ -588,11 +587,11 @@ class Fenetre(Thread):
         self.display2.create_image(self.Screen2_x/2,self.Screen2_x/(2*ratio),image=self.photo2)
 
         #pour affichage des parametres
-        self.cX.set("{:.2f}".format(self.baryX * self.pixel_size))
-        self.cY.set("{:.2f}".format(self.baryY * self.pixel_size) )
-        self.ellipse_width.set("{:.2f}".format(int(self.ellipse[1][1]) * self.pixel_size)) #3 lignes pour extraction des données du tuple ellipse
-        self.ellipse_height.set("{:.2f}".format(int(self.ellipse[1][0]) * self.pixel_size))
-        self.ellipse_angle.set("{:.2f}".format(int(self.ellipse[2])))
+        self.cX.set("{:.1f}".format(self.baryX * self.pixel_size))
+        self.cY.set("{:.1f}".format(self.baryY * self.pixel_size) )
+        self.ellipse_width.set("{:.1f}".format(int(self.ellipse[1][1]) * self.pixel_size)) #3 lignes pour extraction des données du tuple ellipse
+        self.ellipse_height.set("{:.1f}".format(int(self.ellipse[1][0]) * self.pixel_size))
+        self.ellipse_angle.set("{:.1f}".format(int(self.ellipse[2])))
         return
         
 
@@ -660,35 +659,38 @@ class Fenetre(Thread):
                 self.fig_XY, x, y = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height, self.pixel_size)
                 self.titre_gauss1.set("Gaussienne X :")
                 self.titre_gauss2.set("Gaussienne Y :")
-                self.gauss_amp1.set('Amplitude: {:.3f} +\- {:.3f}'.format(x[0]* self.pixel_size, np.sqrt(x[3][0])* self.pixel_size))
-                self.gauss_mean1.set('Mean: {:.3f} +\- {:.3f}'.format(x[1]* self.pixel_size, np.sqrt(x[3][1])* self.pixel_size))
-                self.gauss_stddev1.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(x[2]* self.pixel_size, np.sqrt(x[3][2])* self.pixel_size))
-                self.gauss_amp2.set('Amplitude: {:.3f} +\- {:.3f}'.format(y[0]* self.pixel_size, np.sqrt(y[3][0])* self.pixel_size))
-                self.gauss_mean2.set('Mean: {:.3f} +\- {:.3f}'.format(y[1]* self.pixel_size, np.sqrt(y[3][1])* self.pixel_size))
-                self.gauss_stddev2.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(y[2]* self.pixel_size, np.sqrt(y[3][2])* self.pixel_size))
+                self.gauss_amp1.set('Amplitude: {:.1f} +\- {:.1f}'.format(x[0], np.sqrt(x[3][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean: {:.1f} +\- {:.1f}'.format(x[1]* self.pixel_size, np.sqrt(x[3][1])* self.pixel_size))
+                self.gauss_stddev1.set('Standard Deviation: {:.1f} +\- {:.1f}'.format(x[2]* self.pixel_size, np.sqrt(x[3][2])* self.pixel_size))
+                self.gauss_amp2.set('Amplitude: {:.1f} +\- {:.1f}'.format(y[0], np.sqrt(y[3][0])* self.pixel_size))
+                self.gauss_mean2.set('Mean: {:.1f} +\- {:.1f}'.format(y[1]* self.pixel_size, np.sqrt(y[3][1])* self.pixel_size))
+                self.gauss_stddev2.set('Standard Deviation: {:.1f} +\- {:.1f}'.format(y[2]* self.pixel_size, np.sqrt(y[3][2])* self.pixel_size))
                 self.gauss_unit.set("\u03BCm")
+                self.gauss_amp2_name.set('')
             if self.choix_fig == 2 :
                 self.fig_XY, g, p= self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height, self.pixel_size)
                 self.titre_gauss1.set("Gaussienne ellipse G :")
                 self.titre_gauss2.set("Gaussienne ellipse P :")
-                self.gauss_amp1.set('Amplitude: {:.3f} +\- {:.3f}'.format(g[0]* self.pixel_size, np.sqrt(g[3][0])* self.pixel_size))
-                self.gauss_mean1.set('Mean: {:.3f} +\- {:.3f}'.format(g[1]* self.pixel_size, np.sqrt(g[3][1])* self.pixel_size))
-                self.gauss_stddev1.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(g[2]* self.pixel_size, np.sqrt(g[3][2])* self.pixel_size))
-                self.gauss_amp2.set('Amplitude: {:.3f} +\- {:.3f}'.format(p[0]* self.pixel_size, np.sqrt(p[3][0])* self.pixel_size))
-                self.gauss_mean2.set('Mean: {:.3f} +\- {:.3f}'.format(p[1]* self.pixel_size, np.sqrt(p[3][1])* self.pixel_size))
-                self.gauss_stddev2.set('Standard Deviation: {:.3f} +\- {:.3f}'.format(p[2]* self.pixel_size, np.sqrt(p[3][2])* self.pixel_size))
+                self.gauss_amp1.set('Amplitude: {:.1f} +\- {:.1f}'.format(g[0], np.sqrt(g[3][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean: {:.1f} +\- {:.1f}'.format(g[1]* self.pixel_size, np.sqrt(g[3][1])* self.pixel_size))
+                self.gauss_stddev1.set('Standard Deviation: {:.1f} +\- {:.1f}'.format(g[2]* self.pixel_size, np.sqrt(g[3][2])* self.pixel_size))
+                self.gauss_amp2.set('Amplitude: {:.1f} +\- {:.1f}'.format(p[0], np.sqrt(p[3][0])* self.pixel_size))
+                self.gauss_mean2.set('Mean: {:.1f} +\- {:.1f}'.format(p[1]* self.pixel_size, np.sqrt(p[3][1])* self.pixel_size))
+                self.gauss_stddev2.set('Standard Deviation: {:.1f} +\- {:.1f}'.format(p[2]* self.pixel_size, np.sqrt(p[3][2])* self.pixel_size))
                 self.gauss_unit.set("\u03BCm")
+                self.gauss_amp2_name.set('')
             if self.choix_fig == 3 :
                 self.fig_XY, d = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
                 self.titre_gauss1.set("Gaussienne 2D :")
                 self.titre_gauss2.set("")
-                self.gauss_amp1.set('Amplitude: {:.3f} +\- {:.3f}'.format(d[0]* self.pixel_size, np.sqrt(d[6][0])* self.pixel_size))
-                self.gauss_mean1.set('Mean x: {:.3f} +\- {:.3f}'.format(d[1]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
-                self.gauss_stddev1.set('Mean y: {:.3f} +\- {:.3f}'.format(d[2]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
-                self.gauss_amp2.set('Standard Deviation x: {:.3f} +\- {:.3f}'.format(d[3]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
-                self.gauss_mean2.set('Standard Deviation y: {:.3f} +\- {:.3f}'.format(d[4]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
-                self.gauss_stddev2.set('Theta: {:.3f}'.format(d[5]))
+                self.gauss_amp1.set('Amplitude: {:.1f} +\- {:.1f}'.format(d[0], np.sqrt(d[6][0])* self.pixel_size))
+                self.gauss_mean1.set('Mean x: {:.1f} +\- {:.1f}'.format(d[1]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
+                self.gauss_stddev1.set('Mean y: {:.1f} +\- {:.1f}'.format(d[2]* self.pixel_size, np.sqrt(d[6][1])* self.pixel_size))
+                self.gauss_amp2.set('Standard Deviation x: {:.1f} +\- {:.1f}'.format(d[3]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
+                self.gauss_mean2.set('Standard Deviation y: {:.1f} +\- {:.1f}'.format(d[4]* self.pixel_size, np.sqrt(d[6][2])* self.pixel_size))
+                self.gauss_stddev2.set('Theta: {:.1f}'.format(d[5]))
                 self.gauss_unit.set("°")
+                self.gauss_amp2_name.set("\u03BCm")
 
         #cadre affichage profils
         self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)

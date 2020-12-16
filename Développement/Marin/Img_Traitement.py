@@ -8,6 +8,7 @@ Created on Wen Oct 14 10:27:21 2020
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import math
+import tkinter as tk #Bibliothèque d'affichage graphique
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from matplotlib.figure import Figure  
 from matplotlib import rcParams
@@ -99,15 +100,28 @@ class Traitement():
 
         av_img=self.img-av_fond #retranche le fond de l'image
         img_indices = self.img-av_img < 0 #Vérifie que l'image sans fond n'a pas pixel inférieur à 0
-        self.img[img_indices]=0 #remplace les pixels inférieur à 0 par 0
+        av_img[img_indices]=0 #remplace les pixels inférieur à 0 par 0
+        self.img=av_img
 
         av_frame=np.array(frame-av_fond).astype(np.uint8) #Retranche le fond de l'image et le mets en 8bits entier pour le transformer en couleur
         frame_indices = frame-av_frame < 0
-        frame[frame_indices]=0
+        av_frame[frame_indices]=0
+        frame=av_frame
 
-        gauss = cv2.GaussianBlur(frame,(5,5),0)
-        By, Bx = np.unravel_index(np.argmax(gauss), gauss.shape)
+        v, h = frame.shape
 
+        # total of all pixels
+        p = np.sum(frame, dtype=np.float)     # float avoids integer overflow
+
+        # sometimes the image is all zeros, just return
+        if p == 0:
+            xc, yc =int(h/2), int(v/2)
+
+        # find the centroid
+        hh = np.arange(h, dtype=np.float)      # float avoids integer overflow
+        vv = np.arange(v, dtype=np.float)      # ditto
+        xc = int(np.sum(np.dot(frame, hh))/p)
+        yc = int(np.sum(np.dot(frame.T, vv))/p)
 
         #Remet l'image en RGB pour y dessiner toutes les formes par la suite et en couleur
         frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
@@ -119,14 +133,14 @@ class Traitement():
         thresh = cv2.ellipse(frame,self.ellipse,(0,255,0),1)
 
         #Dessine les formes sur l'image
-        cv2.line(frame, (Bx, 0), (Bx, frame.shape[0]), (255, 0, 0), 1)#Dessine une croix sur le barycentre de l'image
-        cv2.line(frame, (0, By), (frame.shape[1], By), (255, 0, 0), 1)
+        cv2.line(frame, (xc, 0), (xc, frame.shape[0]), (255, 0, 0), 1)#Dessine une croix sur le barycentre de l'image
+        cv2.line(frame, (0, yc), (frame.shape[1], yc), (255, 0, 0), 1)
 
         #coupe l'image sur le ROI
         crop_img = self.crop(frame)
         self.crop_img = self.crop(self.img) 
 
-        return crop_img, self.ellipse, Bx, By
+        return crop_img, self.ellipse, xc, yc
 
   
     def fond (self, frame):
@@ -242,27 +256,32 @@ class Traitement():
 
         a=x_fitted_model.amplitude.value/np.exp(1)**2
         b=y_fitted_model.amplitude.value/np.exp(1)**2
-        xlist, ylist=[],[]
-        temp=0
-        itx, ity=0,0
-        for n in x_fitted_model(x):
-            temp=abs(n-a)
-            itx+=1
-            if temp<1 and n not in xlist:
-                xlist.append(x[itx])
-        x1=-pxw+xlist[0]*pixel_size
-        x2=-pxw+xlist[-1]*pixel_size
-        dx=x2-x1
 
+        temp, it=[],[]
+        for n in x_fitted_model(x):
+            temp.append(abs(n-a))
+        it=sorted(temp)
+        xl1=temp.index(it[0])
+        xl2=temp.index(it[1])
+        x1=-pxw+xl1*pixel_size
+        x2=-pxw+xl2*pixel_size
+        dx=abs(x2-x1)
+        if dx==0:
+            tk.messagebox.showerror("Fit Problem", "Fit X impossible")
+
+        temp, it=[],[]
         for m in y_fitted_model(y):
-            temp=abs(m-b)
-            ity+=1
-            if temp<1 and m not in ylist:
-                ylist.append(y[ity])
-        y1=-pyw+ylist[0]*pixel_size
-        y2=-pyw+ylist[-1]*pixel_size
-        dy=y2-y1
+            temp.append(abs(m-b))
+        it=sorted(temp)
+        yl1=temp.index(it[0])
+        yl2=temp.index(it[1])
+        y1=-pyw+yl1*pixel_size
+        y2=-pyw+yl2*pixel_size
+        dy=abs(y2-y1)
+        if dy==0:
+            tk.messagebox.showerror("Fit Problem","Fit Y impossible")
         
+
         #On affiche les courbes résultantes
         fig = Figure()
         fig.set_size_inches(fig_width_i,fig_height_i)
@@ -546,27 +565,30 @@ class Traitement():
 
         a=G_fitted_model.amplitude.value/np.exp(1)**2
         b=P_fitted_model.amplitude.value/np.exp(1)**2
-        glist, plist=[],[]
-        temp=0
-        itg,itp=0,0
+
+        temp, it=[],[]
         for n in G_fitted_model(G):
-            temp=abs(n-a)
-            itg+=1
-            if temp<1 and n not in glist:
-                glist.append(G[itg])
-        g1=-pgw+glist[0]*pixel_size
-        g2=-pgw+glist[-1]*pixel_size
-        dg=g2-g1
+            temp.append(abs(n-a))
+        it=sorted(temp)
+        gl1=temp.index(it[0])
+        gl2=temp.index(it[1])
+        g1=-pgw+gl1*pixel_size
+        g2=-pgw+gl2*pixel_size
+        dg=abs(g2-g1)
+        if dg==0:
+            tk.messagebox.showerror("Fit Problem", "Fit grand axe impossible")
 
+        temp, it=[],[]
         for m in P_fitted_model(P):
-            temp=abs(m-b)
-            itp+=1
-            if temp<1 and m not in plist:
-                plist.append(P[itp])
-        p1=-ppw+plist[0]*pixel_size
-        p2=-ppw+plist[-1]*pixel_size
-        dp=p2-p1
-
+            temp.append(abs(m-b))
+        it=sorted(temp)
+        pl1=temp.index(it[0])
+        pl2=temp.index(it[1])
+        p1=-ppw+pl1*pixel_size
+        p2=-ppw+pl2*pixel_size
+        dp=abs(p2-p1)
+        if dp==0:
+            tk.messagebox.showerror("Fit Problem","Fit Y impossible")
 
         #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
@@ -620,7 +642,7 @@ class Traitement():
                 break
             
             area = cv2.contourArea(c)
-            if area <= 1000:  # skip ellipses smaller then 
+            if area <= 10:  # skip ellipses smaller then 
                 continue
             ellipse = cv2.fitEllipse(c)
 
