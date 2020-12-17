@@ -507,7 +507,7 @@ class Fenetre(Thread):
         Measures[5] = float(self.measure6.get())
         Measures[6] = float(self.measure7.get())
         print(Measures)
-        self.abc_fit(self.positions, Measures, self.lambda0)
+        params = self.abc_fit(self.positions, Measures, self.lambda0)
         self.labelSpace = tk.Label(self.central, text='  ', bg='white')
         self.labelSpace.grid(row=10,column=1)
         self.title = tk.Label(self.central,text="Resultats du fit M2 (d0, z0, Theta, M2, zR) : ", bg='gray')
@@ -667,7 +667,6 @@ class Fenetre(Thread):
 
         #recall the function after a delay
         self.window.after(self.delay, self.update)
-
 
     def video_tool(self):
         self.t2 = Thread(target=self.disp_traitement)
