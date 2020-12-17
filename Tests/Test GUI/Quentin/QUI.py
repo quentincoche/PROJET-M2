@@ -808,54 +808,54 @@ class Fenetre(Thread):
         return self.fig_XY
 
     def abc_fit(z, d, lambda0):
-    """
-    Return beam parameters for beam diameter measurements.
+    
+        # Return beam parameters for beam diameter measurements.
 
-    Follows ISO 11146-1 section 9 and uses the standard `polyfit` routine
-    in `numpy` to find the coefficients `a`, `b`, and `c`.
+        # Follows ISO 11146-1 section 9 and uses the standard `polyfit` routine
+        # in `numpy` to find the coefficients `a`, `b`, and `c`.
 
-    d(z)**2 = a + b*z + c*z**2
+        # d(z)**2 = a + b*z + c*z**2
 
-    These coefficients are used to determine the beam parameters using
-    equations 25-29 from ISO 11146-1.
+        # These coefficients are used to determine the beam parameters using
+        # equations 25-29 from ISO 11146-1.
 
-    Unfortunately, standard error propagation fails to accurately determine
-    the standard deviations of these parameters.  Therefore the error calculation
-    lines are commented out and only the beam parameters are returned.
+        # Unfortunately, standard error propagation fails to accurately determine
+        # the standard deviations of these parameters.  Therefore the error calculation
+        # lines are commented out and only the beam parameters are returned.
 
-    Args:
-        z: axial position of beam measurement [m]
-        d: beam diameter [m]
-    Returns:
-        d0: beam waist diameter [m]
-        z0: axial location of beam waist [m]
-        M2: beam propagation parameter [-]
-        Theta: full beam divergence angle [radians]
-        zR: Rayleigh distance [m]
-    """
-    nlfit, _nlpcov = np.polyfit(z, d**2, 2, cov=True)
+        # Args:
+        #     z: axial position of beam measurement [m]
+        #     d: beam diameter [m]
+        # Returns:
+        #     d0: beam waist diameter [m]
+        #     z0: axial location of beam waist [m]
+        #     M2: beam propagation parameter [-]
+        #     Theta: full beam divergence angle [radians]
+        #     zR: Rayleigh distance [m]
+    
+        nlfit, _nlpcov = np.polyfit(z, d**2, 2, cov=True)
 
-    # unpack fitting parameters
-    c, b, a = nlfit
+        # unpack fitting parameters
+        c, b, a = nlfit
 
 
-    z0 = -b/(2*c)
-    Theta = np.sqrt(c)
-    disc = np.sqrt(4*a*c-b*b)/2
-    M2 = np.pi/4/lambda0*disc
-    d0 = disc / np.sqrt(c)
-    zR = disc/c
-    params = [d0, z0, Theta, M2, zR]
+        z0 = -b/(2*c)
+        Theta = np.sqrt(c)
+        disc = np.sqrt(4*a*c-b*b)/2
+        M2 = np.pi/4/lambda0*disc
+        d0 = disc / np.sqrt(c)
+        zR = disc/c
+        params = [d0, z0, Theta, M2, zR]
 
-    # unpack uncertainties in fitting parameters from diagonal of covariance matrix
-    #c_std, b_std, a_std = [np.sqrt(_nlpcov[j, j]) for j in range(nlfit.size)]
-    #z0_std = z0*np.sqrt(b_std**2/b**2 + c_std**2/c**2)
-    #d0_std = np.sqrt((4*c**2*a_std)**2 + (2*b*c*b_std)**2 + (b**2*c_std)**2) / (8*c**2*d0)
-    #Theta_std = c_std/2/np.sqrt(c)
-    #zR_std = np.sqrt(4*c**4*a_std**2 + b**2*c**2*b_std**2 + (b**2-2*a*c)**2*c_std**2)/(4*c**3) / zR
-    #M2_std = np.pi**2 * np.sqrt(4*c**2*a_std**2 + b**2*b_std**2 + 4*a**2*c_std**2)/(64*lambda0**2) / M2
-    #errors = [d0_std, z0_std, M2_std, Theta_std, zR_std]
-    return params
+        # unpack uncertainties in fitting parameters from diagonal of covariance matrix
+        #c_std, b_std, a_std = [np.sqrt(_nlpcov[j, j]) for j in range(nlfit.size)]
+        #z0_std = z0*np.sqrt(b_std**2/b**2 + c_std**2/c**2)
+        #d0_std = np.sqrt((4*c**2*a_std)**2 + (2*b*c*b_std)**2 + (b**2*c_std)**2) / (8*c**2*d0)
+        #Theta_std = c_std/2/np.sqrt(c)
+        #zR_std = np.sqrt(4*c**4*a_std**2 + b**2*c**2*b_std**2 + (b**2-2*a*c)**2*c_std**2)/(4*c**3) / zR
+        #M2_std = np.pi**2 * np.sqrt(4*c**2*a_std**2 + b**2*b_std**2 + 4*a**2*c_std**2)/(64*lambda0**2) / M2
+        #errors = [d0_std, z0_std, M2_std, Theta_std, zR_std]
+        return params
 
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
