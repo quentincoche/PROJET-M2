@@ -370,9 +370,7 @@ class Fenetre(Thread):
     def M2(self):
 
         """Variables à initialiser"""
-        # lambda0 = DoubleVar()
-        # z0 = DoubleVar()
-
+       
 
         """"Edition de l'interface"""
         self.windowM2 = tix.Tk()  #Réalisation de la fenêtre pour le calcul du M²
@@ -385,7 +383,7 @@ class Fenetre(Thread):
         self.cmdM2 = tk.Frame(self.windowM2,padx=5,pady=5,bg="gray",relief = RIDGE)
         self.cmdM2.grid(row=1,column=0,sticky="nsw")
         
-        self.central = tk.Frame(self.windowM2,padx=5,pady=5,bg="gray",relief = RIDGE)
+        self.central = tk.Frame(self.windowM2,padx=5,pady=5,bg="white",relief = RIDGE)
         self.central.grid(row=1,column=1,sticky="nsew")
 
         """Définition des boutons et zones de saisie"""
@@ -394,7 +392,7 @@ class Fenetre(Thread):
 
         self.labellambda = tk.Label(self.cmdM2,text='Longueur d\'onde du faisceau (en nm)',bg="gray")
         self.labellambda.grid(row=1,column=0)
-        self.entrylambda = tk.Entry(self.cmdM2,)
+        self.entrylambda = tk.Entry(self.cmdM2)
         self.entrylambda.grid(row=2,column=0)
 
         self.labelSpace = tk.Label(self.cmdM2, text='  ', bg='gray')
@@ -405,25 +403,19 @@ class Fenetre(Thread):
         self.entryz0 = tk.Entry(self.cmdM2)
         self.entryz0.grid(row=5,column=0)
 
-        lambda0 = self.entrylambda.get()
-        z0 = self.entryz0.get()
+        self.labelSpace = tk.Label(self.cmdM2, text='  ', bg='gray')
+        self.labelSpace.grid(row=6,column=0)
 
-        """Définition des zones d'affichage des z"""
-        self.labelSpace = tk.Label(self.central, text=' z ', bg='gray')
-        self.labelSpace.grid(row=0,column=0)
-        rows=0
-        n=-3.0
-        line=0
-        for line in range(7):
-            rows=rows+1
-            z=z0-10*n
-            widget = tk.Label(self.central,text=z0)
-            widget.grid(row=rows, column=0)
-            line=line+1
+        self.labelw0 = tk.Label(self.cmdM2,text='diamètre waist (en µm)',bg="gray")
+        self.labelw0.grid(row=7,column=0)
+        self.entryw0 = tk.Label(self.cmdM2,text=self.ellipse_width.get())
+        self.entryw0.grid(row=8,column=0)
 
+        self.labelSpace = tk.Label(self.cmdM2, text='  ', bg='gray')
+        self.labelSpace.grid(row=9,column=0)
 
-
-
+        self.membutton= tk.Button(self.cmdM2,text="OK", command=self.memorise)
+        self.membutton.grid(row=10,column=0)
 
         return 
 
@@ -497,6 +489,80 @@ class Fenetre(Thread):
         self.noise=1
         return
 
+    def memorise(self):
+        self.lambda0 = float(self.entrylambda.get())*10**-9
+        self.w0 = float(self.ellipse_width.get())*10**-6
+        self.z0 = float(self.entryz0.get())*10**-3
+        print("lambda = ",self.lambda0,"z0 = ",self.z0)
+        self.mesuresM2()
+        return
+
+    def memoMeasures(self):
+        Measures = np.zeros(7)
+        Measures[0] = float(self.measure1.get())
+        Measures[1] = float(self.measure2.get())
+        Measures[2] = float(self.measure3.get())
+        Measures[3] = float(self.measure4.get())
+        Measures[4] = float(self.measure5.get())
+        Measures[5] = float(self.measure6.get())
+        Measures[6] = float(self.measure7.get())
+        print(Measures)
+        self.abc_fit(self.positions, Measures, self.lambda0)
+        self.labelSpace = tk.Label(self.central, text='  ', bg='white')
+        self.labelSpace.grid(row=10,column=1)
+        self.title = tk.Label(self.central,text="Resultats du fit M2 (d0, z0, Theta, M2, zR) : ", bg='gray')
+        self.title.grid(row=11,column = 1)
+        self.affichparams = tk.Label(self.central,text=params, bg='gray')
+        self.affichparams.grid(row=11,column = 2)
+        return
+
+
+
+    def mesuresM2(self):
+        """Définition des zones d'affichage des z"""
+        self.labeltitlez = tk.Label(self.central, text=' z (en mm) ', bg='gray')
+        self.labeltitlez.grid(row=0,column=0)
+        self.labeltitlew = tk.Label(self.central, text=' w (en µm) ', bg='gray')
+        self.labeltitlew.grid(row=0,column=2)
+
+        self.positions = np.zeros(7)
+        rows=0
+        Zr = np.pi * self.w0*self.w0 / self.lambda0
+        delta = 2* Zr / 7
+        n = -3
+        line=0
+        for line in range(7):
+            rows=rows+1
+            self.positions[line] = self.z0 + n*delta
+            pos = tk.Label(self.central,text=self.positions[line])
+            pos.grid(row=rows, column=0)
+            space = tk.Label(self.central,text =" ")
+            space.grid(row=rows, column=1)
+            
+            line=line+1
+            n=n+1
+        #Zones d'entrées indexées pour ranger les valeurs par la suite
+        self.measure1 = tk.Entry(self.central)
+        self.measure1.grid(row=1, column=2)
+        self.measure2 = tk.Entry(self.central)
+        self.measure2.grid(row=2, column=2)
+        self.measure3 = tk.Entry(self.central)
+        self.measure3.grid(row=3, column=2)
+        self.measure4 = tk.Entry(self.central)
+        self.measure4.grid(row=4, column=2)
+        self.measure5 = tk.Entry(self.central)
+        self.measure5.grid(row=5, column=2)
+        self.measure6 = tk.Entry(self.central)
+        self.measure6.grid(row=6, column=2)
+        self.measure7 = tk.Entry(self.central)
+        self.measure7.grid(row=7, column=2)
+
+        self.labelSpace = tk.Label(self.central, text='  ', bg='white')
+        self.labelSpace.grid(row=8,column=2)
+
+        #Bouton OK
+        self.membutton= tk.Button(self.central,text="OK", command=self.memoMeasures)
+        self.membutton.grid(row=9,column=2)
 
 
     #####################
@@ -740,6 +806,56 @@ class Fenetre(Thread):
         self.cadre_disp_XY = self.disp_XY.get_tk_widget()
         self.cadre_disp_XY.grid(row=1,column=0,sticky="NSEW")
         return self.fig_XY
+
+    def abc_fit(z, d, lambda0):
+    """
+    Return beam parameters for beam diameter measurements.
+
+    Follows ISO 11146-1 section 9 and uses the standard `polyfit` routine
+    in `numpy` to find the coefficients `a`, `b`, and `c`.
+
+    d(z)**2 = a + b*z + c*z**2
+
+    These coefficients are used to determine the beam parameters using
+    equations 25-29 from ISO 11146-1.
+
+    Unfortunately, standard error propagation fails to accurately determine
+    the standard deviations of these parameters.  Therefore the error calculation
+    lines are commented out and only the beam parameters are returned.
+
+    Args:
+        z: axial position of beam measurement [m]
+        d: beam diameter [m]
+    Returns:
+        d0: beam waist diameter [m]
+        z0: axial location of beam waist [m]
+        M2: beam propagation parameter [-]
+        Theta: full beam divergence angle [radians]
+        zR: Rayleigh distance [m]
+    """
+    nlfit, _nlpcov = np.polyfit(z, d**2, 2, cov=True)
+
+    # unpack fitting parameters
+    c, b, a = nlfit
+
+
+    z0 = -b/(2*c)
+    Theta = np.sqrt(c)
+    disc = np.sqrt(4*a*c-b*b)/2
+    M2 = np.pi/4/lambda0*disc
+    d0 = disc / np.sqrt(c)
+    zR = disc/c
+    params = [d0, z0, Theta, M2, zR]
+
+    # unpack uncertainties in fitting parameters from diagonal of covariance matrix
+    #c_std, b_std, a_std = [np.sqrt(_nlpcov[j, j]) for j in range(nlfit.size)]
+    #z0_std = z0*np.sqrt(b_std**2/b**2 + c_std**2/c**2)
+    #d0_std = np.sqrt((4*c**2*a_std)**2 + (2*b*c*b_std)**2 + (b**2*c_std)**2) / (8*c**2*d0)
+    #Theta_std = c_std/2/np.sqrt(c)
+    #zR_std = np.sqrt(4*c**4*a_std**2 + b**2*c**2*b_std**2 + (b**2-2*a*c)**2*c_std**2)/(4*c**3) / zR
+    #M2_std = np.pi**2 * np.sqrt(4*c**2*a_std**2 + b**2*b_std**2 + 4*a**2*c_std**2)/(64*lambda0**2) / M2
+    #errors = [d0_std, z0_std, M2_std, Theta_std, zR_std]
+    return params
 
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """

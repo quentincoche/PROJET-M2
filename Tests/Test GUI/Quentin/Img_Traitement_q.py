@@ -37,17 +37,17 @@ class Traitement():
 
     def binarisation(self, img, choix):
         """ Filtrage de l'image et binarisation de celle-ci"""
-        kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)) #Matrice permettant de définir la taille de travail des filtres
+        kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)) #Matrice permettant de définir la taille de travail des filtres
         thres=img #En cas de problème dans les choix de filtrage
         if choix==1: #Choix de filtre Otsu
-            gauss = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
+            gauss = cv2.GaussianBlur(img,(3,3),0) #Met un flou gaussien
             ret3,thres = cv2.threshold(gauss,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         
         elif choix ==2 : #Choix du filtre adaptatif
             thres= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 3) 
         
         elif choix ==3 : #Choix du filtre I/e^2
-            thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
+            thres = cv2.GaussianBlur(img,(3,3),0) #Met un flou gaussien
             amp=np.max(thres)
             exponentielle = math.exp(1)
             I=amp/exponentielle**2
@@ -73,7 +73,7 @@ class Traitement():
                 break
             
             area = cv2.contourArea(c)
-            if area <= 1000:  # skip ellipses smaller then 
+            if area <= 10:  # skip ellipses smaller then 
                 continue
             #cv2.drawContours(frame, [c], 0, (0,255,0), 3)
             # calculate moments for each contour
