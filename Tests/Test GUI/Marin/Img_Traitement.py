@@ -8,6 +8,7 @@ Created on Wen Oct 14 10:27:21 2020
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import math
+import tkinter as tk #Bibliothèque d'affichage graphique
 import matplotlib.pyplot as plt #Bibliothèque d'affichage mathématiques
 from matplotlib.figure import Figure  
 from matplotlib import rcParams
@@ -37,17 +38,17 @@ class Traitement():
 
     def binarisation(self, img, choix):
         """ Filtrage de l'image et binarisation de celle-ci"""
-        kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)) #Matrice permettant de définir la taille de travail des filtres
+        kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)) #Matrice permettant de définir la taille de travail des filtres
         thres=img #En cas de problème dans les choix de filtrage
         if choix==1: #Choix de filtre Otsu
-            gauss = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
+            gauss = cv2.GaussianBlur(img,(3,3),0) #Met un flou gaussien
             ret3,thres = cv2.threshold(gauss,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #Applique le filtre d'Otsu
         
         elif choix ==2 : #Choix du filtre adaptatif
             thres= cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 3, 3) 
         
         elif choix ==3 : #Choix du filtre I/e^2
-            thres = cv2.GaussianBlur(img,(5,5),0) #Met un flou gaussien
+            thres = cv2.GaussianBlur(img,(3,3),0) #Met un flou gaussien
             amp=np.max(thres)
             exponentielle = math.exp(1)
             I=amp/exponentielle**2
@@ -73,7 +74,7 @@ class Traitement():
                 break
             
             area = cv2.contourArea(c)
-            if area <= 1000:  # skip ellipses smaller then 
+            if area <= 10:  # skip ellipses smaller then 
                 continue
             #cv2.drawContours(frame, [c], 0, (0,255,0), 3)
             # calculate moments for each contour
@@ -99,30 +100,47 @@ class Traitement():
 
         av_img=self.img-av_fond #retranche le fond de l'image
         img_indices = self.img-av_img < 0 #Vérifie que l'image sans fond n'a pas pixel inférieur à 0
-        self.img[img_indices]=0 #remplace les pixels inférieur à 0 par 0
+        av_img[img_indices]=0 #remplace les pixels inférieur à 0 par 0
+        self.img=av_img
 
         av_frame=np.array(frame-av_fond).astype(np.uint8) #Retranche le fond de l'image et le mets en 8bits entier pour le transformer en couleur
         frame_indices = frame-av_frame < 0
-        frame[frame_indices]=0
+        av_frame[frame_indices]=0
+        frame=av_frame
+
+        v, h = frame.shape
+
+        # total of all pixels
+        p = np.sum(frame, dtype=np.float)     # float avoids integer overflow
+
+        # sometimes the image is all zeros, just return
+        if p == 0:
+            xc, yc =int(h/2), int(v/2)
+
+        # find the centroid
+        hh = np.arange(h, dtype=np.float)      # float avoids integer overflow
+        vv = np.arange(v, dtype=np.float)      # ditto
+        xc = int(np.sum(np.dot(frame, hh))/p)
+        yc = int(np.sum(np.dot(frame.T, vv))/p)
 
         #Remet l'image en RGB pour y dessiner toutes les formes par la suite et en couleur
         frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
 
         #Dessine un cercle sur tous les blobs de l'image (formes blanches)
-        cv2.circle(frame, (self.cX, self.cY), 2, (0, 0, 255), -1)
+        #cv2.circle(frame, (self.cX, self.cY), 2, (0, 0, 255), -1)
 
         #Dessiner l'ellipse
         thresh = cv2.ellipse(frame,self.ellipse,(0,255,0),1)
 
         #Dessine les formes sur l'image
-        cv2.line(frame, (self.cX, 0), (self.cX, frame.shape[0]), (255, 0, 0), 1)#Dessine une croix sur le barycentre de l'image
-        cv2.line(frame, (0, self.cY), (frame.shape[1], self.cY), (255, 0, 0), 1)
+        cv2.line(frame, (xc, 0), (xc, frame.shape[0]), (255, 0, 0), 1)#Dessine une croix sur le barycentre de l'image
+        cv2.line(frame, (0, yc), (frame.shape[1], yc), (255, 0, 0), 1)
 
         #coupe l'image sur le ROI
         crop_img = self.crop(frame)
         self.crop_img = self.crop(self.img) 
 
-        return crop_img, self.ellipse, self.cX, self.cY
+        return crop_img, self.ellipse, xc, yc
 
   
     def fond (self, frame):
@@ -206,9 +224,6 @@ class Traitement():
         x=np.arange(img_x)
         y=np.arange(img_y)
 
-        x_pixel=x * pixel_size
-        y_pixel=y * pixel_size
-
         sigma_x = np.std(Lx)
         sigma_y = np.std(Ly)
 
@@ -224,6 +239,11 @@ class Traitement():
         x_fitted_model = fitterx(modelx, x, Lx)
         y_fitted_model = fittery(modely, y, Ly)
 
+        pxw=img_x*pixel_size/2
+        pyw=img_y*pixel_size/2
+        x_pixel=np.arange(start=-pxw, stop=pxw, step=pixel_size)
+        y_pixel=np.arange(start=-pyw, stop=pyw, step=pixel_size)
+
         #Création de la liste de données
         cov_diag_x = np.diag(fitterx.fit_info['param_cov'])
         cov_diag_y = np.diag(fittery.fit_info['param_cov'])
@@ -234,12 +254,33 @@ class Traitement():
         fig_width_i = width / dpi
         fig_height_i = height / dpi
 
-        #Ligne de hauteur I/e^2
-        Ie_X = np.max(Lx)/math.exp(1)**2
-        Ie_Y = np.max(Ly)/math.exp(1)**2
+        a=x_fitted_model.amplitude.value/np.exp(1)**2
+        b=y_fitted_model.amplitude.value/np.exp(1)**2
 
-        line_X=np.linspace(Ie_X, Ie_X, len(Lx))
-        line_Y=np.linspace(Ie_Y, Ie_Y, len(Ly))
+        temp, it=[],[]
+        for n in x_fitted_model(x):
+            temp.append(abs(n-a))
+        it=sorted(temp)
+        xl1=temp.index(it[0])
+        xl2=temp.index(it[1])
+        x1=-pxw+xl1*pixel_size
+        x2=-pxw+xl2*pixel_size
+        dx=abs(x2-x1)
+        if dx==0:
+            tk.messagebox.showerror("Fit Problem", "Fit X impossible")
+
+        temp, it=[],[]
+        for m in y_fitted_model(y):
+            temp.append(abs(m-b))
+        it=sorted(temp)
+        yl1=temp.index(it[0])
+        yl2=temp.index(it[1])
+        y1=-pyw+yl1*pixel_size
+        y2=-pyw+yl2*pixel_size
+        dy=abs(y2-y1)
+        if dy==0:
+            tk.messagebox.showerror("Fit Problem","Fit Y impossible")
+        
 
         #On affiche les courbes résultantes
         fig = Figure()
@@ -249,27 +290,29 @@ class Traitement():
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x_pixel, Lx, label="Données bruts")
         ax.plot(x_pixel, x_fitted_model(x), label="Modèle fitté")
-        ax.plot(x_pixel , line_X, label="I/e^2")
+        ax.annotate('', (x1, a), (x2, a), arrowprops=dict(arrowstyle="<->"))
+        ax.text(0, 1.1*a, 'I/e²=%.0f %s' % (dx, 'µm'), va='bottom', ha='center')
 
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(y_pixel, Ly, label="Données bruts")
+        ax2.plot(y_pixel, Ly, label="Données brutes")
         ax2.plot(y_pixel, y_fitted_model(y), label="Modèle fitté")
-        ax2.plot(y_pixel, line_Y, label="I/e^2")
+        ax2.annotate('', (y1, b), (y2, b), arrowprops=dict(arrowstyle="<->"))
+        ax2.text(0, 1.1*b, 'I/e²=%.0f %s' % (dy, 'µm'), va='bottom', ha='center')
 
         ax.set_title('X profil')
-        ax.set_xlabel ("Largeur de l'image en µm")
+        ax.set_xlabel ("Distance du centre en µm")
         ax.set_ylabel ("Intensité sur 8bits")
         ax.legend(loc='upper right')
 
         ax2.set_title ('Y profil')
-        ax2.set_xlabel ("Hauteur de l'image en µm")
+        ax2.set_xlabel ("Distance du centre en µm")
         ax2.set_ylabel ("Intensité sur 8bits")
         ax2.legend(loc='upper right')
 
         temps=time.time()-t
         print("Temps plot Gauss x,y : ", temps)
 
-        return fig, data_x, data_y
+        return fig, data_x, data_y, dx, dy
 
    
     def plot_2D(self,dpi,width,height):
@@ -488,9 +531,6 @@ class Traitement():
         G = np.arange(len(Lg))
         P = np.arange(len(Lp))
 
-        G_pixel = G*pixel_size
-        P_pixel = P*pixel_size
-
         #Calcul des sigmas sur les valeurs             
         sigma_g = np.std(Lg)
         sigma_p = np.std(Lp) 
@@ -508,6 +548,11 @@ class Traitement():
         G_fitted_model = fitterG(modelG, G, Lg)
         P_fitted_model = fitterP(modelP, P, Lp)
 
+        pgw=len(Lg)*pixel_size/2
+        ppw=len(Lp)*pixel_size/2
+        G_pixel=np.arange(start=-pgw, stop=pgw, step=pixel_size)
+        P_pixel=np.arange(start=-ppw, stop=ppw, step=pixel_size)
+
         #Créations des données à afficher
         cov_diag_g = np.diag(fitterG.fit_info['param_cov'])
         cov_diag_p = np.diag(fitterP.fit_info['param_cov'])
@@ -518,13 +563,32 @@ class Traitement():
         fig_width_i = cv_width / dpi
         fig_height_i = cv_height / dpi
 
-        #Ligne de hauteur I/e^2
-        Ie_G = np.max(Lg)/math.exp(1)**2
-        Ie_P = np.max(Lp)/math.exp(1)**2
+        a=G_fitted_model.amplitude.value/np.exp(1)**2
+        b=P_fitted_model.amplitude.value/np.exp(1)**2
 
-        line_G=np.linspace(Ie_G, Ie_G, len(Lg))
-        line_P=np.linspace(Ie_P, Ie_P, len(Lp))
+        temp, it=[],[]
+        for n in G_fitted_model(G):
+            temp.append(abs(n-a))
+        it=sorted(temp)
+        gl1=temp.index(it[0])
+        gl2=temp.index(it[1])
+        g1=-pgw+gl1*pixel_size
+        g2=-pgw+gl2*pixel_size
+        dg=abs(g2-g1)
+        if dg==0:
+            tk.messagebox.showerror("Fit Problem", "Fit grand axe impossible")
 
+        temp, it=[],[]
+        for m in P_fitted_model(P):
+            temp.append(abs(m-b))
+        it=sorted(temp)
+        pl1=temp.index(it[0])
+        pl2=temp.index(it[1])
+        p1=-ppw+pl1*pixel_size
+        p2=-ppw+pl2*pixel_size
+        dp=abs(p2-p1)
+        if dp==0:
+            tk.messagebox.showerror("Fit Problem","Fit Y impossible")
 
         #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
@@ -532,14 +596,16 @@ class Traitement():
         fig.suptitle("Gaussienne ellipse")
 
         ax = fig.add_subplot(1 ,2 ,1)
-        ax.plot(G_pixel, Lg, label="Données bruts")
+        ax.plot(G_pixel, Lg, label="Données brutes")
         ax.plot(G_pixel, G_fitted_model(G), label="Modèle fitté")
-        ax.plot(G_pixel, line_G, label="I/e^2")
+        ax.annotate('', (g1, a), (g2, a), arrowprops=dict(arrowstyle="<->"))
+        ax.text(0, 1.1*a, 'I/e²=%.0f %s' % (dg, 'µm'), va='bottom', ha='center')
 
         ax2 = fig.add_subplot(1, 2, 2)
-        ax2.plot(P_pixel, Lp, label="Données bruts")
+        ax2.plot(P_pixel, Lp, label="Données brutes")
         ax2.plot(P_pixel, P_fitted_model(P), label="Modèle fitté")
-        ax2.plot(P_pixel, line_P, label="I/e^2")
+        ax2.annotate('', (p1, a), (p2, a), arrowprops=dict(arrowstyle="<->"))
+        ax2.text(0, 1.1*a, 'I/e²=%.0f %s' % (dp, 'µm'), va='bottom', ha='center')
 
         ax.set_title('Grand axe profil')
         ax.set_xlabel ('Grand axe en µm')
@@ -554,32 +620,4 @@ class Traitement():
         temps = time.time()-t
         print("Temps plot Gauss ellipse : ", temps)
 
-        return fig, data_g, data_p
-
-
-    # def divergence(self, lambda):
-    #     """Calcul la divergence du faisceau"""
-    #     theta=(4*lambda)/(math.pi*self.ellipse[1][1]) #Calcul de la divergence
-    #     return theta
-
-
-    # def M_square(self, lambda):
-    #     """Permet de déterminer le M^2 du faisceau"""
-    #     img=self.binarisation(self.img, 3)
-    #     contours, hierarchy = cv2.findContours(img,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    #     contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
-    #     #print(contours)
-
-    #     for c in contours:
-    #         # permet de fit une ellipse sur toutes les formes identifiés sur l'image
-    #         if len(c) < 5:
-    #             break
-            
-    #         area = cv2.contourArea(c)
-    #         if area <= 1000:  # skip ellipses smaller then 
-    #             continue
-    #         ellipse = cv2.fitEllipse(c)
-
-    #     theta=self.divergence(lambda) #Récupère la divergence
-    #     M=(theta*math.pi*ellipse[1][1])/(4*lambda) #calcul du M^2
-    #     return M
+        return fig, data_g, data_p, dg, dp

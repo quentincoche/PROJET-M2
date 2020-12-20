@@ -32,6 +32,12 @@ class cameraCapture(tk.Frame):
                 self.pixel_size = 2.4 #microns (pixels carrés sur les baslers)
                 self.pixel_max = 4095
 
+            elif self.Model == "acA3800-14um":
+                self.camera.PixelFormat.SetValue('Mono12')
+                self.tps_exp_min = 50 
+                self.pixel_size = 1.67 #microns (pixels carrés sur les baslers)
+                self.pixel_max = 4095
+
             else :
                 print("Camera non reconnue")
 
