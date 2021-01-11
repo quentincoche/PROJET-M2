@@ -4,20 +4,21 @@ import tkinter as tk
 
 
 class openCamera():
+    """Classe de pilotage de toutes les caméras"""
 
     def __init__(self):
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(0) #Attribution de la caméra
         if not self.cap.isOpened():
             print("Cannot open camera")
             exit()
-        self.pixel_max = 255
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 6400)
+        self.pixel_max = 255 #Image en 8bits pour l'exploitation
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 6400) #Taille maximum d'image (modifiable)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 4800)
-        self.cap.set(5,30)
-        w = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.cap.set(5,30) #flux à 30fps
+        w = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH) #Récupère la taille de l'image
         h = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
         print(w,h)
-        #self.auto_exposure()
+        self.auto_exposure()
 
 
     def capture(self):

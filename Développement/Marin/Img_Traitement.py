@@ -27,6 +27,8 @@ class Traitement():
 
     def traitement(self, img, choix):
         """Fonction qui va faire l'appel des traitements majeurs de notre image"""
+        #Variables globales et prend en entrée l'image et le choix de traitement. Rend l'image, les paramètres d'ellipse, le barycentre et le choix de traitement en sortie
+
         t=time.time() #Monitoring du temps de traitement
         img_bin=self.binarisation(img, choix) # appel de la fonction binarisation
         self.img=img #Permet l'usage de l'image "brut" par les autres fonctions de la classe
@@ -38,6 +40,8 @@ class Traitement():
 
     def binarisation(self, img, choix):
         """ Filtrage de l'image et binarisation de celle-ci"""
+        #Variables globales et prend en entrée l'image et le choix de traitement. Rend l'image en sortie
+
         kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)) #Matrice permettant de définir la taille de travail des filtres
         thres=img #En cas de problème dans les choix de filtrage
         if choix==1: #Choix de filtre Otsu
@@ -62,7 +66,9 @@ class Traitement():
 
 
     def calcul_traitement(self,frame, thres):
-        """ Amélioration de l'image par binarisation d'Otsu """    
+        """ Amélioration de l'image par binarisation d'Otsu """ 
+        #Variables globales et prend en entrée l'image initiale et l'image binarisé. Rend l'image illustré, les paramètres de l'ellipse et le barycentre en sortie
+         
         # find contours in the binary image
         contours, hierarchy = cv2.findContours(thres,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         contours = sorted(contours, key = cv2.contourArea, reverse = True)[:1]
@@ -145,6 +151,8 @@ class Traitement():
   
     def fond (self, frame):
         """Fonction qui récupère une partie du fond puis le "patch" sur le faisceau pour moyenner le fond de l'image"""
+        #Variables globales et prend en entrée l'image. Rend la moyenne du fond en sortie
+
         #lance un crop pour récuperer la taille du crop
         test=self.crop(frame)
 
@@ -175,6 +183,8 @@ class Traitement():
 
     def crop(self,frame):
         """ Fonction qui crop le centre d'intérêt à 2 fois la taille associé au rectangle fitté"""
+        #Variables globales et prend en entrée l'image. Rend le crop en sortie.
+
         #on défini les tailles de crop, les conditions qui suivent sont là pour éviter les problèmes de bord
         self.X=self.x-math.ceil(self.w/2)
         self.Y=self.y-math.ceil(self.h/2)
@@ -205,6 +215,8 @@ class Traitement():
 
     def trace_profil(self,dpi,width,height, pixel_size):
         """Trace le profil d'intensité sur les axes du barycentre de l'image"""
+        #Variables globales et prend en entrée la définition des graphs, la largeur, la hauteur et la taille des pixels. Rend la figure et ses paramètres en sortie
+
         t=time.time()
         print('Start plot Gauss x,y')
         img=self.crop_img # on récupère l'image
@@ -317,6 +329,7 @@ class Traitement():
    
     def plot_2D(self,dpi,width,height):
         """Trace la gaussienne 2D associé à l'image"""
+        #Variables globales et prend en entrée la définition des graphs, la largeur et la hauteur. Rend la figure et ses paramètres en sortie
         t=time.time()
         print("start plot Gauss 2D")
         img=self.crop_img # on récupère l'image
@@ -396,6 +409,8 @@ class Traitement():
         Permet de récupérer les points extremes de l'image selon le grand et
         petit axe de l'ellipse pour par la suite fiter la gaussienne sur ces lignes
         """
+        #Variables globales et sort les coordonnées des points de l'axe de l'ellipse en sortie
+
         img=self.crop_img #On récupère l'image
         img_l=img.shape[0] #le nombre de ligne de l'image
         img_c=img.shape[1] #le nombre de colonne de l'image
@@ -496,6 +511,8 @@ class Traitement():
 
     def trace_ellipse(self,dpi,cv_width,cv_height, pixel_size):
         """ Trace le fit gaussien selon les axes de l'ellipse"""
+        #Variables globales et prend en entrée la définition des graphs, la largeur, la hauteur et la taille des pixels. Rend la figure et ses paramètres en sortie
+
         t=time.time()
         print("Start plot Gauss ellipse axis")
         #on pose les variables et on récupère les informations de l'image

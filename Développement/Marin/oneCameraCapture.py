@@ -7,6 +7,8 @@ import numpy as np
 import tkinter as tk
 
 class cameraCapture(tk.Frame):
+    """Classe de pilotage de caméra Basler"""
+    
     def __init__(self):
         t=time.time()
         self.img0 = []
@@ -74,6 +76,8 @@ class cameraCapture(tk.Frame):
         print("Temps acquisition caméra  : ", temps)
 
     def getFrame(self):
+        """Fonction qui permet de récupérer le flux vidéo de la caméra"""
+        #Variables globales uniquement
         try:
             self.grabResult = self.camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException) #Récupère tous les flux de la caméra
 
@@ -91,9 +95,12 @@ class cameraCapture(tk.Frame):
             # Error handling
             print("An exception occurred.", e.GetDescription())
             exitCode = 1
+        return
 
     def auto_exposure(self):
         """ Fonction dauto-exposition uniquement pour la caméra Basler actuellement """
+        #Variables globales uniquement
+
         self.camera.Close()
         self.camera.Open()  #Need to open camera before can use camera.ExposureTime
         self.temp_exp =500
@@ -146,6 +153,8 @@ class cameraCapture(tk.Frame):
     
     def max_photo(self):
         """" Fonction permettant de retourner le max d'intensité sur l'image """
+        #Variables globales et sort le maximum d'intensité en sortie
+
         self.camera.StopGrabbing() #Arrête l'acquisition d'information de la caméra
         self.camera.AcquisitionMode.SetValue('SingleFrame') #Utilise la caméra en mode photo
         self.camera.ExposureTime.SetValue(self.temp_exp)
@@ -159,6 +168,7 @@ class cameraCapture(tk.Frame):
         return max_photo #Renvoie la valeur du max
 
 if __name__ == "__main__":
+    """Fonction de test"""
     testWidget = cameraCapture()
     while testWidget.camera.IsGrabbing():
         #input("Press Enter to continue...")

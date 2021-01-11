@@ -89,7 +89,6 @@ class Fenetre(Thread):
         self.window.protocol('WM_DELETE_WINDOW', self.destructor) #La croix de la fenetre va fermer le programme
         
         """"definition des proportions pour les frames"""
-        
         self.window.grid_columnconfigure(1, weight=3)
         self.window.grid_columnconfigure(2, weight=0)
         self.window.grid_columnconfigure(3,weight=2)
@@ -193,40 +192,50 @@ class Fenetre(Thread):
 
     def Interface(self):
         """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
+        #Variables globales uniquement
         
+        #Logo
+        self.logo = tk.Frame(self.window,padx=5,pady=5,bg="gray")
+        self.logo.grid(row=0,column=0, sticky='NSEW')
+
+        #name
+        self.ourname = tk.Frame(self.window,padx=5,pady=5,bg="gray")
+        self.ourname.grid(row=4,column=0, sticky='NSEW')
+        ourname=tk.Label(self.ourname, text="Quentin COCHERIL \n & Marin COR",bg="gray",foreground="white")
+        ourname.grid(row=0, column=0, sticky='NSEW')
+
         #commandes gauche
             #Taille de la zone des boutons
         self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray",relief = RIDGE)
         self.cmdleft.grid(row=1, rowspan=3,column=0, sticky='NSEW')
 
-            #Bouton snapshot
-        self.FrameCapture=tk.Frame(self.cmdleft, borderwidth=2, relief='groove')
+        self.FrameCapture=tk.Frame(self.cmdleft, borderwidth=2, relief='groove',bg="gray")
         self.FrameCapture.grid(row=0, column=0, sticky="nsew")
 
-        label_snap=tk.Label(self.FrameCapture, text="Choix enregistrement :")
+        label_snap=tk.Label(self.FrameCapture, text="Choix enregistrement :",bg="gray",foreground="white")
         label_snap.grid(row=0, column=0, sticky="nsew")
 
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Preview", var=self.coch0)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Preview", var=self.coch0,bg="gray",foreground="white")
         bouton_selection.grid(row=1, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Traité", var=self.coch1)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Traité", var=self.coch1,bg="gray",foreground="white")
         bouton_selection.grid(row=2, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot", var=self.coch2)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Plot", var=self.coch2,bg="gray",foreground="white")
         bouton_selection.grid(row=3, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Coordonnées", var=self.coch3)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Coordonnées", var=self.coch3,bg="gray",foreground="white")
         bouton_selection.grid(row=4, column=0)
-        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Données Plot", var=self.coch4)
+        bouton_selection = tk.Checkbutton(self.FrameCapture, text="Données Plot", var=self.coch4,bg="gray",foreground="white")
         bouton_selection.grid(row=5, column=0)
 
 
             #Bouton capture
-        btncap = tk.Button(self.cmdleft,text="Enregistrer",command=self.capture)
+        btncap = tk.Button(self.cmdleft,text="Enregistrer",command=self.capture,bg="gray",foreground="white")
         btncap.grid(row=1,column=0,sticky="nsew")
 
-        labelSpace2=tk.Label(self.cmdleft, text='', bg='gray')
+        labelSpace2=tk.Label(self.cmdleft, text='',bg="gray",foreground="white")
         labelSpace2.grid(row=2,column=0)
 
             #Liste selection du plot
-        selection_plot=tk.Label(self.cmdleft,text="Sellectionnez Fit",bg="gray")
+        selection_plot=tk.Label(self.cmdleft,text="Sellectionnez Fit",bg="gray",foreground="white")
         selection_plot.grid(row=3,column=0,sticky="nsew")
         liste_plots =["Choix","Fit XY","Fit axes ellipse","Fit Gaussien 2D"]
         self.liste_combobox = ttk.Combobox(self.cmdleft,values=liste_plots)
@@ -235,33 +244,40 @@ class Fenetre(Thread):
         self.liste_combobox.bind("<<ComboboxSelected>>",self.choix_figure) 
 
             #tracé du profil (par defaut XY)
-        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot)
+        btnprofiles = tk.Button(self.cmdleft,text="Profils",command=self.plot,bg="gray",foreground="white")
         btnprofiles.grid(row=5,column=0,sticky="nsew")
 
-        btn_stpprof = tk.Button(self.cmdleft, text="Stop Profils", command=self.stop_profil)
+        btn_stpprof = tk.Button(self.cmdleft, text="Stop Profils", command=self.stop_profil,bg="gray",foreground="white")
         btn_stpprof.grid(row=6, column=0, sticky="nsew")
 
-        labelSpace3=tk.Label(self.cmdleft, text='', bg='gray')
+        labelSpace3=tk.Label(self.cmdleft, text='',bg="gray",foreground="white")
         labelSpace3.grid(row=7,column=0)       
 
             #Bouton alignement de faisceaux
-        btnalign = tk.Button(self.cmdleft, text='Alignement de faisceaux', command=self.alignement)
+        btnalign = tk.Button(self.cmdleft, text='Alignement de faisceaux', command=self.alignement,bg="gray",foreground="white")
         btnalign.grid(row=8, column=0, sticky="nsew")
 
             #Bouton hold de faisceaux
-        btnhold = tk.Button(self.cmdleft, text='Hold', command=self.hold)
+        btnhold = tk.Button(self.cmdleft, text='Hold', command=self.hold,bg="gray",foreground="white")
         btnhold.grid(row=9, column=0, sticky="nsew")
 
             #Bouton arrêt alignement
-        btn_stopalign = tk.Button(self.cmdleft, text='Arrêt alignement', command=self.arret_align)
+        btn_stopalign = tk.Button(self.cmdleft, text='Arrêt alignement', command=self.arret_align,bg="gray",foreground="white")
         btn_stopalign.grid(row=10, column=0, sticky="nsew")
 
         labelSpace=tk.Label(self.cmdleft, text='', bg='gray')
         labelSpace.grid(row=11,column=0)
 
+            #Bouton M²
+        btn_M2 = tk.Button(self.cmdleft, text='Fit M²',bg="gray",foreground="white")
+        btn_M2.grid(row=12, column=0, sticky="nsew")
+
+        labelSpace=tk.Label(self.cmdleft, text='',bg="gray",foreground="white")
+        labelSpace.grid(row=13,column=0)
+
             #Bouton quitter
-        btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor)
-        btnquit.grid(row=12,column=0,sticky="nsew")
+        btnquit = tk.Button(self.cmdleft,text="Quitter",command = self.destructor,bg="gray",foreground="white")
+        btnquit.grid(row=14,column=0,sticky="nsew")
 
         #commandes superieures
             #Taille de la zone de commande
@@ -269,19 +285,20 @@ class Fenetre(Thread):
         self.cmdup.grid(row=0,column=1, columnspan=2, sticky="NSEW")
 
             #Bouton traitement vidéo
-        btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool)
+        btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool,bg="gray",foreground="white")
         btnvideo.grid(row=0,column=0,sticky="nsew")
 
             #Bouton auto-exposition
-        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp)
+        btnexp = tk.Button(self.cmdup,text="Réglage auto temps exp", command=self.exp,bg="gray",foreground="white")
         btnexp.grid(row=0,column=1,sticky="nsew")
 
-        labelSpace5=tk.Label(self.cmdup, text='  ', bg='gray')
+        labelSpace5=tk.Label(self.cmdup, text='      ',bg="gray",foreground="white")
         labelSpace5.grid(row=0,column=2)
+        
 
            #Choix du filtre
-        selection_filtre=tk.Label(self.cmdup,text="Selectionnez Filtre",bg="gray")
-        selection_filtre.grid(row=0,column=3,sticky="nse")
+        selection_filtre=tk.Label(self.cmdup,text="Selectionnez Filtre",bg="gray",foreground="white")
+        selection_filtre.grid(row=0,column=3,sticky="nsew")
         liste_filtres =["Otsu","Adaptatif","I/e²"]
         self.liste_combobox2 = ttk.Combobox(self.cmdup,values=liste_filtres)
         self.liste_combobox2.grid(row=0,column=4,sticky="nse")
@@ -289,15 +306,19 @@ class Fenetre(Thread):
         self.liste_combobox2.bind("<<ComboboxSelected>>",self.choose_filter)
 
             #Denoise
-        btnNoise = tk.Button(self.cmdup,text="Denoise image", command=self.DeNoise)
+        btnNoise = tk.Button(self.cmdup,text="Denoise image", command=self.DeNoise,bg="gray",foreground="white")
         btnNoise.grid(row=0,column=5,sticky="nsew")
 
+        labelSpace6=tk.Label(self.cmdup, text='      ',bg="gray",foreground="white")
+        labelSpace6.grid(row=0,column=6)
+
             #Scale
-        self.curs_zoom=tk.Scale(self.cmdup, orient='horizontal', from_=1, to=20, resolution=0.1, tickinterval=2, length=250, label='zoom')
-        self.curs_zoom.grid(row=0,column=6,sticky="nsew")
+        labelSpace7=tk.Label(self.cmdup, text='Zoom',bg="gray",foreground="white")
+        labelSpace7.grid(row=0,column=7)
+        self.curs_zoom=tk.Scale(self.cmdup, orient='horizontal', from_=1, to=20, resolution=1, tickinterval=1, length=300,bg="gray",foreground="white") #curseur de zoom
+        self.curs_zoom.grid(row=0,column=8,sticky="nsew")
 
         #### Affichage de l'aide quand on survole les bouttons ####
-
         b = tk.tix.Balloon(self.window,bg="gray")
         b.bind_widget(btnquit,balloonmsg='Quitte le logiciel')
         b.bind_widget(btnalign,balloonmsg='Affiche la position du barycentre du faisceau au moment de la pression, pour\n vérifier la bonne position du faisceau')
@@ -328,28 +349,31 @@ class Fenetre(Thread):
 
 
     def display(self):
-
-        self.display1 = tk.Canvas(self.window, borderwidth=4,bg="white",relief="ridge")  # Initialisation de l'écran 1
+        """Fonctions s'occupant de la disposition des différents cadres d'images, figures et résultats"""
+       #Variables globales uniquement
+       
+        #Cadre preview
+        self.display1 = tk.Canvas(self.window, borderwidth=4,bg=self._from_rgb((40, 40, 40)))  # Initialisation de l'écran 1
         self.display1.grid(row=1,column=1,sticky="NSEW")        #cadre video
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
-        self.offx = tk.Scale(self.window, orient='horizontal', from_=-self.dx, to=self.dx, resolution=1, tickinterval=0, length=self.display1.winfo_width(), showvalue=0)
+        self.offx = tk.Scale(self.window, orient='horizontal', from_=-self.dx, to=self.dx, resolution=1, tickinterval=0, length=self.display1.winfo_width(), showvalue=0,bg="gray",foreground="white") #Curseur de décalage sur l'image zoomé
         self.offx.grid(row=2,column=1,sticky="nsew")
-        self.offy = tk.Scale(self.window, orient='vertical', from_=-self.dy, to=self.dy, resolution=1, tickinterval=0, length=self.display1.winfo_height(), showvalue=0)
+        self.offy = tk.Scale(self.window, orient='vertical', from_=-self.dy, to=self.dy, resolution=1, tickinterval=0, length=self.display1.winfo_height(), showvalue=0,bg="gray",foreground="white") #Curseur de décalage sur l'image zoomé
         self.offy.grid(row=1,column=2,sticky="nsew")
 
         #cadre traitement
-        self.title_display2 = tk.Label(self.window,text="Fit ellipse",borderwidth=4,bg="gray",relief="ridge")
+        self.title_display2 = tk.Label(self.window,text="Fit ellipse",borderwidth=4,bg="gray", foreground="white")
         self.title_display2.grid(row=0,column=3,sticky="NSEW")
-        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg="white",relief="ridge")  # Def de l'écran 2
+        self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg=self._from_rgb((40, 40, 40)))  # Def de l'écran 2
         self.display2.grid(row=1,column=3,sticky="NSEW")
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
 
         #cadre plots fits
-        self.display_plots_title = tk.Label(self.window,text="affichage graphes de fit",borderwidth=4,bg="gray",relief="ridge")
+        self.display_plots_title = tk.Label(self.window,text="affichage graphes de fit",borderwidth=4,bg="gray",foreground="white")
         self.display_plots_title.grid(row=4,column=1, sticky="NSEW")
-        self.cadre_plots = tk.Frame(self.window,borderwidth=4,bg="white",relief="ridge")
+        self.cadre_plots = tk.Frame(self.window,borderwidth=4,bg=self._from_rgb((40, 40, 40)))
         self.cadre_plots.grid(row=3,column=1,columnspan=1,sticky="NSEW")
 
 
@@ -361,55 +385,254 @@ class Fenetre(Thread):
         self.results.grid(row=2,rowspan=3,column=2,columnspan=2, sticky="NSEW") #place la frame
 
         #barycentres
-        self.label01 = tk.Label(self.results,text="barycentre X = ",font=(None,self.fsize)).grid(row=0,column=0,sticky="nsew")
-        self.label001 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=0,column=2,sticky="nsew")
-        self.label1 = tk.Label(self.results,textvariable=self.cX,font=(None,self.fsize)).grid(row=0,column=1,sticky="nsew")
-        self.label02 = tk.Label(self.results,text="barycentre Y = ",font=(None,self.fsize)).grid(row=1,column=0,sticky="nsew")
-        self.label002 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=1,column=2,sticky="nsew")
-        self.label2 = tk.Label(self.results,textvariable=self.cY,font=(None,self.fsize)).grid(row=1,column=1,sticky="nsew")
+        self.label01 = tk.Label(self.results,text="barycentre X = ",font=(None,self.fsize),bg="gray",foreground="white").grid(row=0,column=0,sticky="nsew")
+        self.label001 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize),bg="gray",foreground="white").grid(row=0,column=2,sticky="nsew")
+        self.label1 = tk.Label(self.results,textvariable=self.cX,font=(None,self.fsize),bg="gray",foreground="white").grid(row=0,column=1,sticky="nsew")
+        self.label02 = tk.Label(self.results,text="barycentre Y = ",font=(None,self.fsize),bg="gray",foreground="white").grid(row=1,column=0,sticky="nsew")
+        self.label002 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize),bg="gray",foreground="white").grid(row=1,column=2,sticky="nsew")
+        self.label2 = tk.Label(self.results,textvariable=self.cY,font=(None,self.fsize),bg="gray",foreground="white").grid(row=1,column=1,sticky="nsew")
         
         #parametres ellipse
-        self.label03 = tk.Label(self.results,text="Grand axe ellipse = ",font=(None,self.fsize)).grid(row=2,column=0,sticky="nsew")
-        self.label003 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=2,column=2,sticky="nsew")
-        self.label3 = tk.Label(self.results,textvariable=self.ellipse_width,font=(None,self.fsize)).grid(row=2,column=1,sticky="nsew")
-        self.label04 = tk.Label(self.results,text="Petit axe ellipse = ",font=(None,self.fsize)).grid(row=3,column=0,sticky="nsew")
-        self.label004 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=3,column=2,sticky="nsew")
-        self.label4 = tk.Label(self.results,textvariable=self.ellipse_height,font=(None,self.fsize)).grid(row=3,column=1,sticky="nsew")
-        self.label05 = tk.Label(self.results,text="Angle ellipse = ",font=(None,self.fsize)).grid(row=4,column=0,sticky="nsew")
-        self.label005 = tk.Label(self.results,text="°",font=(None,self.fsize)).grid(row=4,column=2,sticky="nsew")
-        self.label5 = tk.Label(self.results,textvariable=self.ellipse_angle,font=(None,self.fsize)).grid(row=4,column=1,sticky="nsew")
+        self.label03 = tk.Label(self.results,text="Grand axe ellipse = ",font=(None,self.fsize),bg="gray",foreground="white").grid(row=2,column=0,sticky="nsew")
+        self.label003 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize),bg="gray",foreground="white").grid(row=2,column=2,sticky="nsew")
+        self.label3 = tk.Label(self.results,textvariable=self.ellipse_width,font=(None,self.fsize),bg="gray",foreground="white").grid(row=2,column=1,sticky="nsew")
+        self.label04 = tk.Label(self.results,text="Petit axe ellipse = ",font=(None,self.fsize),bg="gray",foreground="white").grid(row=3,column=0,sticky="nsew")
+        self.label004 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize),bg="gray",foreground="white").grid(row=3,column=2,sticky="nsew")
+        self.label4 = tk.Label(self.results,textvariable=self.ellipse_height,font=(None,self.fsize),bg="gray",foreground="white").grid(row=3,column=1,sticky="nsew")
+        self.label05 = tk.Label(self.results,text="Angle ellipse = ",font=(None,self.fsize),bg="gray",foreground="white").grid(row=4,column=0,sticky="nsew")
+        self.label005 = tk.Label(self.results,text="°",font=(None,self.fsize),bg="gray",foreground="white").grid(row=4,column=2,sticky="nsew")
+        self.label5 = tk.Label(self.results,textvariable=self.ellipse_angle,font=(None,self.fsize),bg="gray",foreground="white").grid(row=4,column=1,sticky="nsew")
         
 
         #Paramètre gaussienne
-        self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1,font=(None,self.fsize)).grid(row=5,column=0,sticky="nsew")
-        self.labelg11 = tk.Label(self.results,textvariable=self.gauss_amp1,font=(None,self.fsize)).grid(row=5,column=1,sticky="nsew")
-        self.labelg111 = tk.Label(self.results,text="",font=(None,self.fsize)).grid(row=5,column=2,sticky="nsew")
-        self.labelg12 = tk.Label(self.results,textvariable=self.gauss_mean1,font=(None,self.fsize)).grid(row=6,column=1,sticky="nsew")
-        self.labelg121 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=6,column=2,sticky="nsew")
-        self.labelg13 = tk.Label(self.results,textvariable=self.gauss_stddev1,font=(None,self.fsize)).grid(row=7,column=1,sticky="nsew")
-        self.labelg131 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=7,column=2,sticky="nsew")
-        self.labelg140 = tk.Label(self.results,text="",font=(None,self.fsize)).grid(row=8,column=0,sticky="nsew")
-        self.labelg141 = tk.Label(self.results,textvariable=self.gauss_Ie1,font=(None,self.fsize)).grid(row=8,column=1,sticky="nsew")
-        self.labelg142 = tk.Label(self.results,textvariable=self.gauss_unit2,font=(None,self.fsize)).grid(row=8,column=2,sticky="nsew")
-        self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2,font=(None,self.fsize)).grid(row=9,column=0,sticky="nsew")
-        self.labelg02 = tk.Label(self.results,textvariable=self.gauss_amp2,font=(None,self.fsize)).grid(row=9,column=1,sticky="nsew")
-        self.labelg021 = tk.Label(self.results,textvariable=self.gauss_amp2_name,font=(None,self.fsize)).grid(row=9,column=2,sticky="nsew")
-        self.labelg03 = tk.Label(self.results,textvariable=self.gauss_mean2,font=(None,self.fsize)).grid(row=10,column=1,sticky="nsew")
-        self.labelg031 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize)).grid(row=10,column=2,sticky="nsew")
-        self.labelg04 = tk.Label(self.results,textvariable=self.gauss_stddev2,font=(None,self.fsize)).grid(row=11,column=1,sticky="nsew")
-        self.labelg041 = tk.Label(self.results,textvariable=self.gauss_unit,font=(None,self.fsize)).grid(row=11,column=2,sticky="nsew")
-        self.labelg05 = tk.Label(self.results,text="",font=(None,self.fsize)).grid(row=12,column=0,sticky="nsew")
-        self.labelg051 = tk.Label(self.results,textvariable=self.gauss_Ie2,font=(None,self.fsize)).grid(row=12,column=1,sticky="nsew")
-        self.labelg052 = tk.Label(self.results,textvariable=self.gauss_unit2,font=(None,self.fsize)).grid(row=12,column=2,sticky="nsew")
-        self.labelg120=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=6,column=0,sticky="nsew")
-        self.labelg130=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=7,column=0,sticky="nsew")
-        self.labelg030=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=10,column=0,sticky="nsew")
-        self.labelg040=tk.Label(self.results,textvariable="",font=(None,self.fsize)).grid(row=11,column=0,sticky="nsew")
+        self.labelg10=tk.Label(self.results,textvariable=self.titre_gauss1,font=(None,self.fsize),bg="gray",foreground="white").grid(row=5,column=0,sticky="nsew")
+        self.labelg11 = tk.Label(self.results,textvariable=self.gauss_amp1,font=(None,self.fsize),bg="gray",foreground="white").grid(row=5,column=1,sticky="nsew")
+        self.labelg111 = tk.Label(self.results,text="",font=(None,self.fsize),bg="gray",foreground="white").grid(row=5,column=2,sticky="nsew")
+        self.labelg12 = tk.Label(self.results,textvariable=self.gauss_mean1,font=(None,self.fsize),bg="gray",foreground="white").grid(row=6,column=1,sticky="nsew")
+        self.labelg121 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize),bg="gray",foreground="white").grid(row=6,column=2,sticky="nsew")
+        self.labelg13 = tk.Label(self.results,textvariable=self.gauss_stddev1,font=(None,self.fsize),bg="gray",foreground="white").grid(row=7,column=1,sticky="nsew")
+        self.labelg131 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize),bg="gray",foreground="white").grid(row=7,column=2,sticky="nsew")
+        self.labelg140 = tk.Label(self.results,text="",font=(None,self.fsize),bg="gray",foreground="white").grid(row=8,column=0,sticky="nsew")
+        self.labelg141 = tk.Label(self.results,textvariable=self.gauss_Ie1,font=(None,self.fsize),bg="gray",foreground="white").grid(row=8,column=1,sticky="nsew")
+        self.labelg142 = tk.Label(self.results,textvariable=self.gauss_unit2,font=(None,self.fsize),bg="gray",foreground="white").grid(row=8,column=2,sticky="nsew")
+        self.labelg01=tk.Label(self.results,textvariable=self.titre_gauss2,font=(None,self.fsize),bg="gray",foreground="white").grid(row=9,column=0,sticky="nsew")
+        self.labelg02 = tk.Label(self.results,textvariable=self.gauss_amp2,font=(None,self.fsize),bg="gray",foreground="white").grid(row=9,column=1,sticky="nsew")
+        self.labelg021 = tk.Label(self.results,textvariable=self.gauss_amp2_name,font=(None,self.fsize),bg="gray",foreground="white").grid(row=9,column=2,sticky="nsew")
+        self.labelg03 = tk.Label(self.results,textvariable=self.gauss_mean2,font=(None,self.fsize),bg="gray",foreground="white").grid(row=10,column=1,sticky="nsew")
+        self.labelg031 = tk.Label(self.results,text="\u03BCm",font=(None,self.fsize),bg="gray",foreground="white").grid(row=10,column=2,sticky="nsew")
+        self.labelg04 = tk.Label(self.results,textvariable=self.gauss_stddev2,font=(None,self.fsize),bg="gray",foreground="white").grid(row=11,column=1,sticky="nsew")
+        self.labelg041 = tk.Label(self.results,textvariable=self.gauss_unit,font=(None,self.fsize),bg="gray",foreground="white").grid(row=11,column=2,sticky="nsew")
+        self.labelg05 = tk.Label(self.results,text="",font=(None,self.fsize),bg="gray",foreground="white").grid(row=12,column=0,sticky="nsew")
+        self.labelg051 = tk.Label(self.results,textvariable=self.gauss_Ie2,font=(None,self.fsize),bg="gray",foreground="white").grid(row=12,column=1,sticky="nsew")
+        self.labelg052 = tk.Label(self.results,textvariable=self.gauss_unit2,font=(None,self.fsize),bg="gray",foreground="white").grid(row=12,column=2,sticky="nsew")
+        self.labelg120=tk.Label(self.results,textvariable="",font=(None,self.fsize),bg="gray",foreground="white").grid(row=6,column=0,sticky="nsew")
+        self.labelg130=tk.Label(self.results,textvariable="",font=(None,self.fsize),bg="gray",foreground="white").grid(row=7,column=0,sticky="nsew")
+        self.labelg030=tk.Label(self.results,textvariable="",font=(None,self.fsize),bg="gray",foreground="white").grid(row=10,column=0,sticky="nsew")
+        self.labelg040=tk.Label(self.results,textvariable="",font=(None,self.fsize),bg="gray",foreground="white").grid(row=11,column=0,sticky="nsew")
         return
+
+    def M2(self):
+        """Fonction permettant le caclcul du M² (fonction en développement, il peut être nécessaire de la modifier)"""
+       #Variables globales uniquement
+       
+        """Variables à initialiser"""
+       
+
+        """"Edition de l'interface"""
+        self.windowM2 = tix.Tk()  #Réalisation de la fenêtre pour le calcul du M²
+        #self.windowM2.state('zoomed') #Lance le GUI en plein écran
+         
+        self.windowM2.title("Calcul du M²")
+        self.windowM2.config(background="#FFFFFF") #Couleur de la fenêtre
+
+        """Définition des frames"""
+        self.cmdM2 = tk.Frame(self.windowM2,padx=5,pady=5,bg="gray",relief = RIDGE)
+        self.cmdM2.grid(row=1,column=0,sticky="nsw")
+        
+        self.central = tk.Frame(self.windowM2,padx=5,pady=5,bg="gray",relief = RIDGE)
+        self.central.grid(row=1,column=1,sticky="nsew")
+
+        """Définition des boutons et zones de saisie"""
+        self.labelSpace = tk.Label(self.cmdM2, text='  ',bg="gray",foreground="white")
+        self.labelSpace.grid(row=0,column=0)
+
+        self.labellambda = tk.Label(self.cmdM2,text='Longueur d\'onde du faisceau (en nm)',bg="gray",foreground="white")
+        self.labellambda.grid(row=1,column=0)
+        self.entrylambda = tk.Entry(self.cmdM2)
+        self.entrylambda.grid(row=2,column=0)
+
+        self.labelSpace = tk.Label(self.cmdM2, text='  ',bg="gray",foreground="white")
+        self.labelSpace.grid(row=3,column=0)
+
+        self.labelz0 = tk.Label(self.cmdM2,text='Position du waist (en mm)',bg="gray",foreground="white")
+        self.labelz0.grid(row=4,column=0)
+        self.entryz0 = tk.Entry(self.cmdM2)
+        self.entryz0.grid(row=5,column=0)
+
+        self.labelSpace = tk.Label(self.cmdM2, text='  ',bg="gray",foreground="white")
+        self.labelSpace.grid(row=6,column=0)
+
+        self.labelw0 = tk.Label(self.cmdM2,text='diamètre waist (en µm)',bg="gray",foreground="white")
+        self.labelw0.grid(row=7,column=0)
+        self.entryw0 = tk.Label(self.cmdM2,text=self.ellipse_width.get())
+        self.entryw0.grid(row=8,column=0)
+
+        self.labelSpace = tk.Label(self.cmdM2, text='  ',bg="gray",foreground="white")
+        self.labelSpace.grid(row=9,column=0)
+
+        self.membutton= tk.Button(self.cmdM2,text="OK", command=self.memorise, bg="gray",foreground="white")
+        self.membutton.grid(row=10,column=0)
+        return
+
+    def destructorM2(self):
+        """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
+        #Variables globales uniquement
+
+        print("[INFO] closing...")
+        self.windowM2.quit()
+        self.windowM2.destroy() # Ferme la fenêtre
+        return
+
+    def memorise(self):
+        """Fonction enregistrant les différentes valeurs pour le calcul du M²"""
+        #Variables globales uniquement
+
+        self.lambda0 = float(self.entrylambda.get())*10**-9
+        self.w0 = float(self.ellipse_width.get())*10**-6
+        self.z0 = float(self.entryz0.get())*10**-3
+        print("lambda = ",self.lambda0,"z0 = ",self.z0)
+        self.mesuresM2()
+        return
+
+    def memoMeasures(self):
+        """Mémorisation et affichages des valeurs à mesurer"""
+        #Variables globales uniquement
+
+        Measures = np.zeros(7)
+        Measures[0] = float(self.measure1.get())
+        Measures[1] = float(self.measure2.get())
+        Measures[2] = float(self.measure3.get())
+        Measures[3] = float(self.measure4.get())
+        Measures[4] = float(self.measure5.get())
+        Measures[5] = float(self.measure6.get())
+        Measures[6] = float(self.measure7.get())
+        print(Measures)
+        params = self.abc_fit(self.positions, Measures, self.lambda0) #Appel de la fonction qui fit la fonction avec les paramètres
+        self.labelSpace = tk.Label(self.central, text='  ',bg="gray",foreground="white")
+        self.labelSpace.grid(row=10,column=1)
+        self.title = tk.Label(self.central,text="Resultats du fit M2 (d0, z0, Theta, M2, zR) : ",bg="gray",foreground="white")
+        self.title.grid(row=11,column = 1)
+        self.affichparams = tk.Label(self.central,text=params,bg="gray",foreground="white")
+        self.affichparams.grid(row=11,column = 2)
+        return
+
+
+
+    def mesuresM2(self):
+        """Définition des zones d'affichage des z"""
+        #Variables globales uniquement
+
+        self.labeltitlez = tk.Label(self.central, text=' z (en mm) ',bg="gray",foreground="white")
+        self.labeltitlez.grid(row=0,column=0)
+        self.labeltitlew = tk.Label(self.central, text=' w (en µm) ',bg="gray",foreground="white")
+        self.labeltitlew.grid(row=0,column=2)
+
+        self.positions = np.zeros(7)
+        rows=0
+        Zr = np.pi * self.w0*self.w0 / self.lambda0
+        delta = 2* Zr / 7
+        n = -3
+        line=0
+        for line in range(7):
+            rows=rows+1
+            self.positions[line] = self.z0 + n*delta
+            pos = tk.Label(self.central,text=self.positions[line])
+            pos.grid(row=rows, column=0)
+            space = tk.Label(self.central,text =" ")
+            space.grid(row=rows, column=1)
+            
+            line=line+1
+            n=n+1
+        #Zones d'entrées indexées pour ranger les valeurs par la suite
+        self.measure1 = tk.Entry(self.central)
+        self.measure1.grid(row=1, column=2)
+        self.measure2 = tk.Entry(self.central)
+        self.measure2.grid(row=2, column=2)
+        self.measure3 = tk.Entry(self.central)
+        self.measure3.grid(row=3, column=2)
+        self.measure4 = tk.Entry(self.central)
+        self.measure4.grid(row=4, column=2)
+        self.measure5 = tk.Entry(self.central)
+        self.measure5.grid(row=5, column=2)
+        self.measure6 = tk.Entry(self.central)
+        self.measure6.grid(row=6, column=2)
+        self.measure7 = tk.Entry(self.central)
+        self.measure7.grid(row=7, column=2)
+
+        self.labelSpace = tk.Label(self.central, text='  ',bg="gray",foreground="white")
+        self.labelSpace.grid(row=8,column=2)
+
+        #Bouton OK
+        self.membutton= tk.Button(self.central,text="OK", command=self.memoMeasures,bg="gray",foreground="white")
+        self.membutton.grid(row=9,column=2)
+        return
+
+    def abc_fit(self, z, d, lambda0):
+    
+        # Return beam parameters for beam diameter measurements.
+
+        # Follows ISO 11146-1 section 9 and uses the standard `polyfit` routine
+        # in `numpy` to find the coefficients `a`, `b`, and `c`.
+
+        # d(z)**2 = a + b*z + c*z**2
+
+        # These coefficients are used to determine the beam parameters using
+        # equations 25-29 from ISO 11146-1.
+
+        # Unfortunately, standard error propagation fails to accurately determine
+        # the standard deviations of these parameters.  Therefore the error calculation
+        # lines are commented out and only the beam parameters are returned.
+
+        # Args:
+        #     z: axial position of beam measurement [m]
+        #     d: beam diameter [m]
+        # Returns:
+        #     d0: beam waist diameter [m]
+        #     z0: axial location of beam waist [m]
+        #     M2: beam propagation parameter [-]
+        #     Theta: full beam divergence angle [radians]
+        #     zR: Rayleigh distance [m]
+    
+        nlfit, _nlpcov = np.polyfit(z, d**2, 2, cov=True)
+
+        # unpack fitting parameters
+        c, b, a = nlfit
+
+
+        z0 = -b/(2*c)
+        Theta = np.sqrt(c)
+        disc = np.sqrt(4*a*c-b*b)/2
+        M2 = np.pi/4/lambda0*disc
+        d0 = disc / np.sqrt(c)
+        zR = disc/c
+        params = [d0, z0, Theta, M2, zR]
+
+        # unpack uncertainties in fitting parameters from diagonal of covariance matrix
+        #c_std, b_std, a_std = [np.sqrt(_nlpcov[j, j]) for j in range(nlfit.size)]
+        #z0_std = z0*np.sqrt(b_std**2/b**2 + c_std**2/c**2)
+        #d0_std = np.sqrt((4*c**2*a_std)**2 + (2*b*c*b_std)**2 + (b**2*c_std)**2) / (8*c**2*d0)
+        #Theta_std = c_std/2/np.sqrt(c)
+        #zR_std = np.sqrt(4*c**4*a_std**2 + b**2*c**2*b_std**2 + (b**2-2*a*c)**2*c_std**2)/(4*c**3) / zR
+        #M2_std = np.pi**2 * np.sqrt(4*c**2*a_std**2 + b**2*b_std**2 + 4*a**2*c_std**2)/(64*lambda0**2) / M2
+        #errors = [d0_std, z0_std, M2_std, Theta_std, zR_std]
+        return params
+
 
 
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
+        #Variables globales uniquement
+
         print("[INFO] closing...")
         self.window.quit()
         self.window.destroy() # Ferme la fenêtre
@@ -418,11 +641,15 @@ class Fenetre(Thread):
 
     def alignement(self):
         """Fonction pour alignement de faisceaux"""
+        #Variables globales uniquement
+
         self.align=True
         return
     
     def arret_align(self):
         """Fonction d'arrêt de l'alignement"""
+        #Variables globales uniquement
+
         self.align=False
         self.titre_gauss1.set("")
         self.titre_gauss2.set("")
@@ -432,6 +659,8 @@ class Fenetre(Thread):
 
     def stop_profil(self):
         """Fonction permettant d'enlever le plots"""
+        #Variables globales uniquement
+
         for widget in self.cadre_plots.winfo_children():
             widget.destroy()
             self.titre_gauss1.set("")
@@ -440,14 +669,26 @@ class Fenetre(Thread):
             
 
     def hold(self):
+        """Fonction qui garde en mémoire la position du faisceau pour l'alignement"""
+        #Variables globales uniquement
+
         self.H=True
         self.Bx=self.baryX
         self.By=self.baryY
         return
 
     def DeNoise(self):
+        """Donne la condition d'alignement pour le traitement d'image"""
+        #Variables globales uniquement
+
         self.noise=1
         return
+
+    def _from_rgb(self, rgb):
+        """translates an rgb tuple of int to a tkinter friendly color code"""
+        #Prend un code rgb en entrée en sort la variable pour tkinter de la couleur
+
+        return "#%02x%02x%02x" % rgb  
 
 
     #####################
@@ -456,6 +697,8 @@ class Fenetre(Thread):
 
     def flux_cam(self):
         """Lance la fonction d'affichage de la preview  dans un thread"""
+        #Variables globales uniquement
+
         self.t1=Thread(target=self.update(), args=(self.window, self.display1, self.Screen_x, self.Screen_y)) #boucle la fonction d'acquisition de la caméra
         self.t1.start()
         return
@@ -463,6 +706,8 @@ class Fenetre(Thread):
     
     def update(self):
         """Affichage de la preview"""
+        #Fonction avec variables globales et fichier OneCameraCapture
+
         #Get a frame from cameraCapture
         ratio=1
 
@@ -544,19 +789,20 @@ class Fenetre(Thread):
         elif r < ratio:
             self.Screen_y = int(round(self.display1.winfo_width()/ratio))
 
-        #resize the picture
-        centery, centerx = int(frame.shape[0]/2), int(frame.shape[1]/2)
-        z=self.curs_zoom.get()
-        self.dy=int(centery/z)
+        centery, centerx = int(frame.shape[0]/2), int(frame.shape[1]/2) #centre de l'image
+        z=self.curs_zoom.get() #récupère le facteur de zoom
+        self.dy=int(centery/z) #calcul du décalage enlevé par le zoom sur les bords de l'image
         self.dx=int(centerx/z)
-        offy=centery-self.dy
+        offy=centery-self.dy #fixe le décalage en pixel possible du au zoom
         offx=centerx-self.dx
-        self.offx.configure(from_=-offx, to=offx)
+        self.offx.configure(from_=-offx, to=offx) #fixe les valeurs du curseur de décalage du focus du zoom
         self.offy.configure(from_=-offy, to=offy)
 
+        #début du crop par rapport au centre
         startx = centerx+self.offx.get()
         starty = centery+self.offy.get()
 
+        #crop and resize the picture
         crop= frame[starty-self.dy:starty+self.dy,startx-self.dx:startx+self.dx]
         frame = cv2.resize(crop, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_AREA)
 
@@ -570,13 +816,19 @@ class Fenetre(Thread):
  
 
     def video_tool(self):
+        """Lance la fonction de traitement d'image dans un thread"""
+        #Variables globales uniquement
+
         self.t2 = Thread(target=self.disp_traitement)
         self.t2.start()
         return
 
 
     def disp_traitement(self):
-        if self.noise==1:
+        """Fonction d'appel de l'image traité dans le display 2"""
+        #Fonctions avec variables globales et fichier Img_Traitement
+
+        if self.noise==1: 
             self.frame= cv2.fastNlMeansDenoising( self.frame , None , 10 , 7 , 21)
             self.noise=0
         else :
@@ -587,6 +839,9 @@ class Fenetre(Thread):
 
     
     def affich_traitement(self):
+        """Fonction d'affichage de l'image traité dans le display2"""
+        #Variables globales uniquement
+
         #Get display size
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
@@ -600,6 +855,7 @@ class Fenetre(Thread):
         elif r < ratio:
             self.Screen2_y = int(round(self.display2.winfo_width()/ratio))
 
+        #changement de l'image en 8bits au cas de changement de bitrate dans le transfert
         frame = cv2.resize(self.frame2, dsize=(self.Screen2_x,self.Screen2_y), interpolation=cv2.INTER_AREA)
         self.photo2 = ImageTk.PhotoImage(image = Img.fromarray(frame))
         self.display2.create_image(self.Screen2_x/2,self.Screen2_x/(2*ratio),image=self.photo2)
@@ -615,6 +871,8 @@ class Fenetre(Thread):
 
     def exp(self):
         """Lance la fonction d'auto expo de la classe onCameraCapture suite à la pression d'un bouton"""
+        #Fonction avec variables globales et fichier OneCameraCapture
+
         try :
             self.vid.auto_exposure()
         except :
@@ -628,6 +886,9 @@ class Fenetre(Thread):
 
 
     def choix_figure(self, parameter):
+        """Choix de la figure matplotlib à afficher"""
+        #Variables globales uniquement
+
         selection = self.liste_combobox.get()
         #print(selection)
         if selection =="Choix":
@@ -642,6 +903,9 @@ class Fenetre(Thread):
 
 
     def choose_filter(self,parameter):
+        """Choix du filtre pour le traitement de l'image"""
+        #Variables globales uniquement
+
         selection = self.liste_combobox2.get()
         if selection =="Otsu":
             self.choix_filtre=1
@@ -654,26 +918,28 @@ class Fenetre(Thread):
 
     def plot(self):
         "choix_fig_XY = 0 quand le traitement d'image n'a pas encore été effectué, et = 1 après le traitement. le graphe apparait après pression du bouton profils"
+        #Fonctions avec variables globales et fichier Img_Traitement sort la figure résultante en sortie
+
         try :
             for widget in self.cadre_plots.winfo_children():
                 widget.destroy()
         except :
             pass
         if self.choix_fig == 0:
-            self.fig_XY = Figure()
+            self.fig_XY = Figure() #création de la figure
         else : 
             try :
                 self.photo2
             except :
                 tk.messagebox.showerror("Graphiques impossibles", "Il faut traiter le faisceau pour l'affichage des graphs. \n Pour cela cliquez sur le bouton traitement après ce message.")
-                self.fig_XY = Figure()
+                self.fig_XY = Figure() #création de la figure
                 return self.fig_XY
 
-            self.fig_XY = Figure()
+            self.fig_XY = Figure() #création de la figure
             self.fig_width = self.cadre_plots.winfo_width() 
             self.fig_height = self.cadre_plots.winfo_height()
                 
-            if self.choix_fig == 1 :
+            if self.choix_fig == 1 : #Affichage du graph fit XY
                 self.fig_XY, x, y, Iex, Iey = self.trmt.trace_profil(self.dpi,self.fig_width,self.fig_height, self.pixel_size)
                 self.titre_gauss1.set("Gaussienne X :")
                 self.titre_gauss2.set("Gaussienne Y :")
@@ -688,7 +954,7 @@ class Fenetre(Thread):
                 self.gauss_unit.set("\u03BCm")
                 self.gauss_unit2.set("\u03BCm")
                 self.gauss_amp2_name.set('')
-            if self.choix_fig == 2 :
+            if self.choix_fig == 2 : #Affichage du graph fit ellipse
                 self.fig_XY, g, p, Ieg, Iep= self.trmt.trace_ellipse(self.dpi,self.fig_width,self.fig_height, self.pixel_size)
                 self.titre_gauss1.set("Gaussienne ellipse G :")
                 self.titre_gauss2.set("Gaussienne ellipse P :")
@@ -703,7 +969,7 @@ class Fenetre(Thread):
                 self.gauss_unit.set("\u03BCm")
                 self.gauss_unit2.set("\u03BCm")
                 self.gauss_amp2_name.set('')
-            if self.choix_fig == 3 :
+            if self.choix_fig == 3 : #Affichage du graph fit gauss 2D
                 self.fig_XY, d = self.trmt.plot_2D(self.dpi,self.fig_width,self.fig_height)
                 self.titre_gauss1.set("Gaussienne 2D :")
                 self.titre_gauss2.set("")
@@ -720,7 +986,7 @@ class Fenetre(Thread):
                 self.gauss_amp2_name.set("\u03BCm")
 
         #cadre affichage profils
-        self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots)
+        self.disp_XY = FigureCanvasTkAgg(self.fig_XY, self.cadre_plots) #affichage de la boîte à outils matplotlib
         self.toolbar = NavigationToolbar2Tk(self.disp_XY, self.cadre_plots,pack_toolbar=False)
         self.toolbar.grid(row=0,column=0)
         self.toolbar.update()    
@@ -731,6 +997,8 @@ class Fenetre(Thread):
 
     def capture(self):
         """ Fonction permettant de capturer une image et de l'enregistrer avec l'horodatage """
+        #Variables globales uniquement
+
         ts = datetime.datetime.now()
         try:
             os.mkdir('Save') #Créer un dossier snapshot pour les images
