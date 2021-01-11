@@ -33,12 +33,15 @@ Created on Mon Sep 28 09:22:21 2020
 
 
 print("[INFO] starting...")
+import math
+from types import DynamicClassAttribute
 from PIL import Image as Img #Bibliothèque de traitement d'image
 from PIL import ImageTk #Transformation d'image pour l'affichage de tkinter
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
+import warnings
 import tkinter as tk #Bibliothèque d'affichage graphique
-from tkinter import ALL, EventType
+from tkinter import filedialog
 from tkinter import StringVar, ttk, DoubleVar, IntVar, BooleanVar
 from tkinter import RIDGE
 from tkinter import tix
@@ -86,10 +89,14 @@ class Fenetre(Thread):
         self.window.protocol('WM_DELETE_WINDOW', self.destructor) #La croix de la fenetre va fermer le programme
         
         """"definition des proportions pour les frames"""
+        
         self.window.grid_columnconfigure(1, weight=3)
-        self.window.grid_columnconfigure(2,weight=2)
+        self.window.grid_columnconfigure(2, weight=0)
+        self.window.grid_columnconfigure(3,weight=2)
         self.window.grid_rowconfigure(1, weight=3)
-        self.window.grid_rowconfigure(2, weight=3)
+        self.window.grid_rowconfigure(2, weight=0)
+        self.window.grid_rowconfigure(3, weight=2)
+        
         
         """Definition de certaines variables nécessaires au demarrage de l'interface"""
         #Variables pour la taille des pixels des caméras
@@ -143,6 +150,9 @@ class Fenetre(Thread):
         self.Screen_y = 1000
         self.Screen2_x = 750
         self.Screen2_y = 750
+        self.dx=0
+        self.dy=0
+        
 
         #Temps en ms entre chaque actualisation de l'interface
         self.delay=15
@@ -152,6 +162,7 @@ class Fenetre(Thread):
 
         #Variable pour l'aligenement des faisceaux
         self.align=False
+        self.zoom=False
         self.choix_fig=0
         self.Bx=0
         self.By=0
@@ -186,7 +197,7 @@ class Fenetre(Thread):
         #commandes gauche
             #Taille de la zone des boutons
         self.cmdleft = tk.Frame(self.window,padx=5,pady=5,bg="gray",relief = RIDGE)
-        self.cmdleft.grid(row=1, rowspan=2,column=0, sticky='NSEW')
+        self.cmdleft.grid(row=1, rowspan=3,column=0, sticky='NSEW')
 
             #Bouton snapshot
         self.FrameCapture=tk.Frame(self.cmdleft, borderwidth=2, relief='groove')
@@ -255,7 +266,7 @@ class Fenetre(Thread):
         #commandes superieures
             #Taille de la zone de commande
         self.cmdup = tk.Frame(self.window,padx=5,pady=5,bg="gray")
-        self.cmdup.grid(row=0,column=1, sticky="NSEW")
+        self.cmdup.grid(row=0,column=1, columnspan=2, sticky="NSEW")
 
             #Bouton traitement vidéo
         btnvideo = tk.Button(self.cmdup,text="Traitement video", command=self.video_tool)
@@ -281,6 +292,9 @@ class Fenetre(Thread):
         btnNoise = tk.Button(self.cmdup,text="Denoise image", command=self.DeNoise)
         btnNoise.grid(row=0,column=5,sticky="nsew")
 
+            #Scale
+        self.curs_zoom=tk.Scale(self.cmdup, orient='horizontal', from_=1, to=20, resolution=0.1, tickinterval=2, length=250, label='zoom')
+        self.curs_zoom.grid(row=0,column=6,sticky="nsew")
 
         #### Affichage de l'aide quand on survole les bouttons ####
 
@@ -319,20 +333,24 @@ class Fenetre(Thread):
         self.display1.grid(row=1,column=1,sticky="NSEW")        #cadre video
         self.Screen_x = self.display1.winfo_width()
         self.Screen_y = self.display1.winfo_height()
+        self.offx = tk.Scale(self.window, orient='horizontal', from_=-self.dx, to=self.dx, resolution=1, tickinterval=0, length=self.display1.winfo_width(), showvalue=0)
+        self.offx.grid(row=2,column=1,sticky="nsew")
+        self.offy = tk.Scale(self.window, orient='vertical', from_=-self.dy, to=self.dy, resolution=1, tickinterval=0, length=self.display1.winfo_height(), showvalue=0)
+        self.offy.grid(row=1,column=2,sticky="nsew")
 
         #cadre traitement
         self.title_display2 = tk.Label(self.window,text="Fit ellipse",borderwidth=4,bg="gray",relief="ridge")
-        self.title_display2.grid(row=0,column=2,sticky="NSEW")
+        self.title_display2.grid(row=0,column=3,sticky="NSEW")
         self.display2 = tk.Canvas(self.window, width=self.Screen2_x/2, height=self.Screen2_y/2,bg="white",relief="ridge")  # Def de l'écran 2
-        self.display2.grid(row=1,column=2,sticky="NSEW")
+        self.display2.grid(row=1,column=3,sticky="NSEW")
         self.Screen2_x = self.display2.winfo_width()
         self.Screen2_y = self.display2.winfo_height()
 
         #cadre plots fits
         self.display_plots_title = tk.Label(self.window,text="affichage graphes de fit",borderwidth=4,bg="gray",relief="ridge")
-        self.display_plots_title.grid(row=3,column=1, sticky="NSEW")
+        self.display_plots_title.grid(row=4,column=1, sticky="NSEW")
         self.cadre_plots = tk.Frame(self.window,borderwidth=4,bg="white",relief="ridge")
-        self.cadre_plots.grid(row=2,column=1,columnspan=1,sticky="NSEW")
+        self.cadre_plots.grid(row=3,column=1,columnspan=1,sticky="NSEW")
 
 
         ##zone affichage résultats##
@@ -340,7 +358,7 @@ class Fenetre(Thread):
         self.fsize = 12 #Taille de la police pour l'affichage
         
         self.results = tk.Frame(self.window,padx=5,pady=5,bg="gray") #définit la frame
-        self.results.grid(row=2,rowspan=2,column=2,sticky="NSEW") #place la frame
+        self.results.grid(row=2,rowspan=3,column=2,columnspan=2, sticky="NSEW") #place la frame
 
         #barycentres
         self.label01 = tk.Label(self.results,text="barycentre X = ",font=(None,self.fsize)).grid(row=0,column=0,sticky="nsew")
@@ -431,14 +449,6 @@ class Fenetre(Thread):
         self.noise=1
         return
 
-    def do_zoom(self, event):
-        width, height = self.photo.size
-        print(event.x, event.y)
-        x=round(width/event.x)
-        y=round(height/event.y)
-        self.photo.resize((x,y), Img.ANTIALIAS)
-        return
-
 
     #####################
     #   Partie Camera   # 
@@ -469,7 +479,7 @@ class Fenetre(Thread):
                 print("Problem to get an image") #Impossible de récuperer le flux de la caméra
                 tk.messagebox.showerror("Problem to get an image") #Affichage d'un message d'erreur
                 exit()
-
+    
         self.frame=cv2.normalize(self.frame0, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1) #Convertit l'image en 8bits pour en permettre l'affichage sur tous les écrans
         frame=self.frame
 
@@ -514,16 +524,6 @@ class Fenetre(Thread):
                     self.gauss_amp1.set("{:.1f}".format(xc * self.pixel_size))
                     self.gauss_amp2.set("{:.1f}".format(yc * self.pixel_size))
 
-        #OpenCV bindings for Python store an image in a NumPy array
-        #Tkinter stores and displays images using the PhotoImage class
-        # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
-        self.photo =  Img.fromarray(frame)
-
-        self.display1.bind("<MouseWheel>", self.do_zoom)
-        self.display1.bind('<ButtonPress-1>', lambda event: self.display1.scan_mark(event.x, event.y))
-        self.display1.bind("<B1-Motion>", lambda event: self.display1.scan_dragto(event.x, event.y, gain=1))
-
-        photo=ImageTk.PhotoImage(image =self.photo)
 
         #Get display size
         self.Screen_x = self.display1.winfo_width()
@@ -545,12 +545,29 @@ class Fenetre(Thread):
             self.Screen_y = int(round(self.display1.winfo_width()/ratio))
 
         #resize the picture
-        #frame = cv2.resize(frame, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_AREA)
-    
-        self.display1.create_image(self.Screen_x/2,self.Screen_x/(2*ratio),image=photo)
+        centery, centerx = int(frame.shape[0]/2), int(frame.shape[1]/2)
+        z=self.curs_zoom.get()
+        self.dy=int(centery/z)
+        self.dx=int(centerx/z)
+        offy=centery-self.dy
+        offx=centerx-self.dx
+        self.offx.configure(from_=-offx, to=offx)
+        self.offy.configure(from_=-offy, to=offy)
+
+        startx = centerx+self.offx.get()
+        starty = centery+self.offy.get()
+
+        crop= frame[starty-self.dy:starty+self.dy,startx-self.dx:startx+self.dx]
+        frame = cv2.resize(crop, dsize=(self.Screen_x,self.Screen_y), interpolation=cv2.INTER_AREA)
+
+        #OpenCV bindings for Python store an image in a NumPy array
+        #Tkinter stores and displays images using the PhotoImage class
+        # Use PIL (Pillow) to convert the NumPy ndarray to a PhotoImage
+        self.photo = ImageTk.PhotoImage(image = Img.fromarray(frame))
+        self.display1.create_image(self.Screen_x/2,self.Screen_x/(2*ratio),image=self.photo)
         #recall the function after a delay
         self.window.after(self.delay, self.update)
-        
+ 
 
     def video_tool(self):
         self.t2 = Thread(target=self.disp_traitement)
@@ -808,7 +825,6 @@ class Fenetre(Thread):
                 break
             break
         return
-
 
 root = Fenetre()
 root.window.mainloop() # Lancement de la boucle principale
