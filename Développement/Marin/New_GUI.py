@@ -85,7 +85,7 @@ class Fenetre(Thread):
         self.window.state('zoomed') #Lance le GUI en plein écran
          
         self.window.title("Beam analyzer Python")
-        self.window.config(background="#FFFFFF") #Couleur de la fenêtre
+        self.window.config(background="gray") #Couleur de la fenêtre
         self.window.protocol('WM_DELETE_WINDOW', self.destructor) #La croix de la fenetre va fermer le programme
         
         """"definition des proportions pour les frames"""
@@ -195,8 +195,18 @@ class Fenetre(Thread):
         #Variables globales uniquement
         
         #Logo
-        self.logo = tk.Frame(self.window,padx=5,pady=5,bg="gray")
-        self.logo.grid(row=0,column=0, sticky='NSEW')
+        image = Img.open('Photos/foton.png')
+        image=image.resize((100,70))
+        photo = ImageTk.PhotoImage(image)
+        label = tk.Label(self.window, image=photo, bg="gray")
+        label.grid(row=0, column=0)
+        """
+        img=cv2.imread('Photos/foton.png',0)
+        image=cv2.resize(img, dsize=(100,70), interpolation=cv2.INTER_AREA)
+        #cv2.imshow('image', image)
+        photo = ImageTk.PhotoImage(image = Img.fromarray(image))
+        self.logo.create_image(50,30,image=photo)
+        """
 
         #name
         self.ourname = tk.Frame(self.window,padx=5,pady=5,bg="gray")
