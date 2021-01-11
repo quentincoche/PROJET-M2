@@ -160,12 +160,9 @@ class Fenetre(Thread):
         except:
             pass
         
-
-
     #########################
     #   Partie Interface    # 
     #########################       
-
 
     def Interface(self):
         """ Fonction permettant de créer l'interface dans laquelle sera placé toutes les commandes et visualisation permettant d'utiliser le programme """
@@ -297,7 +294,6 @@ class Fenetre(Thread):
         #b.bind_widget(button2, balloonmsg='Self-destruct button',statusmsg='Press this button and it will destroy itself')
         return
 
-
     def display(self):
 
         self.display1 = tk.Canvas(self.window, borderwidth=4,bg="white",relief="ridge")  # Initialisation de l'écran 1
@@ -419,8 +415,6 @@ class Fenetre(Thread):
 
         return 
 
-
-
     def destructor(self):
         """ Détruit les racines objet et arrête l'acquisition de toutes les sources """
         print("[INFO] closing...")
@@ -515,8 +509,6 @@ class Fenetre(Thread):
         self.affichparams = tk.Label(self.central,text=params, bg='gray')
         self.affichparams.grid(row=11,column = 2)
         return
-
-
 
     def mesuresM2(self):
         """Définition des zones d'affichage des z"""
@@ -806,7 +798,7 @@ class Fenetre(Thread):
         self.cadre_disp_XY.grid(row=1,column=0,sticky="NSEW")
         return self.fig_XY
 
-    def abc_fit(z, d, lambda0):
+    def abc_fit(self,z, d, lambda0):
     
         # Return beam parameters for beam diameter measurements.
 
