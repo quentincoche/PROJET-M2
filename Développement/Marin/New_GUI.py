@@ -40,11 +40,12 @@ from PIL import ImageTk #Transformation d'image pour l'affichage de tkinter
 import numpy as np #Bibliothèque de traitement des vecteurs et matrice
 import cv2 #Bibliothèque d'interfaçage de caméra et de traitement d'image
 import warnings
+from ttkwidgets.frames import Balloon
 import tkinter as tk #Bibliothèque d'affichage graphique
 from tkinter import filedialog
 from tkinter import StringVar, ttk, DoubleVar, IntVar, BooleanVar
 from tkinter import RIDGE
-from tkinter import tix
+from tkinter import ttk
 from tkinter.filedialog import asksaveasfile
 from threading import Thread #Bibliothèque de multithreading pour optimiser le fonctionnement
 import os #Bibliothèque permettant de communiquer avec l'os et notamment le "path"
@@ -81,7 +82,7 @@ class Fenetre(Thread):
         self.output_path = Path.cwd()  #Chemin de sortie de la photo
 
         """"Edition de l'interface"""
-        self.window = tix.Tk()  #Réalisation de la fenêtre principale
+        self.window = tk.Tk()  #Réalisation de la fenêtre principale
         self.window.state('zoomed') #Lance le GUI en plein écran
          
         self.window.title("Beam analyzer Python")
@@ -195,11 +196,12 @@ class Fenetre(Thread):
         #Variables globales uniquement
         
         #Logo
+        
         image = Img.open('Photos/foton.png')
-        image=image.resize((100,70))
+        image=image.resize((100,70), Img.ANTIALIAS)
         photo = ImageTk.PhotoImage(image)
-        #label = tk.Label(self.window, image=photo, bg="gray")
-        #label.grid(row=0, column=0)
+        # label = tk.Label(self.window, image=photo, bg="gray")
+        # label.grid(row=0, column=0)
         self.logo = tk.Canvas(self.window, width = image.size[0], height = image.size[1], bg="gray") 
         self.logo.create_image(0,0, anchor = "nw", image=photo)
         self.logo.grid(row=0,column=0) 
@@ -332,32 +334,31 @@ class Fenetre(Thread):
         self.curs_zoom.grid(row=0,column=8,sticky="nsew")
 
         #### Affichage de l'aide quand on survole les bouttons ####
-        b = tk.tix.Balloon(self.window,bg="gray")
-        b.bind_widget(btnquit,balloonmsg='Quitte le logiciel')
-        b.bind_widget(btnalign,balloonmsg='Affiche la position du barycentre du faisceau au moment de la pression, pour\n vérifier la bonne position du faisceau')
-        b.bind_widget(btnhold,balloonmsg='Permet de mémoriser la position du barycentre du faisceau au moment de la pression, puis d\'afficher\n la position en temps réel du barycentre pour aligner un deuxième faisceau avec le premier')
-        b.bind_widget(btn_stopalign,balloonmsg='Arrête la fonction d\'alignement de faisceaux')
-        b.bind_widget(btnexp,balloonmsg='Réglage automatique du temps d\'exposition après pression du bouton')
-        b.bind_widget(btnNoise,balloonmsg='Permet d\'appliquer un Denoiser sur l\'image dans le cas où il y aurait\n beaucoup de bruit, long temps de traitement')
-        b.bind_widget(btnvideo,balloonmsg='Lance le traitement d\'image.\
+        btnquit_ttp=Balloon(btnquit, text='Quitte le logiciel')
+        btnalign_ttp=Balloon(btnalign,text='Affiche la position du barycentre du faisceau au moment de la pression, pour\n vérifier la bonne position du faisceau')
+        btnhold_ttp=Balloon(btnhold,text='Permet de mémoriser la position du barycentre du faisceau au moment de la pression, puis d\'afficher\n la position en temps réel du barycentre pour aligner un deuxième faisceau avec le premier')
+        btnstopalign_ttp=Balloon(btn_stopalign,text='Arrête la fonction d\'alignement de faisceaux')
+        btnexp_ttp=Balloon(btnexp,text='Réglage automatique du temps d\'exposition après pression du bouton')
+        btnnoise_ttp=Balloon(btnNoise,text='Permet d\'appliquer un Denoiser sur l\'image dans le cas où il y aurait\n beaucoup de bruit, long temps de traitement')
+        btnvideo_ttp=Balloon(btnvideo,text='Lance le traitement d\'image.\
             \n Permet de détecter plus ou moins grossièrement selon la méthode de\n seuillage la forme de l\'ellipse ainsi que la position du barycentre de limage croppée')
-        b.bind_widget(self.liste_combobox,balloonmsg='Choix du fit à afficher :\n\
+        btnfit_ttp=Balloon(self.liste_combobox,text='Choix du fit à afficher :\n\
              -Fit XY -> fit gaussien selon les axes X et Y \n\
              -Fit axes ellipse -> fit gaussien selon les axes de l\'ellipse (grand et petit axes)\n\
              -Fit gauss2D -> fit gaussien sur les deux dimensions \n Appuyer sur le bouton Profils pour afficher les graphes')
-        b.bind_widget(self.liste_combobox2,balloonmsg='Choix de la technique de seuillage du faisceau :\n\
+        btnfiltre_ttp=Balloon(self.liste_combobox2,text='Choix de la technique de seuillage du faisceau :\n\
              -Otsu -> binarisation selon l\'algorithme Otsu \n\
              -Adaptatif -> binarisation adaptative par zone de l\'image\n\
              -I/e² -> les pixels inférieurs à la valeur de Imax/e² sont mis à zero ')
-        b.bind_widget(btnprofiles,balloonmsg='Permet l\'affichage des courbes choisies')
-        b.bind_widget(btn_stpprof,balloonmsg='Permet d\'arrêter l\'affichage des courbes')
-        b.bind_widget(self.FrameCapture, balloonmsg='Sélection des images et/ou paramètres à enregistrer :\n\
+        btnprofil_ttp=Balloon(btnprofiles,text='Permet l\'affichage des courbes choisies')
+        btnstprof_ttp=Balloon(btn_stpprof,text='Permet d\'arrêter l\'affichage des courbes')
+        btncapture_ttp=Balloon(self.FrameCapture, text='Sélection des images et/ou paramètres à enregistrer :\n\
             -Preview -> l\'image en temps réel à gauche de l\'écran en .jpeg\n\
             -Traité -> l\'image traité à droite de l\'écran en .jpeg\n\
             -Plot -> Le graphique en bas de l\'écran en .jpeg\n\
             -Coordonnées -> fichier texte des coordonnées du faisceaux (barycentre, ellipse) en .txt\n\
             -Données Plot -> Paramètres associés à la gaussiennes du graph en .txt')
-        #b.bind_widget(button2, balloonmsg='Self-destruct button',statusmsg='Press this button and it will destroy itself')
+        #btnquit_ttp=Balloon(button2, text='Self-destruct button',statusmsg='Press this button and it will destroy itself')
         return
 
 
@@ -452,7 +453,7 @@ class Fenetre(Thread):
        
 
         """"Edition de l'interface"""
-        self.windowM2 = tix.Tk()  #Réalisation de la fenêtre pour le calcul du M²
+        self.windowM2 = tk.Tk()  #Réalisation de la fenêtre pour le calcul du M²
         #self.windowM2.state('zoomed') #Lance le GUI en plein écran
          
         self.windowM2.title("Calcul du M²")

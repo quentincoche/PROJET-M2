@@ -169,8 +169,10 @@ class Traitement():
         crop = frame[y:y+100,x:x+100] #sélection de la partie du fond hors du faisceau
         crop_img = Image.fromarray(crop) #Transforme le crop en image
         crop_fond = ImageStat.Stat(crop_img) #Récupère les stats de l'image
-        crop_av=int(np.round(crop_fond.mean)) #Récupère la moyenne de l'intensité
-
+        try:
+            crop_av=int(np.round(crop_fond.mean)) #Récupère la moyenne de l'intensité
+        except:
+            crop_av=0
         patch = Image.new("L", (self.W,self.H), crop_av) #Créer un patch de taille du faisceau et d'intensité de la moyenne précédente
         mask = Image.fromarray(frame) #Transforme l'"image" original en image
         mask.paste(patch, box=(self.X,self.Y)) #Copie le patch sur l'image
@@ -297,7 +299,7 @@ class Traitement():
         #On affiche les courbes résultantes
         fig = Figure()
         fig.set_size_inches(fig_width_i,fig_height_i)
-        fig.suptitle("Gaussienne x,y")
+        fig.suptitle("Gaussiennes x,y")
 
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(x_pixel, Lx, label="Données bruts")
@@ -610,7 +612,7 @@ class Traitement():
         #affichage des résultats
         fig = plt.figure(figsize=plt.figaspect(0.5))
         fig.set_size_inches(fig_width_i,fig_height_i)
-        fig.suptitle("Gaussienne ellipse")
+        fig.suptitle("Gaussiennes ellipses")
 
         ax = fig.add_subplot(1 ,2 ,1)
         ax.plot(G_pixel, Lg, label="Données brutes")
