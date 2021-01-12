@@ -198,8 +198,11 @@ class Fenetre(Thread):
         image = Img.open('Photos/foton.png')
         image=image.resize((100,70))
         photo = ImageTk.PhotoImage(image)
-        label = tk.Label(self.window, image=photo, bg="gray")
-        label.grid(row=0, column=0)
+        #label = tk.Label(self.window, image=photo, bg="gray")
+        #label.grid(row=0, column=0)
+        self.logo = tk.Canvas(self.window, width = image.size[0], height = image.size[1], bg="gray") 
+        self.logo.create_image(0,0, anchor = "nw", image=photo)
+        self.logo.grid(row=0,column=0) 
         """
         img=cv2.imread('Photos/foton.png',0)
         image=cv2.resize(img, dsize=(100,70), interpolation=cv2.INTER_AREA)
