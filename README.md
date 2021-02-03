@@ -6,7 +6,7 @@ Le programme est en cours de **développement** et des bugs peuvent survenir et 
   
 La base de développement du système est une caméra Basler ([acA1920-40uc](https://www.baslerweb.com/en/products/cameras/area-scan-cameras/ace/aca1920-40uc/) et [acA5472-17um](https://www.baslerweb.com/en/products/cameras/area-scan-cameras/ace/aca5472-17um/)) mais un module ouvert [OpenCV](https://opencv.org/) en permet l'usage le plus courant avec tout type de caméra.  
 
-Le poster de la soutenance de projet : 
+Le poster de la soutenance de projet : [Poster](https://github.com/quentincoche/PROJET-M2/blob/master/Poster%20Soutenance.pdf)
   
   
 ## Fonctionnalités :  
