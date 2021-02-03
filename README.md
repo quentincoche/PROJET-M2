@@ -11,8 +11,9 @@ La base de développement du système est une caméra Basler ([acA1920-40uc](htt
   
 Il accuse certaines fonctionnalités :    
   * Preview de la caméra  
+    * Zoom dans le flux
   * Traitement de l'image :  
-    * Détection du faisceau par 2 méthodes de seuillage  
+    * Détection du faisceau par 3 méthodes de seuillage  
     * Détection du faisceau principal  
     * Détection du Barycentre d'intensité de l'image  
     * Détection de l'ellipticité du faisceau principal  
@@ -35,6 +36,4 @@ Il accuse certaines fonctionnalités :
 Pour l'installation avec une caméra Basler, veuillez suivre le Git : [pypylon](https://github.com/basler/pypylon) (à l'heure actuelle fonctionne sur les version Python jusqu'à la [3.8](https://www.python.org/downloads/release/python-386/)).  
 Le développement a été effectué sous Python3.8 et les bibliothèques à jour à la date du 12/12/2020.  
   
-Les dernières versions en cours de développement se trouvent à [Fork 1](https://github.com/quentincoche/PROJET-M2/tree/master/D%C3%A9veloppement/Marin) et [Fork 2](https://github.com/quentincoche/PROJET-M2/tree/master/D%C3%A9veloppement/Quentin).  
-Pour le **Fork 1** executez ``New_GUI.py``
-Pour le **Fork 2** executez ``QUI.py``
+La dernière version en cours de développement se trouvent à [Fork 1](https://github.com/quentincoche/PROJET-M2/tree/master/D%C3%A9veloppement/Analyseur%20de%20faisceaux%20(2D)).
