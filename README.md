@@ -39,6 +39,16 @@ Il accuse certaines fonctionnalités :
 ## Installation  
   
 Pour l'installation avec une caméra Basler, veuillez suivre le Git : [pypylon](https://github.com/basler/pypylon) (à l'heure actuelle fonctionne sur les version Python jusqu'à la [3.8](https://www.python.org/downloads/release/python-386/)).  
-Le développement a été effectué sous Python3.8 et les bibliothèques à jour à la date du 12/12/2020.  
+Le développement a été effectué sous Python3.8 et les bibliothèques à jour à la date du 12/12/2020.
+### Bibliothèques :
+* PIL
+* numpy
+* opencv
+* tkinter
+* matplotlib
+* astropy
+* skimage
+* pypylon
+Avec la commande : `pip install pillow numpy opencv-python matplotlib astropy scikit-image pypylon`
   
 La dernière version en cours de développement se trouvent à [Fork 1](https://github.com/quentincoche/PROJET-M2/tree/master/D%C3%A9veloppement/Analyseur%20de%20faisceaux%20(2D)).
