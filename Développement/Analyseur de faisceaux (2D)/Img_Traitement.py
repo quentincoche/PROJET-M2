@@ -246,6 +246,7 @@ class Traitement():
         fittery = modeling.fitting.LevMarLSQFitter()
 
         #courbe gaussien selon les axes x et y
+        # @TODO modeling by astropy see if change is needed
         modelx = modeling.models.Gaussian1D(amplitude=np.max(Lx), mean=w, stddev=sigma_x)   # depending on the data you need to give some initial values
         modely = modeling.models.Gaussian1D(amplitude=np.max(Ly), mean=h, stddev=sigma_y)
 
