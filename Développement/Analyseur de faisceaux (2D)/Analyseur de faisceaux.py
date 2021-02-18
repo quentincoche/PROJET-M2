@@ -181,6 +181,7 @@ class Fenetre(Thread):
         try:    
             self.pixel_size = self.vid.pixel_size
         except:
+            # @TODO ask pixel size for other camera
             pass
         
 

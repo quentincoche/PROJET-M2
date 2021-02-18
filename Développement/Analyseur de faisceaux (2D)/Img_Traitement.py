@@ -591,7 +591,7 @@ class Traitement():
         it=sorted(temp)
         gl1=temp.index(it[0])
         gl2=temp.index(it[1])
-        g1=-pgw+gl1*pixel_size
+        g1=-pgw+gl1*pixel_size   #@TODO diagonal pixel size
         g2=-pgw+gl2*pixel_size
         dg=abs(g2-g1)
         if dg==0:
